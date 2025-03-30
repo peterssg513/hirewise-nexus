@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,19 +58,16 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
     try {
       setUploadingFile(true);
       
-      // Create a unique file path
       const fileExt = file.name.split('.').pop();
       const timestamp = new Date().getTime();
       const filePath = `${user.id}/certifications/${timestamp}_${certName.replace(/\s+/g, '-').toLowerCase()}.${fileExt}`;
       
-      // Upload the file
       const { error: uploadError, data } = await supabase.storage
         .from('psychologist_files')
         .upload(filePath, file);
         
       if (uploadError) throw uploadError;
       
-      // Get the public URL
       const { data: urlData } = supabase.storage
         .from('psychologist_files')
         .getPublicUrl(filePath);
@@ -128,13 +124,11 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
     setIsSubmitting(true);
     
     try {
-      // Convert the certifications array to a JSON string for storage
-      // Update psychologist certifications
       const { error } = await supabase
         .from('psychologists')
         .update({
           certifications: certifications,
-          signup_progress: 4, // Move to next step
+          signup_progress: 4,
         })
         .eq('user_id', user.id);
         
