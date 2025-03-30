@@ -37,7 +37,7 @@ const Profile = () => {
   // Map between different property names
   const mapExperienceProperties = (exp: any): Experience => {
     return {
-      id: exp.id,
+      id: exp.id || `exp-${Math.random().toString(36).substring(2, 9)}`,
       position: exp.position || exp.jobTitle || '',
       organization: exp.organization || exp.placeOfEmployment || '',
       description: exp.description || '',
@@ -50,13 +50,28 @@ const Profile = () => {
   // Map between different education property names
   const mapEducationProperties = (edu: any): Education => {
     return {
-      id: edu.id,
+      id: edu.id || `edu-${Math.random().toString(36).substring(2, 9)}`,
       institution: edu.institution || edu.schoolName || '',
       field: edu.field || edu.major || '',
       degree: edu.degree || '',
       startDate: edu.startDate || '',
       endDate: edu.endDate || ''
     };
+  };
+  
+  // Process certification data
+  const processCertificationData = (certData: any[]): Certification[] => {
+    return certData.map(cert => ({
+      id: cert.id || `cert-${Math.random().toString(36).substring(2, 9)}`,
+      name: cert.name || cert.certificationName || '',
+      issuingAuthority: cert.issuingAuthority || cert.issuer || '',
+      expirationDate: cert.expirationDate || cert.endYear || '',
+      startYear: cert.startYear || cert.date || '',
+      endYear: cert.endYear || cert.expirationDate || '',
+      description: cert.description || '',
+      status: cert.status || 'pending',
+      documentUrl: cert.documentUrl || cert.url || null,
+    }));
   };
   
   useEffect(() => {
@@ -100,7 +115,7 @@ const Profile = () => {
               certData = Object.values(data.certification_details as object);
             }
             
-            setCertifications(certData as unknown as Certification[]);
+            setCertifications(processCertificationData(certData));
           }
           
         } catch (profileError) {
@@ -183,6 +198,7 @@ const Profile = () => {
           experiences={experiences}
           educations={educations}
           certifications={certifications}
+          profileData={profile}
         />
       </div>
     </div>

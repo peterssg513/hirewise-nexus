@@ -19,7 +19,7 @@ export const fetchPsychologistProfile = async (userId: string) => {
       throw profileError;
     }
     
-    // Then fetch the psychologist-specific data
+    // Then fetch the psychologist-specific data with all fields
     const { data: psychologistData, error: psychologistError } = await supabase
       .from('psychologists')
       .select('*')

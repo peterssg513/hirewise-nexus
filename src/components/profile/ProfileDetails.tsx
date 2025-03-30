@@ -11,9 +11,10 @@ export interface ProfileDetailsProps {
   experiences: Experience[];
   educations: Education[];
   certifications: Certification[];
+  profileData?: any; // Optional profile data
 }
 
-const ProfileDetails = ({ experiences, educations, certifications }: ProfileDetailsProps) => {
+const ProfileDetails = ({ experiences, educations, certifications, profileData }: ProfileDetailsProps) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -123,7 +124,7 @@ const ProfileDetails = ({ experiences, educations, certifications }: ProfileDeta
                         </Badge>
                       )}
                     </div>
-                    <p className="text-gray-600">{cert.issuingAuthority}</p>
+                    <p className="text-gray-600">{cert.issuingAuthority || cert.issuer || ''}</p>
                     {cert.description && (
                       <p className="text-sm text-gray-500 mt-1">{cert.description}</p>
                     )}

@@ -10,11 +10,13 @@ export interface Certification {
   uploadedAt?: string;
   startYear: string;
   endYear: string;
-  // Additional fields that might be used in Profile view
+  // Additional fields for Profile view
   issuer?: string;
+  issuingAuthority?: string;
   date?: string;
   expirationDate?: string;
   documentUrl?: string;
+  description?: string;
 }
 
 /**
