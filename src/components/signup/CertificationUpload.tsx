@@ -1,28 +1,22 @@
 
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Upload, 
-  Loader2, 
-  FileX, 
-  FileCheck,
-  File 
+  Loader2
 } from 'lucide-react';
+import CertificationList from './CertificationList';
+import { 
+  Certification, 
+  uploadCertificationFile, 
+  saveCertifications 
+} from '@/services/certificationService';
 
 interface CertificationUploadProps {
   onComplete: () => void;
-}
-
-interface Certification {
-  id: string;
-  name: string;
-  url: string;
-  status: 'pending' | 'verified';
-  uploadedAt: string;
 }
 
 const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete }) => {
@@ -59,27 +53,7 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
     try {
       setUploadingFile(true);
       
-      const fileExt = file.name.split('.').pop();
-      const timestamp = new Date().getTime();
-      const filePath = `${user.id}/certifications/${timestamp}_${certName.replace(/\s+/g, '-').toLowerCase()}.${fileExt}`;
-      
-      const { error: uploadError, data } = await supabase.storage
-        .from('psychologist_files')
-        .upload(filePath, file);
-        
-      if (uploadError) throw uploadError;
-      
-      const { data: urlData } = supabase.storage
-        .from('psychologist_files')
-        .getPublicUrl(filePath);
-        
-      const newCert: Certification = {
-        id: timestamp.toString(),
-        name: certName,
-        url: urlData.publicUrl,
-        status: 'pending',
-        uploadedAt: new Date().toISOString(),
-      };
+      const newCert = await uploadCertificationFile(user.id, file, certName);
       
       setCertifications([...certifications, newCert]);
       setCertName('');
@@ -125,17 +99,7 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
     setIsSubmitting(true);
     
     try {
-      // Store the certifications as a stringified JSON object
-      // This way we properly preserve all certification details
-      const { error } = await supabase
-        .from('psychologists')
-        .update({
-          certifications: JSON.stringify(certifications),
-          signup_progress: 4,
-        })
-        .eq('user_id', user.id);
-        
-      if (error) throw error;
+      await saveCertifications(user.id, certifications);
       
       toast({
         title: 'Certifications saved',
@@ -198,64 +162,10 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
           </label>
         </div>
         
-        {certifications.length > 0 && (
-          <div className="border rounded-md overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Certification
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {certifications.map((cert) => (
-                  <tr key={cert.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <File className="h-5 w-5 text-gray-400 mr-2" />
-                        <div className="text-sm font-medium text-gray-900">{cert.name}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        cert.status === 'verified' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {cert.status === 'verified' ? 'Verified' : 'Pending'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex space-x-2">
-                        <a 
-                          href={cert.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          View
-                        </a>
-                        <button
-                          onClick={() => handleRemoveCertification(cert.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <CertificationList 
+          certifications={certifications} 
+          onRemove={handleRemoveCertification} 
+        />
       </div>
       
       <div className="flex justify-end">
