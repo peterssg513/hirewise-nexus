@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { User, Edit, MapPin, Briefcase, GraduationCap, Award, Save, Loader2 } from 'lucide-react';
@@ -15,7 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PsychologistProfile {
   id: string;
@@ -61,17 +60,15 @@ const PsychologistProfile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [editingBasic, setEditingBasic] = useState(false);
   const [editingProfessional, setEditingProfessional] = useState(false);
   
-  // Fetch profile data
   const { data: profile, isLoading } = useQuery({
     queryKey: ['psychologist-profile'],
     queryFn: async () => {
       if (!user) throw new Error("User not authenticated");
       
-      // Fetch profile data from psychologists table
       const { data, error } = await supabase
         .from('psychologists')
         .select('*')
@@ -80,7 +77,6 @@ const PsychologistProfile = () => {
       
       if (error) throw error;
       
-      // Fetch name from profiles table
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('name')
@@ -89,7 +85,6 @@ const PsychologistProfile = () => {
       
       if (userError) throw userError;
       
-      // Split name into first and last name
       let firstName = '', lastName = '';
       if (userData?.name) {
         const nameParts = userData.name.split(' ');
@@ -106,7 +101,6 @@ const PsychologistProfile = () => {
     enabled: !!user,
   });
   
-  // Form for basic information
   const basicForm = useForm<BasicInfoFormValues>({
     resolver: zodResolver(basicInfoSchema),
     defaultValues: {
@@ -120,7 +114,6 @@ const PsychologistProfile = () => {
     },
   });
   
-  // Form for professional information
   const professionalForm = useForm<ProfessionalInfoFormValues>({
     resolver: zodResolver(professionalInfoSchema),
     defaultValues: {
@@ -130,7 +123,6 @@ const PsychologistProfile = () => {
     },
   });
   
-  // Reset forms when profile data loads
   React.useEffect(() => {
     if (profile) {
       basicForm.reset({
@@ -151,12 +143,10 @@ const PsychologistProfile = () => {
     }
   }, [profile, basicForm, professionalForm]);
   
-  // Mutation for updating basic information
   const updateBasicInfo = useMutation({
     mutationFn: async (values: BasicInfoFormValues) => {
       if (!user || !profile) throw new Error("User not authenticated");
       
-      // Update name in profiles table
       const { error: nameError } = await supabase
         .from('profiles')
         .update({ name: `${values.firstName} ${values.lastName}` })
@@ -164,7 +154,6 @@ const PsychologistProfile = () => {
       
       if (nameError) throw nameError;
       
-      // Update other fields in psychologists table
       const { error } = await supabase
         .from('psychologists')
         .update({
@@ -197,7 +186,6 @@ const PsychologistProfile = () => {
     },
   });
   
-  // Mutation for updating professional information
   const updateProfessionalInfo = useMutation({
     mutationFn: async (values: ProfessionalInfoFormValues) => {
       if (!user || !profile) throw new Error("User not authenticated");
@@ -273,7 +261,6 @@ const PsychologistProfile = () => {
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
           </TabsList>
           
-          {/* Profile Overview */}
           <TabsContent value="overview">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="md:col-span-1">
@@ -413,7 +400,6 @@ const PsychologistProfile = () => {
             </div>
           </TabsContent>
           
-          {/* Basic Information */}
           <TabsContent value="basicInfo">
             <Card>
               <CardHeader>
@@ -591,7 +577,6 @@ const PsychologistProfile = () => {
             </Card>
           </TabsContent>
           
-          {/* Professional Information */}
           <TabsContent value="professionalInfo">
             <Card>
               <CardHeader>
@@ -654,8 +639,6 @@ const PsychologistProfile = () => {
                       )}
                     />
                     
-                    {/* Specialties field would ideally be a tag input,
-                        but for simplicity we're keeping it as a basic textarea */}
                     <FormField
                       control={professionalForm.control}
                       name="specialties"
@@ -712,7 +695,6 @@ const PsychologistProfile = () => {
             </Card>
           </TabsContent>
           
-          {/* Preferences */}
           <TabsContent value="preferences">
             <Card>
               <CardHeader>

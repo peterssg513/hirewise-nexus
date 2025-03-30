@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle, Clock, FileText, AlertCircle, XCircle, ExternalLink, FileCheck, PanelRightOpen } from 'lucide-react';
@@ -10,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
@@ -43,14 +42,12 @@ const statusColors: Record<string, { color: string, icon: React.ReactNode, label
 const Applications = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   
-  // Fetch applications from Supabase
   const { data: applications, isLoading, error } = useQuery({
     queryKey: ['applications'],
     queryFn: async () => {
-      // Get the psychologist ID first
       const { data: psychologist, error: psychError } = await supabase
         .from('psychologists')
         .select('id')
@@ -58,7 +55,6 @@ const Applications = () => {
       
       if (psychError) throw psychError;
       
-      // Then get applications with job details
       const { data, error: appError } = await supabase
         .from('applications')
         .select(`
@@ -81,7 +77,6 @@ const Applications = () => {
       
       if (appError) throw appError;
       
-      // Transform the data for easier consumption
       return data?.map(app => ({
         id: app.id,
         status: app.status,
@@ -134,7 +129,6 @@ const Applications = () => {
     };
   };
   
-  // Application details component
   const ApplicationDetails = ({ application }: { application: Application }) => (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -208,7 +202,6 @@ const Applications = () => {
     </div>
   );
   
-  // Render appropriate loading, error, or empty states
   if (error) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -279,7 +272,6 @@ const Applications = () => {
             </TabsContent>
           </Tabs>
           
-          {/* Application details dialog/drawer */}
           {isMobile ? (
             <Drawer open={!!selectedApplication} onOpenChange={(open) => !open && setSelectedApplication(null)}>
               <DrawerContent>
@@ -313,7 +305,6 @@ const Applications = () => {
   );
 };
 
-// Helper function to render applications in a table or card layout
 const renderApplicationsTable = (
   applications: Application[], 
   setSelectedApplication: (app: Application) => void,

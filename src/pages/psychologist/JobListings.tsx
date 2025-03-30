@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Filter, MapPin, Clock, BookOpen, X } from 'lucide-react';
@@ -13,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Job {
   id: string;
@@ -37,7 +36,7 @@ interface FilterOptions {
 const JobListings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
@@ -49,7 +48,6 @@ const JobListings = () => {
   });
   const [currentJob, setCurrentJob] = useState<Job | null>(null);
   
-  // Fetch jobs from Supabase
   const { data: jobs, isLoading, error } = useQuery({
     queryKey: ['jobs'],
     queryFn: async () => {
@@ -63,7 +61,6 @@ const JobListings = () => {
     }
   });
   
-  // Extract filter options from jobs data
   useEffect(() => {
     if (jobs) {
       const skills = Array.from(new Set(jobs.flatMap(job => job.skills_required || [])));
@@ -78,26 +75,21 @@ const JobListings = () => {
     }
   }, [jobs]);
   
-  // Apply filters to jobs
   const filteredJobs = jobs?.filter(job => {
-    // Search query filter
     const matchesSearch = 
       searchQuery === '' || 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.district_name.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Skills filter
     const matchesSkills = 
       selectedSkills.length === 0 || 
       selectedSkills.every(skill => job.skills_required?.includes(skill));
     
-    // Location filter
     const matchesLocation = 
       selectedLocations.length === 0 || 
       selectedLocations.includes(job.location);
     
-    // Timeframe filter
     const matchesTimeframe = 
       selectedTimeframes.length === 0 || 
       selectedTimeframes.includes(job.timeframe);
@@ -157,7 +149,6 @@ const JobListings = () => {
     setSearchQuery('');
   };
   
-  // Show job details in dialog or drawer based on device
   const JobDetails = ({ job }: { job: Job }) => (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -258,7 +249,6 @@ const JobListings = () => {
                   <DrawerDescription>Narrow down the job listings</DrawerDescription>
                 </DrawerHeader>
                 <div className="p-4 space-y-4">
-                  {/* Filters UI for mobile */}
                   <Tabs defaultValue="skills">
                     <TabsList className="grid grid-cols-3 mb-4">
                       <TabsTrigger value="skills">Skills</TabsTrigger>
@@ -337,7 +327,6 @@ const JobListings = () => {
                   <DialogDescription>Narrow down the job listings</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
-                  {/* Filters UI for desktop */}
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-medium mb-2">Skills Required</h4>
@@ -399,7 +388,6 @@ const JobListings = () => {
         </div>
       </div>
       
-      {/* Applied filters display */}
       {(selectedSkills.length > 0 || selectedLocations.length > 0 || selectedTimeframes.length > 0) && (
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-sm text-muted-foreground">Filters:</span>
@@ -450,7 +438,6 @@ const JobListings = () => {
         </div>
       )}
       
-      {/* Job listings */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {isLoading ? 
           Array(6).fill(0).map((_, i) => (

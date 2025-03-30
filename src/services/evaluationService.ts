@@ -6,170 +6,173 @@ export interface EvaluationData {
   status: string;
   created_at: string;
   submitted_at: string | null;
-  report_url: string | null;
-  evaluation_data: any;
+  psychologist_id: string;
   application_id: string;
+  data: Record<string, any>; // Use data instead of evaluation_data
 }
 
-export interface StudentInfo {
+export interface EvaluationFormField {
+  id: string;
+  type: 'text' | 'textarea' | 'number' | 'select' | 'multiselect' | 'checkbox' | 'radio' | 'date';
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  options?: string[];
+  description?: string;
+  section: string;
+}
+
+export interface EvaluationTemplate {
+  id: string;
   name: string;
-  dob: string;
-  grade: string;
-  school: string;
-  referralReason: string;
+  description: string;
+  sections: string[];
+  fields: EvaluationFormField[];
 }
 
-export interface AssessmentData {
-  testsAdministered: string[];
-  cognitiveResults: string;
-  academicResults: string;
-  behavioralResults: string;
-  socialEmotionalResults: string;
-}
-
-export interface Conclusions {
-  summary: string;
-  diagnosis?: string;
-  recommendations: string;
-}
-
-export interface CompleteEvaluationForm {
-  studentInfo: StudentInfo;
-  assessmentData: AssessmentData;
-  conclusions: Conclusions;
-}
-
-/**
- * Fetch an evaluation by ID
- */
-export const fetchEvaluation = async (id: string): Promise<EvaluationData> => {
+export const getEvaluationById = async (evaluationId: string): Promise<EvaluationData> => {
   const { data, error } = await supabase
     .from('evaluations')
-    .select(`
-      id, 
-      status, 
-      created_at, 
-      submitted_at, 
-      report_url,
-      evaluation_data,
-      application_id
-    `)
-    .eq('id', id)
+    .select('id, status, created_at, submitted_at, psychologist_id, application_id, data')
+    .eq('id', evaluationId)
     .single();
-  
+
   if (error) {
-    throw new Error(`Error fetching evaluation: ${error.message}`);
+    console.error('Error fetching evaluation:', error);
+    throw error;
   }
-  
+
   return data as EvaluationData;
 };
 
-/**
- * Save draft evaluation data
- */
-export const saveEvaluationDraft = async (
+export const getEvaluationTemplate = async (templateId: string): Promise<EvaluationTemplate> => {
+  // For now, we'll use a mock template
+  // In a real application, this would fetch from the database
+  return {
+    id: templateId,
+    name: 'Standard Psychological Evaluation',
+    description: 'Comprehensive evaluation for K-12 students',
+    sections: [
+      'Background Information',
+      'Assessment Results',
+      'Observations',
+      'Recommendations'
+    ],
+    fields: [
+      {
+        id: 'student_name',
+        type: 'text',
+        label: 'Student Name',
+        placeholder: 'Enter student name',
+        required: true,
+        section: 'Background Information'
+      },
+      {
+        id: 'date_of_birth',
+        type: 'date',
+        label: 'Date of Birth',
+        required: true,
+        section: 'Background Information'
+      },
+      {
+        id: 'grade',
+        type: 'select',
+        label: 'Grade',
+        options: ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+        required: true,
+        section: 'Background Information'
+      },
+      {
+        id: 'referral_reason',
+        type: 'textarea',
+        label: 'Reason for Referral',
+        placeholder: 'Describe the reason for referral',
+        required: true,
+        section: 'Background Information'
+      },
+      {
+        id: 'assessment_tools',
+        type: 'multiselect',
+        label: 'Assessment Tools Used',
+        options: [
+          'WISC-V', 'WAIS-IV', 'WJ-IV', 'BASC-3', 'Conners-3', 'BRIEF-2',
+          'Vineland-3', 'ADOS-2', 'ADHD Rating Scale', 'Other'
+        ],
+        required: true,
+        section: 'Assessment Results'
+      },
+      {
+        id: 'cognitive_results',
+        type: 'textarea',
+        label: 'Cognitive Assessment Results',
+        placeholder: 'Summarize cognitive assessment findings',
+        required: true,
+        section: 'Assessment Results'
+      },
+      {
+        id: 'behavioral_observations',
+        type: 'textarea',
+        label: 'Behavioral Observations',
+        placeholder: 'Describe student behavior during assessment',
+        required: true,
+        section: 'Observations'
+      },
+      {
+        id: 'recommendations',
+        type: 'textarea',
+        label: 'Recommendations',
+        placeholder: 'List recommended interventions and accommodations',
+        required: true,
+        section: 'Recommendations'
+      }
+    ]
+  };
+};
+
+export const saveEvaluationData = async (
   evaluationId: string, 
-  formData: Partial<CompleteEvaluationForm>
+  formData: Record<string, any>
 ): Promise<void> => {
   const { error } = await supabase
     .from('evaluations')
-    .update({
-      evaluation_data: formData,
-      status: 'in_progress',
-    })
+    .update({ data: formData, status: 'in_progress' })
     .eq('id', evaluationId);
-  
+
   if (error) {
-    throw new Error(`Error saving evaluation draft: ${error.message}`);
+    console.error('Error saving evaluation data:', error);
+    throw error;
   }
 };
 
-/**
- * Submit completed evaluation
- */
 export const submitEvaluation = async (
   evaluationId: string, 
-  formData: CompleteEvaluationForm
+  formData: Record<string, any>
 ): Promise<void> => {
   const { error } = await supabase
     .from('evaluations')
-    .update({
-      evaluation_data: formData,
+    .update({ 
+      data: formData, 
       status: 'submitted',
-      submitted_at: new Date().toISOString(),
+      submitted_at: new Date().toISOString()
     })
     .eq('id', evaluationId);
-  
+
   if (error) {
-    throw new Error(`Error submitting evaluation: ${error.message}`);
+    console.error('Error submitting evaluation:', error);
+    throw error;
   }
 };
 
-/**
- * Generate a PDF report from evaluation data (simulated)
- */
-export const generatePdfReport = async (evaluationId: string): Promise<string> => {
-  // In a real implementation, this would call an API to generate a PDF
-  // For now, we'll simulate it
-  
+export const getPsychologistEvaluations = async (psychologistId: string): Promise<EvaluationData[]> => {
   const { data, error } = await supabase
     .from('evaluations')
-    .update({
-      report_url: `https://example.com/reports/${evaluationId}.pdf`, // Simulated URL
-    })
-    .eq('id', evaluationId)
-    .select('report_url')
-    .single();
-  
-  if (error) {
-    throw new Error(`Error generating PDF report: ${error.message}`);
-  }
-  
-  return data.report_url;
-};
+    .select('id, status, created_at, submitted_at, psychologist_id, application_id, data')
+    .eq('psychologist_id', psychologistId);
 
-/**
- * Fetch evaluations for a psychologist
- */
-export const fetchPsychologistEvaluations = async (psychologistId: string): Promise<EvaluationData[]> => {
-  const { data, error } = await supabase
-    .from('evaluations')
-    .select(`
-      id, 
-      status, 
-      created_at, 
-      submitted_at, 
-      report_url,
-      evaluation_data,
-      application_id,
-      application:applications!inner(psychologist_id)
-    `)
-    .eq('applications.psychologist_id', psychologistId);
-  
   if (error) {
-    throw new Error(`Error fetching evaluations: ${error.message}`);
+    console.error('Error fetching evaluations:', error);
+    throw error;
   }
-  
+
   return data as EvaluationData[];
-};
-
-/**
- * Generate AI-assisted content for evaluation sections (simulated)
- */
-export const generateAIContent = async (prompt: string, section: string): Promise<string> => {
-  // In a real implementation, this would call an AI API like OpenAI
-  // For now, we'll return canned responses
-  const responses: Record<string, string> = {
-    cognitiveResults: "Based on cognitive assessment, the student demonstrates average to above-average intellectual functioning...",
-    academicResults: "Academic achievement testing indicates performance consistent with grade-level expectations in most areas...",
-    behavioralResults: "Behavioral assessment using standardized measures indicates elevated scores in attention problems...",
-    socialEmotionalResults: "Social-emotional assessment reveals generally positive adjustment with some areas of concern...",
-    summary: "This comprehensive psychoeducational evaluation was conducted to address concerns regarding academic performance...",
-    recommendations: "Based on the evaluation results, the following recommendations are provided..."
-  };
-  
-  // In a real implementation, add a delay to simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  return responses[section] || "AI-generated content would appear here.";
 };
