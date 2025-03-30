@@ -1,28 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Form } from '@/components/ui/form';
+import { saveBasicInfo } from '@/services/psychologistSignupService';
+import NameInputs from './contactInfo/NameInputs';
+import PhoneInput from './contactInfo/PhoneInput';
+import AddressInputs from './contactInfo/AddressInputs';
 
 interface BasicInformationProps {
   onComplete: () => void;
@@ -51,64 +39,10 @@ const basicInfoSchema = z.object({
 
 type BasicInfoFormValues = z.infer<typeof basicInfoSchema>;
 
-// List of US states for dropdown
-const US_STATES = [
-  { code: "AL", name: "Alabama" },
-  { code: "AK", name: "Alaska" },
-  { code: "AZ", name: "Arizona" },
-  { code: "AR", name: "Arkansas" },
-  { code: "CA", name: "California" },
-  { code: "CO", name: "Colorado" },
-  { code: "CT", name: "Connecticut" },
-  { code: "DE", name: "Delaware" },
-  { code: "FL", name: "Florida" },
-  { code: "GA", name: "Georgia" },
-  { code: "HI", name: "Hawaii" },
-  { code: "ID", name: "Idaho" },
-  { code: "IL", name: "Illinois" },
-  { code: "IN", name: "Indiana" },
-  { code: "IA", name: "Iowa" },
-  { code: "KS", name: "Kansas" },
-  { code: "KY", name: "Kentucky" },
-  { code: "LA", name: "Louisiana" },
-  { code: "ME", name: "Maine" },
-  { code: "MD", name: "Maryland" },
-  { code: "MA", name: "Massachusetts" },
-  { code: "MI", name: "Michigan" },
-  { code: "MN", name: "Minnesota" },
-  { code: "MS", name: "Mississippi" },
-  { code: "MO", name: "Missouri" },
-  { code: "MT", name: "Montana" },
-  { code: "NE", name: "Nebraska" },
-  { code: "NV", name: "Nevada" },
-  { code: "NH", name: "New Hampshire" },
-  { code: "NJ", name: "New Jersey" },
-  { code: "NM", name: "New Mexico" },
-  { code: "NY", name: "New York" },
-  { code: "NC", name: "North Carolina" },
-  { code: "ND", name: "North Dakota" },
-  { code: "OH", name: "Ohio" },
-  { code: "OK", name: "Oklahoma" },
-  { code: "OR", name: "Oregon" },
-  { code: "PA", name: "Pennsylvania" },
-  { code: "RI", name: "Rhode Island" },
-  { code: "SC", name: "South Carolina" },
-  { code: "SD", name: "South Dakota" },
-  { code: "TN", name: "Tennessee" },
-  { code: "TX", name: "Texas" },
-  { code: "UT", name: "Utah" },
-  { code: "VT", name: "Vermont" },
-  { code: "VA", name: "Virginia" },
-  { code: "WA", name: "Washington" },
-  { code: "WV", name: "West Virginia" },
-  { code: "WI", name: "Wisconsin" },
-  { code: "WY", name: "Wyoming" },
-];
-
 const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
   const { toast } = useToast();
   const { user, profile } = useAuth();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<BasicInfoFormValues>({
     resolver: zodResolver(basicInfoSchema),
@@ -135,29 +69,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
     setIsSubmitting(true);
     
     try {
-      // Update profile name
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          name: `${values.firstName} ${values.lastName}`,
-        })
-        .eq('id', user.id);
-        
-      if (profileError) throw profileError;
-      
-      // Update psychologist details
-      const { error: psychologistError } = await supabase
-        .from('psychologists')
-        .update({
-          phone_number: values.phoneNumber,
-          city: values.city,
-          state: values.state,
-          zip_code: values.zipCode,
-          signup_progress: 2, // Move to next step
-        })
-        .eq('user_id', user.id);
-        
-      if (psychologistError) throw psychologistError;
+      await saveBasicInfo(user.id, values);
       
       toast({
         title: 'Information saved',
@@ -182,107 +94,9 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
-          <FormField
-            control={form.control}
-            name="phoneNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone Number</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>City</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>State</FormLabel>
-                  <FormControl>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select state" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {US_STATES.map(state => (
-                          <SelectItem key={state.code} value={state.code}>
-                            {state.code} - {state.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="zipCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Zip Code</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <NameInputs form={form} />
+          <PhoneInput form={form} />
+          <AddressInputs form={form} />
           
           <Button 
             type="submit" 

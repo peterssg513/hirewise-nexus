@@ -121,6 +121,12 @@ export const getCertifications = async (userId: string): Promise<Certification[]
       return [];
     }
     
+    // Type guard to check if certification_details is an array
+    if (!Array.isArray(data.certification_details)) {
+      console.warn('certification_details is not an array:', data.certification_details);
+      return [];
+    }
+    
     // Transform the certification details into the Certification interface
     return data.certification_details.map((cert: CertificationDTO, index: number) => ({
       id: `cert-${index}`,
@@ -163,6 +169,11 @@ export const verifyCertification = async (
     
     if (!data || !data.certification_details) {
       throw new Error('No certification details found');
+    }
+    
+    // Type guard to check if certification_details is an array
+    if (!Array.isArray(data.certification_details)) {
+      throw new Error('Certification details is not in the expected format');
     }
     
     // Update the status of the specific certification
