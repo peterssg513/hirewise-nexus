@@ -1,188 +1,114 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MapPin, FileEdit, Briefcase, ClipboardList, GraduationCap, Camera } from 'lucide-react';
+import { Check, Edit2, MapPin, Mail, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
-import ProfilePictureUpload from '@/components/signup/ProfilePictureUpload';
+import ProfilePictureModal from './ProfilePictureModal';
 
 interface ProfileHeaderProps {
   profileData: any;
   onEditProfile: () => void;
-  onProfilePictureUpdate?: (url: string) => void;
+  onProfilePictureUpdate: (url: string) => Promise<void>;
 }
 
 const ProfileHeader = ({ profileData, onEditProfile, onProfilePictureUpdate }: ProfileHeaderProps) => {
-  const [showProfilePictureUpload, setShowProfilePictureUpload] = useState(false);
-  
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        duration: 0.5,
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 }
-  };
+  const [isPictureModalOpen, setIsPictureModalOpen] = useState(false);
 
-  console.log("ProfileHeader - Profile Picture URL:", profileData.profile_picture_url);
-  console.log("ProfileHeader - Profile Data:", profileData);
-
-  const handleUploadComplete = (url: string) => {
-    console.log("Upload complete, new URL:", url);
-    if (onProfilePictureUpdate) {
-      onProfilePictureUpdate(url);
-    }
-    setShowProfilePictureUpload(false);
+  const getInitials = (name: string) => {
+    if (!name) return "?";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
   return (
     <motion.div 
-      className="w-full md:w-1/3 bg-white rounded-lg shadow-sm p-6 border border-gray-100"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+      className="w-full md:w-1/3"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
     >
-      <div className="flex flex-col items-center text-center">
-        <motion.div variants={itemVariants} className="relative group">
-          <Avatar className="h-32 w-32 mb-4 ring-4 ring-psyched-cream shadow-md">
-            {profileData.profile_picture_url ? (
+      <div className="bg-white shadow-sm rounded-lg border border-gray-100 p-6">
+        <div className="flex flex-col items-center">
+          <div className="relative group mb-4">
+            <Avatar className="h-24 w-24 border-2 border-gray-200">
               <AvatarImage 
                 src={profileData.profile_picture_url} 
-                alt={profileData.profiles?.name || 'User'} 
-                className="object-cover"
+                alt={profileData.name || "Profile"} 
               />
-            ) : (
-              <AvatarFallback className="text-2xl bg-psyched-lightBlue text-white">
-                {profileData.profiles?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
+              <AvatarFallback className="bg-psyched-lightBlue text-white text-xl">
+                {getInitials(profileData.name || "User")}
               </AvatarFallback>
-            )}
-          </Avatar>
-          
-          <Button 
-            size="icon"
-            variant="secondary"
-            className="absolute bottom-4 right-0 rounded-full bg-white shadow-md hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={() => setShowProfilePictureUpload(true)}
-          >
-            <Camera className="h-4 w-4" />
-          </Button>
-        </motion.div>
-        
-        {showProfilePictureUpload && profileData.user_id && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-4"
-          >
-            <ProfilePictureUpload 
-              profilePictureUrl={profileData.profile_picture_url} 
-              userId={profileData.user_id}
-              onUploadComplete={handleUploadComplete}
-            />
-          </motion.div>
-        )}
-        
-        <motion.h2 variants={itemVariants} className="text-2xl font-bold text-psyched-darkBlue">
-          {profileData.profiles?.name || 'Anonymous User'}
-        </motion.h2>
-        
-        <motion.p variants={itemVariants} className="text-gray-600 mb-3">
-          {profileData.profiles?.email}
-        </motion.p>
-        
-        <motion.div variants={itemVariants}>
-          {profileData.status === 'approved' ? (
-            <Badge className="bg-green-500 text-white hover:bg-green-600">Verified Psychologist</Badge>
-          ) : (
-            <Badge variant="outline" className="border-yellow-500 text-yellow-700 hover:bg-yellow-50">
-              Verification Pending
-            </Badge>
-          )}
-        </motion.div>
-        
-        {profileData.city && profileData.state && (
-          <motion.div variants={itemVariants} className="flex items-center gap-1 mt-3 text-gray-600">
-            <MapPin className="h-4 w-4 text-psyched-lightBlue" />
-            <span>{profileData.city}, {profileData.state}</span>
-          </motion.div>
-        )}
-        
-        {!showProfilePictureUpload && (
-          <motion.div variants={itemVariants}>
+            </Avatar>
+            
             <Button 
-              className="mt-6 bg-psyched-darkBlue hover:bg-psyched-darkBlue/80 text-white transition-all duration-300 transform hover:scale-105"
-              size="sm"
-              onClick={onEditProfile}
+              variant="ghost" 
+              size="icon" 
+              className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-white shadow hover:bg-gray-100"
+              onClick={() => setIsPictureModalOpen(true)}
             >
-              <FileEdit className="h-4 w-4 mr-2" /> Edit Profile
+              <Edit2 className="h-4 w-4 text-gray-600" />
             </Button>
-          </motion.div>
-        )}
+          </div>
+          
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-semibold text-psyched-darkBlue">
+              {profileData.name || "New Psychologist"}
+            </h2>
+            
+            {profileData.status === "approved" && (
+              <div className="flex items-center justify-center mt-1">
+                <div className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs flex items-center">
+                  <Check className="h-3 w-3 mr-1" />
+                  Verified Professional
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="w-full space-y-3 text-sm">
+            {profileData.email && (
+              <div className="flex items-center text-gray-600">
+                <Mail className="h-4 w-4 mr-2 text-psyched-lightBlue" />
+                <span>{profileData.email}</span>
+              </div>
+            )}
+            
+            {profileData.phone_number && (
+              <div className="flex items-center text-gray-600">
+                <Phone className="h-4 w-4 mr-2 text-psyched-yellow" />
+                <span>{profileData.phone_number}</span>
+              </div>
+            )}
+            
+            {profileData.city && profileData.state && (
+              <div className="flex items-center text-gray-600">
+                <MapPin className="h-4 w-4 mr-2 text-psyched-orange" />
+                <span>{profileData.city}, {profileData.state}</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="w-full mt-6">
+            <Button 
+              onClick={onEditProfile}
+              variant="outline" 
+              className="w-full border-psyched-darkBlue text-psyched-darkBlue hover:bg-psyched-darkBlue hover:text-white"
+            >
+              Edit Contact Info
+            </Button>
+          </div>
+        </div>
       </div>
       
-      <div className="mt-8 space-y-6">
-        <motion.div variants={itemVariants} className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-psyched-orange" />
-            <h3 className="font-medium text-psyched-darkBlue">Work Preferences</h3>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {profileData.work_types?.map((type: string) => (
-              <Badge key={type} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
-                {type}
-              </Badge>
-            ))}
-          </div>
-        </motion.div>
-        
-        <motion.div variants={itemVariants} className="space-y-2">
-          <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-psyched-lightBlue" />
-            <h3 className="font-medium text-psyched-darkBlue">Evaluation Types</h3>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {profileData.evaluation_types?.map((type: string) => (
-              <Badge key={type} variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100">
-                {type}
-              </Badge>
-            ))}
-          </div>
-        </motion.div>
-        
-        <motion.div variants={itemVariants} className="space-y-2">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-psyched-darkBlue" />
-            <h3 className="font-medium text-psyched-darkBlue">Desired Locations</h3>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {profileData.desired_locations?.map((location: string) => (
-              <Badge key={location} variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
-                {location}
-              </Badge>
-            ))}
-          </div>
-        </motion.div>
-        
-        {profileData.open_to_relocation && (
-          <motion.div variants={itemVariants} className="pt-2">
-            <Badge className="bg-psyched-lightBlue text-white hover:bg-psyched-lightBlue/90">
-              Open to Relocation
-            </Badge>
-          </motion.div>
-        )}
-      </div>
+      {isPictureModalOpen && (
+        <ProfilePictureModal
+          isOpen={isPictureModalOpen}
+          onClose={() => setIsPictureModalOpen(false)}
+          onSave={onProfilePictureUpdate}
+          currentPictureUrl={profileData.profile_picture_url}
+          userId={profileData.user_id}
+        />
+      )}
     </motion.div>
   );
 };

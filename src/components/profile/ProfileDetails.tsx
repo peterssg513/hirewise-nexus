@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,6 +115,15 @@ const ProfileDetails = ({
           <CardContent className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold text-psyched-darkBlue">About Me</h3>
+              <Button 
+                onClick={() => onEditItem('basic')} 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center gap-1 text-gray-500 hover:text-psyched-darkBlue"
+              >
+                <FileEdit className="h-4 w-4" />
+                Edit
+              </Button>
             </div>
             
             <div className="space-y-4">

@@ -3,10 +3,43 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 /**
+ * Sets up the required storage buckets if they don't exist
+ */
+export const setupStorageBuckets = async () => {
+  try {
+    // Check if avatars bucket exists
+    const { data: buckets, error } = await supabase
+      .storage
+      .listBuckets();
+      
+    if (error) throw error;
+    
+    // Create the bucket if it doesn't exist
+    if (!buckets.find(bucket => bucket.name === 'avatars')) {
+      const { error: createError } = await supabase
+        .storage
+        .createBucket('avatars', {
+          public: true,
+          fileSizeLimit: 5242880 // 5MB
+        });
+        
+      if (createError) throw createError;
+      
+      console.log('Created avatars bucket');
+    }
+  } catch (error) {
+    console.error('Error setting up storage buckets:', error);
+  }
+};
+
+/**
  * Fetches the psychologist profile data
  */
 export const fetchPsychologistProfile = async (userId: string) => {
   try {
+    // Setup storage buckets if needed
+    await setupStorageBuckets();
+    
     // First fetch the basic profile information
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')

@@ -39,6 +39,7 @@ const EditProfileModal = ({
     // Initialize form data based on section and whether editing existing item
     if (section === 'basic') {
       setFormData({
+        bio: profileData?.bio || '',
         phone_number: profileData?.phone_number || '',
         city: profileData?.city || '',
         state: profileData?.state || '',
@@ -129,6 +130,17 @@ const EditProfileModal = ({
       case 'basic':
         return (
           <div className="space-y-4">
+            <div>
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
+                id="bio"
+                name="bio"
+                value={formData.bio || ''}
+                onChange={handleChange}
+                placeholder="Tell us about yourself"
+                rows={4}
+              />
+            </div>
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <Label htmlFor="phone_number">Phone Number</Label>
@@ -391,7 +403,7 @@ const EditProfileModal = ({
     
     switch (section) {
       case 'basic':
-        return 'Edit Contact Information';
+        return 'Edit Profile Information';
       case 'experience':
         return `${action} Professional Experience`;
       case 'education':
