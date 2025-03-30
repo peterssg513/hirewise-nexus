@@ -54,9 +54,19 @@ export const fetchPsychologistProfile = async (userId: string) => {
  */
 export const updatePsychologistProfile = async (userId: string, profileData: any) => {
   try {
+    // Remove any fields that should not be directly updated
+    const sanitizedData = { ...profileData };
+    delete sanitizedData.id;
+    delete sanitizedData.user_id;
+    delete sanitizedData.profiles;
+    delete sanitizedData.created_at;
+    delete sanitizedData.updated_at;
+    
+    console.log("Updating profile with data:", sanitizedData);
+    
     const { data, error } = await supabase
       .from('psychologists')
-      .update(profileData)
+      .update(sanitizedData)
       .eq('user_id', userId)
       .select();
       

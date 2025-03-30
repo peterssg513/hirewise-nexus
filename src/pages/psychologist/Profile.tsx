@@ -1,15 +1,15 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Certification } from '@/services/certificationService';
 import { Experience, Education } from '@/services/psychologistSignupService';
-import { fetchPsychologistProfile, createPsychologistProfile } from '@/services/profileService';
+import { fetchPsychologistProfile, createPsychologistProfile, updatePsychologistProfile } from '@/services/profileService';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileDetails from '@/components/profile/ProfileDetails';
+import EditProfileModal from '@/components/profile/EditProfileModal';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -19,8 +19,10 @@ const Profile = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [certifications, setCertifications] = useState<Certification[]>([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editSection, setEditSection] = useState<'basic' | 'experience' | 'education' | 'certification' | null>(null);
+  const [editItemId, setEditItemId] = useState<string | null>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   // Helper function to safely parse JSON data
   const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any[] => {
@@ -149,12 +151,151 @@ const Profile = () => {
     fetchProfile();
   }, [user, toast]);
   
-  const handleEditProfile = () => {
-    navigate('/psychologist-signup');
-    toast({
-      title: 'Edit Profile',
-      description: 'You can update your profile information here.',
-    });
+  const handleEditProfile = (section: 'basic' | 'experience' | 'education' | 'certification', itemId?: string) => {
+    setEditSection(section);
+    setEditItemId(itemId || null);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditSection(null);
+    setEditItemId(null);
+  };
+
+  const handleSaveProfile = async (updatedData: any) => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      
+      let updatedProfile = { ...profile };
+      
+      // Handle different sections
+      if (editSection === 'basic') {
+        updatedProfile = {
+          ...updatedProfile,
+          ...updatedData,
+        };
+      } else if (editSection === 'experience') {
+        let updatedExperiences = [...experiences];
+        
+        if (editItemId) {
+          // Update existing experience
+          updatedExperiences = updatedExperiences.map(exp => 
+            exp.id === editItemId ? { ...exp, ...updatedData } : exp
+          );
+        } else {
+          // Add new experience
+          updatedExperiences.push({
+            ...updatedData,
+            id: `exp-${Math.random().toString(36).substring(2, 9)}`
+          });
+        }
+        
+        updatedProfile.experience = JSON.stringify(updatedExperiences);
+        setExperiences(updatedExperiences);
+      } else if (editSection === 'education') {
+        let updatedEducations = [...educations];
+        
+        if (editItemId) {
+          // Update existing education
+          updatedEducations = updatedEducations.map(edu => 
+            edu.id === editItemId ? { ...edu, ...updatedData } : edu
+          );
+        } else {
+          // Add new education
+          updatedEducations.push({
+            ...updatedData,
+            id: `edu-${Math.random().toString(36).substring(2, 9)}`
+          });
+        }
+        
+        updatedProfile.education = JSON.stringify(updatedEducations);
+        setEducations(updatedEducations);
+      } else if (editSection === 'certification') {
+        let updatedCertifications = [...certifications];
+        
+        if (editItemId) {
+          // Update existing certification
+          updatedCertifications = updatedCertifications.map(cert => 
+            cert.id === editItemId ? { ...cert, ...updatedData } : cert
+          );
+        } else {
+          // Add new certification
+          updatedCertifications.push({
+            ...updatedData,
+            id: `cert-${Math.random().toString(36).substring(2, 9)}`,
+            status: 'pending'
+          });
+        }
+        
+        updatedProfile.certification_details = JSON.stringify(updatedCertifications);
+        setCertifications(updatedCertifications);
+      }
+      
+      // Save to database
+      await updatePsychologistProfile(user.id, updatedProfile);
+      setProfile(updatedProfile);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+      
+      handleCloseEditModal();
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Update failed",
+        description: "There was an error updating your profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteItem = async (section: 'experience' | 'education' | 'certification', itemId: string) => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      
+      let updatedProfile = { ...profile };
+      
+      if (section === 'experience') {
+        const updatedExperiences = experiences.filter(exp => exp.id !== itemId);
+        updatedProfile.experience = JSON.stringify(updatedExperiences);
+        setExperiences(updatedExperiences);
+      } else if (section === 'education') {
+        const updatedEducations = educations.filter(edu => edu.id !== itemId);
+        updatedProfile.education = JSON.stringify(updatedEducations);
+        setEducations(updatedEducations);
+      } else if (section === 'certification') {
+        const updatedCertifications = certifications.filter(cert => cert.id !== itemId);
+        updatedProfile.certification_details = JSON.stringify(updatedCertifications);
+        setCertifications(updatedCertifications);
+      }
+      
+      // Save to database
+      await updatePsychologistProfile(user.id, updatedProfile);
+      setProfile(updatedProfile);
+      
+      toast({
+        title: "Item deleted",
+        description: `The ${section} has been successfully deleted.`,
+      });
+    } catch (error) {
+      console.error(`Error deleting ${section}:`, error);
+      toast({
+        title: "Delete failed",
+        description: `There was an error deleting the ${section}. Please try again.`,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
   
   if (loading) {
@@ -187,9 +328,9 @@ const Profile = () => {
           <p className="text-gray-500 mb-4">Unable to retrieve your profile information.</p>
           <Button 
             className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90 text-white"
-            onClick={() => navigate('/psychologist-signup')}
+            onClick={() => window.location.reload()}
           >
-            Complete Your Profile
+            Try Again
           </Button>
         </div>
       </div>
@@ -207,7 +348,7 @@ const Profile = () => {
       <div className="mb-8 flex flex-col md:flex-row gap-6 items-start">
         <ProfileHeader 
           profileData={profile} 
-          onEditProfile={handleEditProfile} 
+          onEditProfile={() => handleEditProfile('basic')} 
         />
         
         <ProfileDetails 
@@ -215,8 +356,24 @@ const Profile = () => {
           educations={educations}
           certifications={certifications}
           profileData={profile}
+          onEditItem={handleEditProfile}
+          onDeleteItem={handleDeleteItem}
         />
       </div>
+
+      {isEditModalOpen && (
+        <EditProfileModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onSave={handleSaveProfile}
+          section={editSection}
+          itemId={editItemId}
+          profileData={profile}
+          experienceData={editItemId ? experiences.find(exp => exp.id === editItemId) : undefined}
+          educationData={editItemId ? educations.find(edu => edu.id === editItemId) : undefined}
+          certificationData={editItemId ? certifications.find(cert => cert.id === editItemId) : undefined}
+        />
+      )}
     </div>
   );
 };
