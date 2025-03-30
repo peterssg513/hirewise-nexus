@@ -6,6 +6,7 @@ import {
   FormLabel,
   FormDescription,
   FormControl,
+  FormMessage,
 } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { UseFormReturn } from 'react-hook-form';
@@ -33,8 +34,10 @@ const RelocationSection: React.FC<RelocationSectionProps> = ({ form }) => {
             <Switch
               checked={field.value}
               onCheckedChange={field.onChange}
+              aria-label="Open to relocation toggle"
             />
           </FormControl>
+          <FormMessage />
         </FormItem>
       )}
     />
