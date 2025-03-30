@@ -7,31 +7,42 @@ import { toast } from "@/hooks/use-toast";
  */
 export const fetchPsychologistProfile = async (userId: string) => {
   try {
-    const { data, error } = await supabase
+    // First fetch the basic profile information
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('name, email')
+      .eq('id', userId)
+      .single();
+      
+    if (profileError) {
+      console.error("Error fetching profile details:", profileError);
+      throw profileError;
+    }
+    
+    // Then fetch the psychologist-specific data
+    const { data: psychologistData, error: psychologistError } = await supabase
       .from('psychologists')
-      .select(`
-        *,
-        profiles:profiles(
-          name,
-          email
-        )
-      `)
+      .select('*')
       .eq('user_id', userId)
       .single();
       
-    if (error) {
-      console.error("Error details:", error);
+    if (psychologistError) {
+      console.error("Error details:", psychologistError);
       
       // If record not found, create a new profile
-      if (error.code === 'PGRST116') {
+      if (psychologistError.code === 'PGRST116') {
         await createPsychologistProfile(userId);
         return fetchPsychologistProfile(userId);
       }
       
-      throw error;
+      throw psychologistError;
     }
     
-    return data;
+    // Combine the data
+    return {
+      ...psychologistData,
+      profiles: profileData
+    };
   } catch (error) {
     console.error('Error fetching psychologist profile:', error);
     throw error;

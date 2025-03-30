@@ -92,7 +92,9 @@ const Profile = () => {
           if (data.certification_details) {
             let certData: any[] = [];
             
-            if (Array.isArray(data.certification_details)) {
+            if (typeof data.certification_details === 'string') {
+              certData = safeJsonParse(data.certification_details);
+            } else if (Array.isArray(data.certification_details)) {
               certData = data.certification_details as any[];
             } else if (typeof data.certification_details === 'object') {
               certData = Object.values(data.certification_details as object);

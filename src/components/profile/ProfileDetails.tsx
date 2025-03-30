@@ -4,12 +4,16 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, GraduationCap, Award, Phone, Mail } from 'lucide-react';
+import { Experience, Education } from '@/services/psychologistSignupService';
+import { Certification } from '@/services/certificationService';
 
-interface ProfileDetailsProps {
-  profileData: any;
+export interface ProfileDetailsProps {
+  experiences: Experience[];
+  educations: Education[];
+  certifications: Certification[];
 }
 
-const ProfileDetails = ({ profileData }: ProfileDetailsProps) => {
+const ProfileDetails = ({ experiences, educations, certifications }: ProfileDetailsProps) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -37,43 +41,8 @@ const ProfileDetails = ({ profileData }: ProfileDetailsProps) => {
       initial="hidden"
       animate="visible"
     >
-      {/* Contact Information */}
-      <motion.div variants={cardVariants}>
-        <Card className="shadow-sm hover:shadow transition-shadow duration-300 border-gray-100">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold text-psyched-darkBlue flex items-center gap-2">
-              <Mail className="h-5 w-5 text-psyched-orange" />
-              Contact Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="font-medium">{profileData.profiles?.email}</p>
-              </div>
-              {profileData.phone_number && (
-                <div>
-                  <p className="text-sm text-gray-500">Phone Number</p>
-                  <p className="font-medium">{profileData.phone_number}</p>
-                </div>
-              )}
-              {(profileData.city || profileData.state) && (
-                <div>
-                  <p className="text-sm text-gray-500">Location</p>
-                  <p className="font-medium">
-                    {[profileData.city, profileData.state].filter(Boolean).join(', ')}
-                    {profileData.zip_code && ` ${profileData.zip_code}`}
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
       {/* Experience */}
-      {profileData.experience && profileData.experience.length > 0 && (
+      {experiences && experiences.length > 0 && (
         <motion.div variants={cardVariants}>
           <Card className="shadow-sm hover:shadow transition-shadow duration-300 border-gray-100">
             <CardHeader className="pb-2">
@@ -84,15 +53,15 @@ const ProfileDetails = ({ profileData }: ProfileDetailsProps) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Array.isArray(profileData.experience) && profileData.experience.map((exp: any, index: number) => (
+                {experiences.map((exp, index) => (
                   <div key={index} className="border-l-2 border-psyched-lightBlue pl-4 py-1">
                     <div className="flex justify-between items-start">
-                      <h4 className="font-medium text-psyched-darkBlue">{exp.title}</h4>
+                      <h4 className="font-medium text-psyched-darkBlue">{exp.position}</h4>
                       <Badge variant="outline" className="bg-blue-50">
-                        {exp.start_date} - {exp.end_date || 'Present'}
+                        {exp.startDate} - {exp.endDate || 'Present'}
                       </Badge>
                     </div>
-                    <p className="text-gray-600">{exp.company}</p>
+                    <p className="text-gray-600">{exp.organization}</p>
                     <p className="text-sm text-gray-500 mt-1">{exp.description}</p>
                   </div>
                 ))}
@@ -103,7 +72,7 @@ const ProfileDetails = ({ profileData }: ProfileDetailsProps) => {
       )}
 
       {/* Education */}
-      {profileData.education && profileData.education.length > 0 && (
+      {educations && educations.length > 0 && (
         <motion.div variants={cardVariants}>
           <Card className="shadow-sm hover:shadow transition-shadow duration-300 border-gray-100">
             <CardHeader className="pb-2">
@@ -114,16 +83,16 @@ const ProfileDetails = ({ profileData }: ProfileDetailsProps) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Array.isArray(profileData.education) && profileData.education.map((edu: any, index: number) => (
+                {educations.map((edu, index) => (
                   <div key={index} className="border-l-2 border-psyched-yellow pl-4 py-1">
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium text-psyched-darkBlue">{edu.degree}</h4>
                       <Badge variant="outline" className="bg-amber-50">
-                        {edu.graduation_year}
+                        {edu.endDate}
                       </Badge>
                     </div>
                     <p className="text-gray-600">{edu.institution}</p>
-                    <p className="text-sm text-gray-500 mt-1">{edu.field_of_study}</p>
+                    <p className="text-sm text-gray-500 mt-1">{edu.field}</p>
                   </div>
                 ))}
               </div>
@@ -133,7 +102,7 @@ const ProfileDetails = ({ profileData }: ProfileDetailsProps) => {
       )}
 
       {/* Certifications */}
-      {profileData.certification_details && profileData.certification_details.length > 0 && (
+      {certifications && certifications.length > 0 && (
         <motion.div variants={cardVariants}>
           <Card className="shadow-sm hover:shadow transition-shadow duration-300 border-gray-100">
             <CardHeader className="pb-2">
@@ -144,17 +113,17 @@ const ProfileDetails = ({ profileData }: ProfileDetailsProps) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Array.isArray(profileData.certification_details) && profileData.certification_details.map((cert: any, index: number) => (
+                {certifications.map((cert, index) => (
                   <div key={index} className="border-l-2 border-green-500 pl-4 py-1">
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium text-psyched-darkBlue">{cert.name}</h4>
-                      {cert.expiration_date && (
+                      {cert.expirationDate && (
                         <Badge variant="outline" className="bg-green-50">
-                          Expires: {cert.expiration_date}
+                          Expires: {cert.expirationDate}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-gray-600">{cert.issuing_authority}</p>
+                    <p className="text-gray-600">{cert.issuingAuthority}</p>
                     {cert.description && (
                       <p className="text-sm text-gray-500 mt-1">{cert.description}</p>
                     )}
