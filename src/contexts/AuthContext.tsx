@@ -59,41 +59,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
-      setIsLoading(true);
-      
-      // Set up auth state listener FIRST
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (event, currentSession) => {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          
-          // Fetch profile if user is authenticated
-          if (currentSession?.user) {
-            setTimeout(async () => {
-              const profileData = await fetchProfile(currentSession.user.id);
-              setProfile(profileData);
-            }, 0);
-          } else {
-            setProfile(null);
+      try {
+        setIsLoading(true);
+        
+        // Set up auth state listener FIRST
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          (event, currentSession) => {
+            setSession(currentSession);
+            setUser(currentSession?.user ?? null);
+            
+            // Fetch profile if user is authenticated
+            if (currentSession?.user) {
+              setTimeout(async () => {
+                const profileData = await fetchProfile(currentSession.user.id);
+                setProfile(profileData);
+              }, 0);
+            } else {
+              setProfile(null);
+            }
           }
-        }
-      );
+        );
 
-      // THEN check for existing session
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      
-      if (data.session?.user) {
-        const profileData = await fetchProfile(data.session.user.id);
-        setProfile(profileData);
+        // THEN check for existing session
+        const { data } = await supabase.auth.getSession();
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+        
+        if (data.session?.user) {
+          const profileData = await fetchProfile(data.session.user.id);
+          setProfile(profileData);
+        }
+        
+        setIsLoading(false);
+        
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Error in initializeAuth:', error);
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-      
-      return () => {
-        subscription.unsubscribe();
-      };
     };
 
     initializeAuth();
