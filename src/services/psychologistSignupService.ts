@@ -21,7 +21,7 @@ export interface Experience {
   current: boolean;
 }
 
-interface BasicInfo {
+export interface BasicInfo {
   firstName: string;
   lastName: string;
   phoneNumber: string;
@@ -30,13 +30,13 @@ interface BasicInfo {
   zipCode: string;
 }
 
-interface ProfileData {
+export interface ProfileData {
   profilePictureUrl: string | null;
   experiences: Experience[];
   education: Education[];
 }
 
-interface PreferencesData {
+export interface PreferencesData {
   workTypes: string[];
   evaluationTypes: string[];
   desiredLocations: string[];
@@ -44,12 +44,44 @@ interface PreferencesData {
 }
 
 /**
- * Saves basic information for a psychologist
+ * Validates a user ID
  */
-export const saveBasicInfo = async (userId: string, data: BasicInfo): Promise<void> => {
+const validateUserId = (userId: string | undefined | null): string => {
   if (!userId) {
     throw new Error('User ID is required');
   }
+  return userId;
+};
+
+/**
+ * Handles API errors consistently
+ */
+const handleApiError = (error: any, message: string): never => {
+  console.error(`${message}:`, error);
+  throw new Error(`${message}: ${error.message || 'Unknown error'}`);
+};
+
+/**
+ * Updates a psychologist's signup progress
+ */
+const updateSignupProgress = async (userId: string, step: number): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('psychologists')
+      .update({ signup_progress: step })
+      .eq('user_id', userId);
+      
+    if (error) throw error;
+  } catch (error) {
+    handleApiError(error, 'Failed to update signup progress');
+  }
+};
+
+/**
+ * Saves basic information for a psychologist
+ */
+export const saveBasicInfo = async (userId: string, data: BasicInfo): Promise<void> => {
+  const validUserId = validateUserId(userId);
   
   try {
     // Update profile name
@@ -58,7 +90,7 @@ export const saveBasicInfo = async (userId: string, data: BasicInfo): Promise<vo
       .update({ 
         name: `${data.firstName} ${data.lastName}`,
       })
-      .eq('id', userId);
+      .eq('id', validUserId);
       
     if (profileError) throw profileError;
     
@@ -72,12 +104,11 @@ export const saveBasicInfo = async (userId: string, data: BasicInfo): Promise<vo
         zip_code: data.zipCode,
         signup_progress: 2,
       })
-      .eq('user_id', userId);
+      .eq('user_id', validUserId);
       
     if (psychologistError) throw psychologistError;
-  } catch (error: any) {
-    console.error('Failed to save basic information:', error);
-    throw new Error(`Failed to save basic information: ${error.message}`);
+  } catch (error) {
+    handleApiError(error, 'Failed to save basic information');
   }
 };
 
@@ -85,9 +116,7 @@ export const saveBasicInfo = async (userId: string, data: BasicInfo): Promise<vo
  * Saves profile data (experiences, education, profile picture)
  */
 export const saveProfileData = async (userId: string, data: ProfileData): Promise<void> => {
-  if (!userId) {
-    throw new Error('User ID is required');
-  }
+  const validUserId = validateUserId(userId);
   
   try {
     // Update psychologist profile
@@ -99,12 +128,11 @@ export const saveProfileData = async (userId: string, data: ProfileData): Promis
         experience_details: JSON.stringify(data.experiences),
         signup_progress: 3,
       })
-      .eq('user_id', userId);
+      .eq('user_id', validUserId);
       
     if (error) throw error;
-  } catch (error: any) {
-    console.error('Failed to save profile data:', error);
-    throw new Error(`Failed to save profile data: ${error.message}`);
+  } catch (error) {
+    handleApiError(error, 'Failed to save profile data');
   }
 };
 
@@ -119,8 +147,18 @@ export const saveCertificationData = async (userId: string, certifications: Cert
  * Saves preferences data
  */
 export const savePreferences = async (userId: string, data: PreferencesData): Promise<void> => {
-  if (!userId) {
-    throw new Error('User ID is required');
+  const validUserId = validateUserId(userId);
+  
+  if (!data.workTypes || data.workTypes.length === 0) {
+    throw new Error('At least one work type is required');
+  }
+  
+  if (!data.evaluationTypes || data.evaluationTypes.length === 0) {
+    throw new Error('At least one evaluation type is required');
+  }
+  
+  if (!data.desiredLocations || data.desiredLocations.length === 0) {
+    throw new Error('At least one desired location is required');
   }
   
   try {
@@ -134,12 +172,11 @@ export const savePreferences = async (userId: string, data: PreferencesData): Pr
         open_to_relocation: data.openToRelocation,
         signup_progress: 5,
       })
-      .eq('user_id', userId);
+      .eq('user_id', validUserId);
       
     if (error) throw error;
-  } catch (error: any) {
-    console.error('Failed to save preferences:', error);
-    throw new Error(`Failed to save preferences: ${error.message}`);
+  } catch (error) {
+    handleApiError(error, 'Failed to save preferences');
   }
 };
 
@@ -147,9 +184,7 @@ export const savePreferences = async (userId: string, data: PreferencesData): Pr
  * Completes the signup process
  */
 export const completeSignup = async (userId: string): Promise<void> => {
-  if (!userId) {
-    throw new Error('User ID is required');
-  }
+  const validUserId = validateUserId(userId);
   
   try {
     const { error } = await supabase
@@ -158,12 +193,11 @@ export const completeSignup = async (userId: string): Promise<void> => {
         signup_completed: true,
         signup_progress: 5,
       })
-      .eq('user_id', userId);
+      .eq('user_id', validUserId);
       
     if (error) throw error;
-  } catch (error: any) {
-    console.error('Failed to complete signup:', error);
-    throw new Error(`Failed to complete signup: ${error.message}`);
+  } catch (error) {
+    handleApiError(error, 'Failed to complete signup');
   }
 };
 
@@ -171,15 +205,13 @@ export const completeSignup = async (userId: string): Promise<void> => {
  * Retrieves the current signup progress
  */
 export const getSignupProgress = async (userId: string): Promise<number> => {
-  if (!userId) {
-    throw new Error('User ID is required');
-  }
+  const validUserId = validateUserId(userId);
   
   try {
     const { data, error } = await supabase
       .from('psychologists')
       .select('signup_progress, signup_completed')
-      .eq('user_id', userId)
+      .eq('user_id', validUserId)
       .single();
       
     if (error) throw error;
@@ -189,9 +221,8 @@ export const getSignupProgress = async (userId: string): Promise<number> => {
     }
     
     return data.signup_progress || 1;
-  } catch (error: any) {
-    console.error('Failed to get signup progress:', error);
-    throw new Error(`Failed to get signup progress: ${error.message}`);
+  } catch (error) {
+    handleApiError(error, 'Failed to get signup progress');
   }
 };
 
@@ -199,9 +230,7 @@ export const getSignupProgress = async (userId: string): Promise<number> => {
  * Retrieves the entire signup data for a psychologist
  */
 export const getSignupData = async (userId: string) => {
-  if (!userId) {
-    throw new Error('User ID is required');
-  }
+  const validUserId = validateUserId(userId);
   
   try {
     const { data, error } = await supabase
@@ -213,14 +242,13 @@ export const getSignupData = async (userId: string) => {
           email
         )
       `)
-      .eq('user_id', userId)
+      .eq('user_id', validUserId)
       .single();
       
     if (error) throw error;
     
     return data;
-  } catch (error: any) {
-    console.error('Failed to get signup data:', error);
-    throw new Error(`Failed to get signup data: ${error.message}`);
+  } catch (error) {
+    handleApiError(error, 'Failed to get signup data');
   }
 };
