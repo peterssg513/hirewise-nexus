@@ -62,13 +62,12 @@ const ProfileDetails = ({
             </CardTitle>
             {onEditItem && (
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="sm" 
-                className="text-gray-500 hover:text-psyched-darkBlue"
+                className="text-psyched-darkBlue border-psyched-darkBlue/70 hover:bg-psyched-darkBlue hover:text-white"
                 onClick={() => onEditItem('basic')}
               >
-                <Pencil className="h-4 w-4" />
-                <span className="sr-only">Edit</span>
+                <Pencil className="h-4 w-4 mr-1" /> Edit
               </Button>
             )}
           </CardHeader>
@@ -88,7 +87,7 @@ const ProfileDetails = ({
               )}
               {profileData?.city && profileData?.state && (
                 <div className="flex items-start gap-3">
-                  <span className="i-lucide-map-pin h-5 w-5 text-psyched-darkBlue mt-0.5" />
+                  <MapPin className="h-5 w-5 text-psyched-darkBlue mt-0.5" />
                   <p className="text-gray-600">
                     {profileData.city}, {profileData.state} {profileData.zip_code || ''}
                   </p>
@@ -136,11 +135,11 @@ const ProfileDetails = ({
                     <p className="text-sm text-gray-500 mt-1">{exp.description}</p>
                     
                     {onEditItem && onDeleteItem && (
-                      <div className="absolute right-0 top-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <div className="absolute right-0 top-0 flex gap-1 md:opacity-70 group-hover:opacity-100 transition-opacity">
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 border border-blue-200"
+                          className="h-8 w-8 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
                           onClick={() => onEditItem('experience', exp.id)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -149,7 +148,7 @@ const ProfileDetails = ({
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 border border-red-200"
+                          className="h-8 w-8 p-0 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
                           onClick={() => onDeleteItem('experience', exp.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -202,11 +201,11 @@ const ProfileDetails = ({
                     <p className="text-sm text-gray-500 mt-1">{edu.field}</p>
                     
                     {onEditItem && onDeleteItem && (
-                      <div className="absolute right-0 top-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <div className="absolute right-0 top-0 flex gap-1 md:opacity-70 group-hover:opacity-100 transition-opacity">
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 border border-blue-200"
+                          className="h-8 w-8 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
                           onClick={() => onEditItem('education', edu.id)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -215,7 +214,7 @@ const ProfileDetails = ({
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 border border-red-200"
+                          className="h-8 w-8 p-0 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
                           onClick={() => onDeleteItem('education', edu.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -280,11 +279,11 @@ const ProfileDetails = ({
                     </Badge>
                     
                     {onEditItem && onDeleteItem && (
-                      <div className="absolute right-0 top-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <div className="absolute right-0 top-0 flex gap-1 md:opacity-70 group-hover:opacity-100 transition-opacity">
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 border border-blue-200"
+                          className="h-8 w-8 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
                           onClick={() => onEditItem('certification', cert.id)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -293,7 +292,7 @@ const ProfileDetails = ({
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 border border-red-200"
+                          className="h-8 w-8 p-0 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
                           onClick={() => onDeleteItem('certification', cert.id)}
                         >
                           <Trash2 className="h-4 w-4" />

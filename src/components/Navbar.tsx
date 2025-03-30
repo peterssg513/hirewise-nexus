@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, ChevronDown } from 'lucide-react';
+import { LogOut, ChevronDown, MapPin } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from '@/integrations/supabase/client';
 
 const Navbar = () => {
   const { isAuthenticated, profile, user, logout } = useAuth();
@@ -35,7 +36,6 @@ const Navbar = () => {
     const fetchProfilePic = async () => {
       if (user?.id && profile?.role === 'psychologist') {
         try {
-          const { supabase } = await import('@/integrations/supabase/client');
           const { data, error } = await supabase
             .from('psychologists')
             .select('profile_picture_url')

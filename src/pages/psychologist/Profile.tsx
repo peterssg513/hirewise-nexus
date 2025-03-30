@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Certification } from '@/services/certificationService';
 import { Experience, Education } from '@/services/psychologistSignupService';
-import { fetchPsychologistProfile, createPsychologistProfile, updatePsychologistProfile } from '@/services/profileService';
+import { fetchPsychologistProfile, createPsychologistProfile, updatePsychologistProfile, updateProfileField } from '@/services/profileService';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileDetails from '@/components/profile/ProfileDetails';
 import EditProfileModal from '@/components/profile/EditProfileModal';
@@ -76,78 +76,78 @@ const Profile = () => {
     }));
   };
   
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) {
-        setLoading(false);
-        setError("User not authenticated");
-        return;
-      }
+  const fetchProfile = async () => {
+    if (!user) {
+      setLoading(false);
+      setError("User not authenticated");
+      return;
+    }
+    
+    try {
+      console.log("Fetching profile for user:", user.id);
       
       try {
-        console.log("Fetching profile for user:", user.id);
+        // First try to fetch existing profile
+        const data = await fetchPsychologistProfile(user.id);
+        console.log("Profile data retrieved:", data);
+        setProfile(data);
         
-        try {
-          // First try to fetch existing profile
-          const data = await fetchPsychologistProfile(user.id);
-          console.log("Profile data retrieved:", data);
-          setProfile(data);
-          
-          // Parse experience data
-          if (data.experience) {
-            const expData = typeof data.experience === 'string' 
-              ? safeJsonParse(data.experience)
-              : data.experience;
-              
-            setExperiences(Array.isArray(expData) 
-              ? expData.map(mapExperienceProperties)
-              : []);
-          }
-          
-          // Parse education data
-          if (data.education) {
-            const eduData = typeof data.education === 'string' 
-              ? safeJsonParse(data.education)
-              : data.education;
-              
-            setEducations(Array.isArray(eduData) 
-              ? eduData.map(mapEducationProperties)
-              : []);
-          }
-          
-          // Parse certification data
-          if (data.certification_details) {
-            let certData: any[] = [];
+        // Parse experience data
+        if (data.experience) {
+          const expData = typeof data.experience === 'string' 
+            ? safeJsonParse(data.experience)
+            : data.experience;
             
-            if (typeof data.certification_details === 'string') {
-              certData = safeJsonParse(data.certification_details);
-            } else if (Array.isArray(data.certification_details)) {
-              certData = data.certification_details as any[];
-            } else if (typeof data.certification_details === 'object') {
-              certData = Object.values(data.certification_details as object);
-            }
-            
-            setCertifications(processCertificationData(certData));
-          }
-          
-        } catch (profileError) {
-          console.error('Error fetching profile, trying to create new profile:', profileError);
-          
-          // If profile doesn't exist yet, create it
-          const newProfile = await createPsychologistProfile(user.id);
-          setProfile(newProfile);
-          setExperiences([]);
-          setEducations([]);
-          setCertifications([]);
+          setExperiences(Array.isArray(expData) 
+            ? expData.map(mapExperienceProperties)
+            : []);
         }
-      } catch (err) {
-        console.error('Error in fetchProfile:', err);
-        setError("An unexpected error occurred");
-      } finally {
-        setLoading(false);
+        
+        // Parse education data
+        if (data.education) {
+          const eduData = typeof data.education === 'string' 
+            ? safeJsonParse(data.education)
+            : data.education;
+            
+          setEducations(Array.isArray(eduData) 
+            ? eduData.map(mapEducationProperties)
+            : []);
+        }
+        
+        // Parse certification data
+        if (data.certification_details) {
+          let certData: any[] = [];
+          
+          if (typeof data.certification_details === 'string') {
+            certData = safeJsonParse(data.certification_details);
+          } else if (Array.isArray(data.certification_details)) {
+            certData = data.certification_details as any[];
+          } else if (typeof data.certification_details === 'object') {
+            certData = Object.values(data.certification_details as object);
+          }
+          
+          setCertifications(processCertificationData(certData));
+        }
+        
+      } catch (profileError) {
+        console.error('Error fetching profile, trying to create new profile:', profileError);
+        
+        // If profile doesn't exist yet, create it
+        const newProfile = await createPsychologistProfile(user.id);
+        setProfile(newProfile);
+        setExperiences([]);
+        setEducations([]);
+        setCertifications([]);
       }
-    };
-    
+    } catch (err) {
+      console.error('Error in fetchProfile:', err);
+      setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchProfile();
   }, [user, toast]);
   
@@ -256,6 +256,33 @@ const Profile = () => {
     }
   };
 
+  const handleProfilePictureUpdate = async (url: string) => {
+    if (!user) return;
+
+    try {
+      // Update the profile picture in the database
+      await updateProfileField(user.id, 'profile_picture_url', url);
+      
+      // Update local state
+      setProfile({
+        ...profile,
+        profile_picture_url: url
+      });
+      
+      toast({
+        title: "Profile picture updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      toast({
+        title: "Update failed",
+        description: "There was an error updating your profile picture. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDeleteItem = async (section: 'experience' | 'education' | 'certification', itemId: string) => {
     if (!user) return;
 
@@ -348,7 +375,8 @@ const Profile = () => {
       <div className="mb-8 flex flex-col md:flex-row gap-6 items-start">
         <ProfileHeader 
           profileData={profile} 
-          onEditProfile={() => handleEditProfile('basic')} 
+          onEditProfile={() => handleEditProfile('basic')}
+          onProfilePictureUpdate={handleProfilePictureUpdate}
         />
         
         <ProfileDetails 

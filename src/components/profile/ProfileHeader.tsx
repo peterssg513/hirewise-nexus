@@ -1,18 +1,22 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, FileEdit, Briefcase, ClipboardList, GraduationCap } from 'lucide-react';
+import { MapPin, FileEdit, Briefcase, ClipboardList, GraduationCap, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
+import ProfilePictureUpload from '@/components/signup/ProfilePictureUpload';
 
 interface ProfileHeaderProps {
   profileData: any;
   onEditProfile: () => void;
+  onProfilePictureUpdate?: (url: string) => void;
 }
 
-const ProfileHeader = ({ profileData, onEditProfile }: ProfileHeaderProps) => {
+const ProfileHeader = ({ profileData, onEditProfile, onProfilePictureUpdate }: ProfileHeaderProps) => {
+  const [showProfilePictureUpload, setShowProfilePictureUpload] = useState(false);
+  
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -35,6 +39,14 @@ const ProfileHeader = ({ profileData, onEditProfile }: ProfileHeaderProps) => {
   console.log("ProfileHeader - Profile Picture URL:", profileData.profile_picture_url);
   console.log("ProfileHeader - Profile Data:", profileData);
 
+  const handleUploadComplete = (url: string) => {
+    console.log("Upload complete, new URL:", url);
+    if (onProfilePictureUpdate) {
+      onProfilePictureUpdate(url);
+    }
+    setShowProfilePictureUpload(false);
+  };
+
   return (
     <motion.div 
       className="w-full md:w-1/3 bg-white rounded-lg shadow-sm p-6 border border-gray-100"
@@ -43,7 +55,7 @@ const ProfileHeader = ({ profileData, onEditProfile }: ProfileHeaderProps) => {
       animate="visible"
     >
       <div className="flex flex-col items-center text-center">
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="relative group">
           <Avatar className="h-32 w-32 mb-4 ring-4 ring-psyched-cream shadow-md">
             {profileData.profile_picture_url ? (
               <AvatarImage 
@@ -57,7 +69,30 @@ const ProfileHeader = ({ profileData, onEditProfile }: ProfileHeaderProps) => {
               </AvatarFallback>
             )}
           </Avatar>
+          
+          <Button 
+            size="icon"
+            variant="secondary"
+            className="absolute bottom-4 right-0 rounded-full bg-white shadow-md hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => setShowProfilePictureUpload(true)}
+          >
+            <Camera className="h-4 w-4" />
+          </Button>
         </motion.div>
+        
+        {showProfilePictureUpload && profileData.user_id && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-4"
+          >
+            <ProfilePictureUpload 
+              profilePictureUrl={profileData.profile_picture_url} 
+              userId={profileData.user_id}
+              onUploadComplete={handleUploadComplete}
+            />
+          </motion.div>
+        )}
         
         <motion.h2 variants={itemVariants} className="text-2xl font-bold text-psyched-darkBlue">
           {profileData.profiles?.name || 'Anonymous User'}
@@ -84,15 +119,17 @@ const ProfileHeader = ({ profileData, onEditProfile }: ProfileHeaderProps) => {
           </motion.div>
         )}
         
-        <motion.div variants={itemVariants}>
-          <Button 
-            className="mt-6 bg-psyched-darkBlue hover:bg-psyched-darkBlue/80 text-white transition-all duration-300 transform hover:scale-105"
-            size="sm"
-            onClick={onEditProfile}
-          >
-            <FileEdit className="h-4 w-4 mr-2" /> Edit Profile
-          </Button>
-        </motion.div>
+        {!showProfilePictureUpload && (
+          <motion.div variants={itemVariants}>
+            <Button 
+              className="mt-6 bg-psyched-darkBlue hover:bg-psyched-darkBlue/80 text-white transition-all duration-300 transform hover:scale-105"
+              size="sm"
+              onClick={onEditProfile}
+            >
+              <FileEdit className="h-4 w-4 mr-2" /> Edit Profile
+            </Button>
+          </motion.div>
+        )}
       </div>
       
       <div className="mt-8 space-y-6">

@@ -4,7 +4,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, ClipboardCheck, Users, Settings, LogOut, 
   Menu, X, ChevronRight, BriefcaseBusiness, User, FileSpreadsheet,
-  ChevronLeft, PanelLeft, Phone, Mail
+  ChevronLeft, PanelLeft, Phone, Mail, MapPin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

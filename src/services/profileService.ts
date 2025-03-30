@@ -145,6 +145,7 @@ export const createPsychologistProfile = async (userId: string) => {
  */
 export const updateProfileField = async (userId: string, field: string, value: any) => {
   try {
+    console.log(`Updating ${field} to:`, value);
     const { data, error } = await supabase
       .from('psychologists')
       .update({ [field]: value })
