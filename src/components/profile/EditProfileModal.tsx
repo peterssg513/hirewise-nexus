@@ -109,7 +109,10 @@ const EditProfileModal = ({
   };
 
   const handleCheckboxChange = (checked: boolean) => {
-    setFormData(prev => ({ ...prev, current: checked }));
+    // Fix the type issue by not adding 'current' property to all form types
+    if (section === 'experience') {
+      setFormData(prev => ({ ...prev, current: checked }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

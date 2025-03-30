@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +9,7 @@ import { fetchPsychologistProfile, createPsychologistProfile, updatePsychologist
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileDetails from '@/components/profile/ProfileDetails';
 import EditProfileModal from '@/components/profile/EditProfileModal';
+import ProfilePreferences from '@/components/profile/ProfilePreferences';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -24,7 +24,6 @@ const Profile = () => {
   const [editItemId, setEditItemId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Helper function to safely parse JSON data
   const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any[] => {
     if (!jsonString) return defaultValue;
     try {
@@ -36,7 +35,6 @@ const Profile = () => {
     }
   };
 
-  // Map between different property names
   const mapExperienceProperties = (exp: any): Experience => {
     return {
       id: exp.id || `exp-${Math.random().toString(36).substring(2, 9)}`,
@@ -49,7 +47,6 @@ const Profile = () => {
     };
   };
 
-  // Map between different education property names
   const mapEducationProperties = (edu: any): Education => {
     return {
       id: edu.id || `edu-${Math.random().toString(36).substring(2, 9)}`,
@@ -60,8 +57,7 @@ const Profile = () => {
       endDate: edu.endDate || edu.end_date || ''
     };
   };
-  
-  // Process certification data
+
   const processCertificationData = (certData: any[]): Certification[] => {
     return certData.map(cert => ({
       id: cert.id || `cert-${Math.random().toString(36).substring(2, 9)}`,
@@ -75,7 +71,7 @@ const Profile = () => {
       documentUrl: cert.documentUrl || cert.url || cert.license_number || null,
     }));
   };
-  
+
   const fetchProfile = async () => {
     if (!user) {
       setLoading(false);
@@ -87,12 +83,10 @@ const Profile = () => {
       console.log("Fetching profile for user:", user.id);
       
       try {
-        // First try to fetch existing profile
         const data = await fetchPsychologistProfile(user.id);
         console.log("Profile data retrieved:", data);
         setProfile(data);
         
-        // Parse experience data
         if (data.experience) {
           const expData = typeof data.experience === 'string' 
             ? safeJsonParse(data.experience)
@@ -101,7 +95,6 @@ const Profile = () => {
           setExperiences(expData.map(mapExperienceProperties));
         }
         
-        // Parse education data
         if (data.education) {
           const eduData = typeof data.education === 'string' 
             ? safeJsonParse(data.education)
@@ -110,7 +103,6 @@ const Profile = () => {
           setEducations(eduData.map(mapEducationProperties));
         }
         
-        // Parse certification data
         if (data.certification_details) {
           let certData: any[] = [];
           
@@ -128,7 +120,6 @@ const Profile = () => {
       } catch (profileError) {
         console.error('Error fetching profile, trying to create new profile:', profileError);
         
-        // If profile doesn't exist yet, create it
         const newProfile = await createPsychologistProfile(user.id);
         setProfile(newProfile);
         setExperiences([]);
@@ -142,11 +133,11 @@ const Profile = () => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchProfile();
   }, [user, toast]);
-  
+
   const handleEditProfile = (section: 'basic' | 'experience' | 'education' | 'certification', itemId?: string) => {
     setEditSection(section);
     setEditItemId(itemId || null);
@@ -157,7 +148,7 @@ const Profile = () => {
     setIsEditModalOpen(false);
     setEditSection(null);
     setEditItemId(null);
-    fetchProfile(); // Refresh data after modal closes
+    fetchProfile();
   };
 
   const handleSaveProfile = async (updatedData: any) => {
@@ -168,22 +159,27 @@ const Profile = () => {
       
       let updatedProfile = { ...profile };
       
-      // Handle different sections
       if (editSection === 'basic') {
+        console.log('Saving basic profile data:', updatedData);
+        
         updatedProfile = {
-          ...updatedProfile,
+          ...profile,
           ...updatedData,
         };
+        
+        await updateProfileField(user.id, 'bio', updatedData.bio);
+        await updateProfileField(user.id, 'phone_number', updatedData.phone_number);
+        await updateProfileField(user.id, 'city', updatedData.city);
+        await updateProfileField(user.id, 'state', updatedData.state);
+        await updateProfileField(user.id, 'zip_code', updatedData.zip_code);
       } else if (editSection === 'experience') {
         let updatedExperiences = [...experiences];
         
         if (editItemId) {
-          // Update existing experience
           updatedExperiences = updatedExperiences.map(exp => 
             exp.id === editItemId ? { ...exp, ...updatedData } : exp
           );
         } else {
-          // Add new experience
           updatedExperiences.push({
             ...updatedData,
             id: `exp-${Math.random().toString(36).substring(2, 9)}`
@@ -196,12 +192,10 @@ const Profile = () => {
         let updatedEducations = [...educations];
         
         if (editItemId) {
-          // Update existing education
           updatedEducations = updatedEducations.map(edu => 
             edu.id === editItemId ? { ...edu, ...updatedData } : edu
           );
         } else {
-          // Add new education
           updatedEducations.push({
             ...updatedData,
             id: `edu-${Math.random().toString(36).substring(2, 9)}`
@@ -214,12 +208,10 @@ const Profile = () => {
         let updatedCertifications = [...certifications];
         
         if (editItemId) {
-          // Update existing certification
           updatedCertifications = updatedCertifications.map(cert => 
             cert.id === editItemId ? { ...cert, ...updatedData } : cert
           );
         } else {
-          // Add new certification
           updatedCertifications.push({
             ...updatedData,
             id: `cert-${Math.random().toString(36).substring(2, 9)}`,
@@ -231,7 +223,6 @@ const Profile = () => {
         setCertifications(updatedCertifications);
       }
       
-      // Save to database
       await updatePsychologistProfile(user.id, updatedProfile);
       setProfile(updatedProfile);
       
@@ -257,10 +248,8 @@ const Profile = () => {
     if (!user) return;
 
     try {
-      // Update the profile picture in the database
       await updateProfileField(user.id, 'profile_picture_url', url);
       
-      // Update local state
       setProfile({
         ...profile,
         profile_picture_url: url
@@ -302,7 +291,6 @@ const Profile = () => {
         setCertifications(updatedCertifications);
       }
       
-      // Save to database
       await updatePsychologistProfile(user.id, updatedProfile);
       setProfile(updatedProfile);
       
@@ -321,7 +309,7 @@ const Profile = () => {
       setLoading(false);
     }
   };
-  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
@@ -329,7 +317,7 @@ const Profile = () => {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
@@ -343,7 +331,7 @@ const Profile = () => {
       </div>
     );
   }
-  
+
   if (!profile) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
@@ -361,6 +349,18 @@ const Profile = () => {
     );
   }
 
+  const desiredLocations = Array.isArray(profile.desired_locations) 
+    ? profile.desired_locations 
+    : (typeof profile.desired_locations === 'string' ? JSON.parse(profile.desired_locations || '[]') : []);
+    
+  const workTypes = Array.isArray(profile.work_types)
+    ? profile.work_types
+    : (typeof profile.work_types === 'string' ? JSON.parse(profile.work_types || '[]') : []);
+    
+  const evaluationTypes = Array.isArray(profile.evaluation_types)
+    ? profile.evaluation_types 
+    : (typeof profile.evaluation_types === 'string' ? JSON.parse(profile.evaluation_types || '[]') : []);
+
   console.log("Rendering profile with data:", profile);
   console.log("Profile picture URL:", profile.profile_picture_url);
   console.log("Experiences:", experiences);
@@ -369,21 +369,32 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-8 flex flex-col md:flex-row gap-6 items-start">
-        <ProfileHeader 
-          profileData={profile} 
-          onEditProfile={() => handleEditProfile('basic')}
-          onProfilePictureUpdate={handleProfilePictureUpdate}
-        />
+      <div className="grid md:grid-cols-12 gap-6">
+        <div className="md:col-span-4 space-y-6">
+          <ProfileHeader 
+            profileData={profile} 
+            onEditProfile={() => handleEditProfile('basic')}
+            onProfilePictureUpdate={handleProfilePictureUpdate}
+          />
+          
+          <ProfilePreferences 
+            desiredLocations={desiredLocations}
+            workTypes={workTypes}
+            evaluationTypes={evaluationTypes}
+            openToRelocation={profile.open_to_relocation}
+          />
+        </div>
         
-        <ProfileDetails 
-          experiences={experiences}
-          educations={educations}
-          certifications={certifications}
-          profileData={profile}
-          onEditItem={handleEditProfile}
-          onDeleteItem={handleDeleteItem}
-        />
+        <div className="md:col-span-8">
+          <ProfileDetails 
+            experiences={experiences}
+            educations={educations}
+            certifications={certifications}
+            profileData={profile}
+            onEditItem={handleEditProfile}
+            onDeleteItem={handleDeleteItem}
+          />
+        </div>
       </div>
 
       {isEditModalOpen && (
