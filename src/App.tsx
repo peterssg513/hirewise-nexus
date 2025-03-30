@@ -28,7 +28,6 @@ import PsychologistSignup from "./pages/PsychologistSignup";
 import JobListings from "./pages/psychologist/JobListings";
 import Applications from "./pages/psychologist/Applications";
 import Profile from "./pages/psychologist/Profile";
-import Evaluation from "./pages/psychologist/Evaluation";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -77,12 +76,7 @@ const App = () => {
                   <Route path="profile" element={<Profile />} />
                 </Route>
                 
-                {/* Separate route for evaluation to make it fullscreen */}
-                <Route path="/psychologist-dashboard/evaluation/:id" element={
-                  <ProtectedRoute allowedRoles={['psychologist']}>
-                    <Evaluation />
-                  </ProtectedRoute>
-                } />
+                {/* Note: Evaluation route removed as requested */}
                 
                 {/* Protected Routes - District */}
                 <Route path="/district-dashboard" element={
