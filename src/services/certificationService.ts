@@ -58,11 +58,15 @@ export const saveCertifications = async (
     endYear: cert.endYear
   }));
   
-  // Convert the certification objects to JSON string to match the expected type
+  // Store the certifications as an array of strings (URLs) to match the expected type
+  const certificationUrls = certifications.map(cert => cert.url);
+  
+  // Update the psychologist profile with both the certification URLs and detailed info
   const { error } = await supabase
     .from('psychologists')
     .update({
-      certifications: JSON.stringify(certificationDTOs), // Convert to string to match the expected type
+      certifications: certificationUrls, // Store just the URLs as a string array to match DB type
+      certification_details: JSON.stringify(certificationDTOs), // Store detailed info as JSON in a separate field
       signup_progress: 4,
     })
     .eq('user_id', userId);
