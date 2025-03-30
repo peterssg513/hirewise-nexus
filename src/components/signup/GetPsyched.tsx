@@ -19,7 +19,7 @@ const GetPsyched: React.FC<GetPsychedProps> = () => {
   
   // Trigger confetti effect on component mount with reduced intensity
   useEffect(() => {
-    const duration = 2 * 1000; // Reduced duration
+    const duration = 1.5 * 1000; // Reduced duration
     const animationEnd = Date.now() + duration;
     
     const randomInRange = (min: number, max: number) => {
@@ -32,19 +32,19 @@ const GetPsyched: React.FC<GetPsychedProps> = () => {
       if (timeLeft <= 0) return;
       
       // Reduced particle count
-      const particleCount = 30 * (timeLeft / duration);
+      const particleCount = 20 * (timeLeft / duration);
       
       // Less spread
       confetti({
         particleCount,
         angle: randomInRange(60, 120),
-        spread: randomInRange(40, 50), // Reduced spread
+        spread: randomInRange(30, 40), // Reduced spread
         origin: { y: 0.6 },
         colors: ['#FFC107', '#FF9800', '#3F51B5'],
       });
       
-      // Only run confetti once every 300ms instead of every frame
-      setTimeout(runConfetti, 300);
+      // Only run confetti once every 400ms instead of every frame
+      setTimeout(runConfetti, 400);
     };
     
     runConfetti();

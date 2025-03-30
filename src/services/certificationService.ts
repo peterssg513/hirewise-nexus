@@ -62,7 +62,7 @@ export const saveCertifications = async (
   const { error } = await supabase
     .from('psychologists')
     .update({
-      certifications: JSON.stringify(certificationDTOs),
+      certifications: certificationDTOs, // The DTO array is acceptable as JSONB
       signup_progress: 4,
     })
     .eq('user_id', userId);
