@@ -284,40 +284,76 @@ export type Database = {
       }
       psychologists: {
         Row: {
+          address: string | null
           availability: string | null
           certifications: string[] | null
+          city: string | null
           created_at: string
+          desired_locations: string[] | null
           education: string | null
+          evaluation_types: string[] | null
           experience_years: number | null
           id: string
+          open_to_relocation: boolean | null
+          phone_number: string | null
+          profile_picture_url: string | null
+          signup_completed: boolean | null
+          signup_progress: number | null
           specialties: string[] | null
+          state: string | null
           status: string | null
           updated_at: string
           user_id: string
+          work_types: string[] | null
+          zip_code: string | null
         }
         Insert: {
+          address?: string | null
           availability?: string | null
           certifications?: string[] | null
+          city?: string | null
           created_at?: string
+          desired_locations?: string[] | null
           education?: string | null
+          evaluation_types?: string[] | null
           experience_years?: number | null
           id?: string
+          open_to_relocation?: boolean | null
+          phone_number?: string | null
+          profile_picture_url?: string | null
+          signup_completed?: boolean | null
+          signup_progress?: number | null
           specialties?: string[] | null
+          state?: string | null
           status?: string | null
           updated_at?: string
           user_id: string
+          work_types?: string[] | null
+          zip_code?: string | null
         }
         Update: {
+          address?: string | null
           availability?: string | null
           certifications?: string[] | null
+          city?: string | null
           created_at?: string
+          desired_locations?: string[] | null
           education?: string | null
+          evaluation_types?: string[] | null
           experience_years?: number | null
           id?: string
+          open_to_relocation?: boolean | null
+          phone_number?: string | null
+          profile_picture_url?: string | null
+          signup_completed?: boolean | null
+          signup_progress?: number | null
           specialties?: string[] | null
+          state?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string
+          work_types?: string[] | null
+          zip_code?: string | null
         }
         Relationships: []
       }
