@@ -11,7 +11,7 @@ export const getEvaluationData = async (evaluationId: string) => {
     const hasFormDataColumn = await checkColumnExists('evaluations', 'form_data');
     
     // Fetch the evaluation with appropriate columns
-    const { data: evaluation, error: evaluationError } = await supabase
+    const { data, error } = await supabase
       .from('evaluations')
       .select(`
         id,
@@ -27,24 +27,24 @@ export const getEvaluationData = async (evaluationId: string) => {
       .eq('id', evaluationId)
       .single();
 
-    if (evaluationError) throw evaluationError;
-    if (!evaluation) throw new Error('Evaluation not found');
+    if (error) throw error;
+    if (!data) throw new Error('Evaluation not found');
 
     // Get the default template
     const template = getDefaultTemplate();
 
-    // Make sure we handle the evaluation data safely
+    // Create a properly typed evaluation object
     const evaluationWithFormData: Evaluation = {
-      id: String(evaluation.id),
-      status: String(evaluation.status),
-      created_at: String(evaluation.created_at),
-      updated_at: String(evaluation.updated_at),
-      submitted_at: evaluation.submitted_at ? String(evaluation.submitted_at) : null,
-      approved_at: evaluation.approved_at ? String(evaluation.approved_at) : null,
-      report_url: evaluation.report_url ? String(evaluation.report_url) : null,
-      application_id: String(evaluation.application_id),
-      form_data: hasFormDataColumn && evaluation.form_data 
-        ? (evaluation.form_data as EvaluationFormData) 
+      id: String(data.id),
+      status: String(data.status),
+      created_at: String(data.created_at),
+      updated_at: String(data.updated_at),
+      submitted_at: data.submitted_at ? String(data.submitted_at) : null,
+      approved_at: data.approved_at ? String(data.approved_at) : null,
+      report_url: data.report_url ? String(data.report_url) : null,
+      application_id: String(data.application_id),
+      form_data: hasFormDataColumn && data.form_data 
+        ? (data.form_data as EvaluationFormData) 
         : {}
     };
 

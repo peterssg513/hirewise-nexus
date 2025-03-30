@@ -13,7 +13,7 @@ import {
   submitEvaluation
 } from '@/services/evaluationService';
 import { useToast } from '@/hooks/use-toast';
-import { EvaluationTemplate } from '@/types/evaluation';
+import { EvaluationTemplate, EvaluationFormData } from '@/types/evaluation';
 import EvaluationHeader from './EvaluationHeader';
 import EvaluationTabs from './EvaluationTabs';
 import EvaluationFormActions from './EvaluationFormActions';
@@ -25,7 +25,7 @@ interface EvaluationFormProps {
       id: string;
       status: string;
       submitted_at: string | null;
-      form_data?: Record<string, any>;
+      form_data?: EvaluationFormData;
     };
     template: EvaluationTemplate;
   };
@@ -34,7 +34,7 @@ interface EvaluationFormProps {
 const EvaluationForm = ({ evaluationId, evaluationData }: EvaluationFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<EvaluationFormData>({});
   const [activeTab, setActiveTab] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,7 +125,7 @@ const EvaluationForm = ({ evaluationId, evaluationData }: EvaluationFormProps) =
   };
 
   const status = evaluationData.evaluation.status || 'assigned';
-  const submittedAt = evaluationData.evaluation.submitted_at || null;
+  const submittedAt = evaluationData.evaluation.submitted_at;
   const isSubmitted = status === 'submitted';
   
   return (
