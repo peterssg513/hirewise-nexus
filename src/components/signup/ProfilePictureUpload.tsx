@@ -30,8 +30,9 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       const fileName = `profile-picture-${Date.now()}.${fileExt}`;
       const filePath = `${userId}/${fileName}`;
       
-      // Check if storage bucket exists, create if not
+      // Check if the psychologist_files bucket exists, create if not
       const { data: buckets } = await supabase.storage.listBuckets();
+      
       if (!buckets?.find(bucket => bucket.name === 'psychologist_files')) {
         await supabase.storage.createBucket('psychologist_files', {
           public: true,
@@ -53,11 +54,20 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         
       onUploadComplete(urlData.publicUrl);
       
+      // Update the psychologist record with the profile picture URL
+      const { error: updateError } = await supabase
+        .from('psychologists')
+        .update({ profile_picture_url: urlData.publicUrl })
+        .eq('user_id', userId);
+        
+      if (updateError) throw updateError;
+      
       toast({
         title: 'Image uploaded',
         description: 'Your profile picture has been uploaded successfully.',
       });
     } catch (error: any) {
+      console.error('Profile picture upload error:', error);
       toast({
         title: 'Error uploading image',
         description: error.message || 'An unexpected error occurred',

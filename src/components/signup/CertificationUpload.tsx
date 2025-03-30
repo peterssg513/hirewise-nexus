@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { File, Upload, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { 
   saveCertifications, 
-  uploadCertificationFile,
   Certification 
 } from '@/services/certificationService';
 import CertificationList from './CertificationList';
@@ -22,67 +21,38 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showCertificationForm, setShowCertificationForm] = useState(false);
   const [certifications, setCertifications] = useState<Certification[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   useEffect(() => {
-    // Load existing certifications from local storage or database if needed
+    // Load existing certifications if needed
   }, []);
   
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setShowCertificationForm(true);
-    }
-  };
-  
   const handleAddCertification = async (certification: Certification) => {
-    if (!user || !selectedFile) {
+    if (!user) {
       toast({
-        title: 'Missing information',
-        description: 'Please select a file and enter certification details.',
+        title: 'Authentication error',
+        description: 'You must be logged in to continue',
         variant: 'destructive',
       });
       return;
     }
     
-    setIsUploading(true);
+    // Create a new certification object
+    const newCertification: Certification = {
+      ...certification,
+      status: 'pending',
+      uploadedAt: new Date().toISOString(),
+    };
     
-    try {
-      // Upload the file and get the URL
-      const fileUrl = await uploadCertificationFile(user.id, selectedFile, certification.name);
-      
-      // Create a new certification object with the file URL
-      const newCertification: Certification = {
-        ...certification,
-        url: fileUrl,
-        documentUrl: fileUrl, // Set documentUrl for Profile view compatibility
-        status: 'pending',
-        uploadedAt: new Date().toISOString(),
-        date: certification.startYear, // Set date for Profile view compatibility
-      };
-      
-      setCertifications(prev => [...prev, newCertification]);
-      setSelectedFile(null);
-      setShowCertificationForm(false);
-      
-      toast({
-        title: 'Certification uploaded',
-        description: 'Your certification has been uploaded successfully.',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error uploading certification',
-        description: error.message || 'An unexpected error occurred',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsUploading(false);
-    }
+    setCertifications(prev => [...prev, newCertification]);
+    setShowCertificationForm(false);
+    
+    toast({
+      title: 'Certification added',
+      description: 'Your certification has been added successfully.',
+    });
   };
   
   const handleRemoveCertification = (id: string) => {
@@ -104,7 +74,7 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
     if (certifications.length === 0) {
       toast({
         title: 'No certifications',
-        description: 'Please upload at least one certification.',
+        description: 'Please add at least one certification.',
         variant: 'destructive',
       });
       return;
@@ -113,7 +83,7 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
     setIsSubmitting(true);
     
     try {
-      // Save certifications with extended data (start/end years)
+      // Save certifications
       await saveCertifications(user.id, certifications);
       
       toast({
@@ -135,53 +105,33 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
   
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-psyched-darkBlue mb-6">Upload Your Certifications</h2>
+      <h2 className="text-2xl font-bold text-psyched-darkBlue mb-6">Your Certifications</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
-          <label className="block text-sm font-medium">Add Certification</label>
+          <div className="flex justify-between items-center">
+            <label className="block text-sm font-medium">Certifications</label>
+            {!showCertificationForm && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowCertificationForm(true)}
+                className="text-psyched-darkBlue border-psyched-darkBlue"
+              >
+                Add Certification
+              </Button>
+            )}
+          </div>
           
-          {!showCertificationForm && (
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <div className="space-y-2">
-                <div className="flex justify-center">
-                  <File className="h-12 w-12 text-gray-400" />
-                </div>
-                <p className="text-sm text-gray-500">
-                  Upload your certification files (PDF, JPG, PNG)
-                </p>
-                <div>
-                  <label className="cursor-pointer bg-psyched-lightBlue hover:bg-psyched-lightBlue/90 text-white py-2 px-4 rounded inline-flex items-center">
-                    <Upload className="w-4 h-4 mr-2" />
-                    {isUploading ? 'Uploading...' : 'Select File'}
-                    <input 
-                      type="file" 
-                      className="hidden"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={handleFileChange}
-                      disabled={isUploading}
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {showCertificationForm && selectedFile && (
+          {showCertificationForm && (
             <CertificationForm 
-              file={selectedFile}
               onAdd={handleAddCertification}
-              onCancel={() => {
-                setShowCertificationForm(false);
-                setSelectedFile(null);
-              }}
+              onCancel={() => setShowCertificationForm(false)}
             />
           )}
         </div>
         
         <div className="mt-6">
-          <h3 className="text-lg font-medium mb-3">Your Certifications</h3>
-          
           <CertificationList 
             certifications={certifications} 
             onRemove={handleRemoveCertification} 
@@ -189,7 +139,7 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
           
           {certifications.length === 0 && (
             <p className="text-gray-500 text-center py-4">
-              No certifications added yet. Please upload your certifications.
+              No certifications added yet. Please add your certifications.
             </p>
           )}
         </div>

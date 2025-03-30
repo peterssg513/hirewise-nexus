@@ -18,7 +18,7 @@ export interface Certification {
 }
 
 /**
- * Uploads a certification file to storage
+ * Optional: Uploads a certification file to storage if provided
  */
 export const uploadCertificationFile = async (
   userId: string, 

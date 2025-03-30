@@ -30,7 +30,6 @@ interface CertificationFormProps {
   onCancel: () => void;
   initialData?: Certification;
   isEditing?: boolean;
-  file?: File;
 }
 
 const certificationSchema = z.object({
@@ -51,8 +50,7 @@ const CertificationForm: React.FC<CertificationFormProps> = ({
   onAdd,
   onCancel,
   initialData,
-  isEditing = false,
-  file
+  isEditing = false
 }) => {
   const form = useForm<CertificationFormValues>({
     resolver: zodResolver(certificationSchema),
@@ -91,12 +89,6 @@ const CertificationForm: React.FC<CertificationFormProps> = ({
       <h3 className="font-medium mb-4">
         {isEditing ? 'Edit Certification' : 'Add New Certification'}
       </h3>
-
-      {file && (
-        <div className="mb-4 px-3 py-2 bg-blue-50 text-blue-700 rounded">
-          <p className="text-sm">File selected: {file.name}</p>
-        </div>
-      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
