@@ -28,14 +28,22 @@ export const getEvaluationData = async (evaluationId: string) => {
       .single();
 
     if (evaluationError) throw evaluationError;
+    if (!evaluation) throw new Error('Evaluation not found');
 
     // Get the default template
     const template = getDefaultTemplate();
 
-    // If form_data column doesn't exist, provide an empty object
-    const evaluationWithFormData = {
-      ...evaluation,
-      form_data: hasFormDataColumn && evaluation.form_data ? evaluation.form_data : {}
+    // Create a properly typed evaluation object with form_data
+    const evaluationWithFormData: Evaluation = {
+      id: evaluation.id,
+      status: evaluation.status,
+      created_at: evaluation.created_at,
+      updated_at: evaluation.updated_at,
+      submitted_at: evaluation.submitted_at || null,
+      approved_at: evaluation.approved_at || null,
+      report_url: evaluation.report_url || null,
+      application_id: evaluation.application_id,
+      form_data: hasFormDataColumn && evaluation.form_data ? evaluation.form_data as EvaluationFormData : {}
     };
 
     return {
@@ -67,6 +75,7 @@ export const saveEvaluationFormData = async (evaluationId: string, formData: Eva
       .single();
 
     if (fetchError) throw fetchError;
+    if (!currentEvaluation) throw new Error("Evaluation not found");
 
     // Check if form_data column exists in evaluations table
     const hasFormDataColumn = await checkColumnExists('evaluations', 'form_data');
@@ -122,6 +131,7 @@ export const submitEvaluation = async (evaluationId: string, formData: Evaluatio
       .single();
 
     if (fetchError) throw fetchError;
+    if (!currentEvaluation) throw new Error("Evaluation not found");
 
     // Only allow submission if the evaluation is not already submitted
     if (currentEvaluation && (currentEvaluation.status === 'submitted' || currentEvaluation.status === 'approved')) {
