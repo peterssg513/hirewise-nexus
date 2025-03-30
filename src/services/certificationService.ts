@@ -58,11 +58,11 @@ export const saveCertifications = async (
     endYear: cert.endYear
   }));
   
-  // Store the DTO objects as a JSON string in the database
+  // Store the certifications as JSON data
   const { error } = await supabase
     .from('psychologists')
     .update({
-      certifications: certificationDTOs, // The DTO array is acceptable as JSONB
+      certifications: certificationDTOs, // This is now correctly typed as a JSON array
       signup_progress: 4,
     })
     .eq('user_id', userId);
