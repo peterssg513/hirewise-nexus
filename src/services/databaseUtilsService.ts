@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Function to check if a column exists in a table
+// Check if a column exists in a table
 export const checkColumnExists = async (tableName: string, columnName: string): Promise<boolean> => {
   try {
     const { data, error } = await supabase.rpc('get_column_info', {
@@ -10,27 +10,16 @@ export const checkColumnExists = async (tableName: string, columnName: string): 
     });
     
     if (error) {
-      console.error(`Error checking if column ${columnName} exists in ${tableName}:`, error);
-      
-      // Fallback method if RPC is not available
-      const { data: tableData, error: tableError } = await supabase
-        .from(tableName as any)
-        .select('*')
-        .limit(1)
-        .maybeSingle();
-        
-      if (tableError) {
-        console.error('Fallback query error:', tableError);
-        return false;
-      }
-      
-      // Check if the column exists in the returned data
-      return tableData ? columnName in tableData : false;
+      console.error('Error checking column existence:', error);
+      // Default to false if there's an error
+      return false;
     }
     
-    return data && data.length > 0;
+    // If data is returned and has length, the column exists
+    return Array.isArray(data) && data.length > 0;
   } catch (error) {
-    console.error(`Error checking if column ${columnName} exists in ${tableName}:`, error);
+    console.error('Exception checking column existence:', error);
+    // Default to false on exception
     return false;
   }
 };

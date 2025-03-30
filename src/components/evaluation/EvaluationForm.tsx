@@ -13,7 +13,7 @@ import {
   submitEvaluation
 } from '@/services/evaluationService';
 import { useToast } from '@/hooks/use-toast';
-import { EvaluationTemplate, EvaluationFormData } from '@/types/evaluation';
+import { EvaluationTemplate, EvaluationFormData, Evaluation } from '@/types/evaluation';
 import EvaluationHeader from './EvaluationHeader';
 import EvaluationTabs from './EvaluationTabs';
 import EvaluationFormActions from './EvaluationFormActions';
@@ -21,12 +21,7 @@ import EvaluationFormActions from './EvaluationFormActions';
 interface EvaluationFormProps {
   evaluationId: string;
   evaluationData: {
-    evaluation: {
-      id: string;
-      status: string;
-      submitted_at: string | null;
-      form_data?: EvaluationFormData;
-    };
+    evaluation: Evaluation;
     template: EvaluationTemplate;
   };
 }

@@ -10,20 +10,23 @@ export const getEvaluationData = async (evaluationId: string) => {
     // Check if form_data column exists in evaluations table
     const hasFormDataColumn = await checkColumnExists('evaluations', 'form_data');
     
-    // Fetch the evaluation with appropriate columns
+    // Construct select statement based on column existence
+    const selectStatement = `
+      id,
+      status,
+      created_at,
+      updated_at,
+      submitted_at,
+      approved_at,
+      report_url,
+      application_id
+      ${hasFormDataColumn ? ',form_data' : ''}
+    `;
+
+    // Fetch the evaluation
     const { data, error } = await supabase
       .from('evaluations')
-      .select(`
-        id,
-        status,
-        created_at,
-        updated_at,
-        submitted_at,
-        approved_at,
-        report_url,
-        application_id
-        ${hasFormDataColumn ? ',form_data' : ''}
-      `)
+      .select(selectStatement)
       .eq('id', evaluationId)
       .single();
 
@@ -35,14 +38,14 @@ export const getEvaluationData = async (evaluationId: string) => {
 
     // Create a properly typed evaluation object
     const evaluationWithFormData: Evaluation = {
-      id: String(data.id),
-      status: String(data.status),
-      created_at: String(data.created_at),
-      updated_at: String(data.updated_at),
+      id: String(data.id || ''),
+      status: String(data.status || 'assigned'),
+      created_at: String(data.created_at || ''),
+      updated_at: String(data.updated_at || ''),
       submitted_at: data.submitted_at ? String(data.submitted_at) : null,
       approved_at: data.approved_at ? String(data.approved_at) : null,
       report_url: data.report_url ? String(data.report_url) : null,
-      application_id: String(data.application_id),
+      application_id: String(data.application_id || ''),
       form_data: hasFormDataColumn && data.form_data 
         ? (data.form_data as EvaluationFormData) 
         : {}

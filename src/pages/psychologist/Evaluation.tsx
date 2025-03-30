@@ -24,6 +24,7 @@ const Evaluation = () => {
     queryKey: ['evaluation', id],
     queryFn: () => getEvaluationById(id as string),
     enabled: !!id,
+    retry: 1,
   });
   
   if (isLoadingEvaluation) {
@@ -87,15 +88,7 @@ const Evaluation = () => {
     <div className="max-w-5xl mx-auto p-6">
       <EvaluationForm 
         evaluationId={id as string}
-        evaluationData={{
-          evaluation: {
-            id: evaluationData.evaluation.id,
-            status: evaluationData.evaluation.status,
-            submitted_at: evaluationData.evaluation.submitted_at,
-            form_data: evaluationData.evaluation.form_data || {}
-          },
-          template: evaluationData.template
-        }}
+        evaluationData={evaluationData}
       />
     </div>
   );

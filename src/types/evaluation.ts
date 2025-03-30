@@ -24,13 +24,13 @@ export interface EvaluationFormField {
 }
 
 export interface EvaluationFormData {
+  [key: string]: any; // Allow for dynamic fields
   student_name?: string;
   student_grade?: string;
   evaluation_date?: string;
   test_scores?: Record<string, any>;
   observations?: Record<string, any>;
   recommendations?: string;
-  [key: string]: any; // Allow for additional fields
 }
 
 export interface Evaluation {
