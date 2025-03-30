@@ -20,6 +20,12 @@ import PsychologistsLanding from "./pages/PsychologistsLanding";
 import DistrictsLanding from "./pages/DistrictsLanding";
 import PsychologistSignup from "./pages/PsychologistSignup";
 
+// Psychologist Pages
+import JobListings from "./pages/psychologist/JobListings";
+import Applications from "./pages/psychologist/Applications";
+import Profile from "./pages/psychologist/Profile";
+import Evaluation from "./pages/psychologist/Evaluation";
+
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
 
@@ -57,8 +63,18 @@ const App = () => {
                   </ProtectedRoute>
                 }>
                   <Route index element={<PsychologistDashboard />} />
-                  {/* Add nested routes for psychologist here */}
+                  <Route path="jobs" element={<JobListings />} />
+                  <Route path="applications" element={<Applications />} />
+                  <Route path="profile" element={<Profile />} />
                 </Route>
+                
+                {/* Separate route for evaluation to make it fullscreen */}
+                <Route path="/psychologist-dashboard/evaluation/:id" element={
+                  <ProtectedRoute allowedRoles={['psychologist']}>
+                    <DashboardLayout />
+                    <Evaluation />
+                  </ProtectedRoute>
+                } />
                 
                 {/* Protected Routes - District */}
                 <Route path="/district-dashboard" element={
