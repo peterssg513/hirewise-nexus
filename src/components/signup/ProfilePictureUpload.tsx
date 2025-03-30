@@ -31,22 +31,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       const fileName = `profile-picture-${Date.now()}.${fileExt}`;
       const filePath = `${userId}/${fileName}`;
       
-      // Check if the psychologist_files bucket exists, create if not
-      const { data: buckets, error: listBucketsError } = await supabase.storage.listBuckets();
-      
-      if (listBucketsError) {
-        throw listBucketsError;
-      }
-      
-      if (!buckets?.find(bucket => bucket.name === 'psychologist_files')) {
-        const { error: createError } = await supabase.storage.createBucket('psychologist_files', {
-          public: true,
-          fileSizeLimit: 5242880 // 5MB
-        });
-        
-        if (createError) throw createError;
-      }
-      
       // First create a local preview for immediate feedback
       setImagePreview(URL.createObjectURL(file));
       

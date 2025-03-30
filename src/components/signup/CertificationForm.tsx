@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Certification } from '@/services/certificationService';
+import { Loader2 } from 'lucide-react';
 
 interface CertificationFormProps {
   onAdd: (certification: Certification) => void;
@@ -17,22 +18,31 @@ const CertificationForm: React.FC<CertificationFormProps> = ({ onAdd, onCancel }
     endYear: '',
     issuer: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent page refresh
     
-    const newCertification: Certification = {
-      id: uuidv4(),
-      ...formData,
-    };
+    setIsSubmitting(true);
     
-    onAdd(newCertification);
-    setFormData({ name: '', startYear: '', endYear: '', issuer: '' });
+    try {
+      const newCertification: Certification = {
+        id: uuidv4(),
+        ...formData,
+      };
+      
+      onAdd(newCertification);
+      setFormData({ name: '', startYear: '', endYear: '', issuer: '' });
+    } catch (error) {
+      console.error('Error adding certification:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -89,11 +99,25 @@ const CertificationForm: React.FC<CertificationFormProps> = ({ onAdd, onCancel }
       </div>
       
       <div className="flex justify-end gap-2 mt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
-        <Button type="submit" className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90 text-white">
-          Add Certification
+        <Button 
+          type="submit" 
+          className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90 text-white"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+              Adding...
+            </span>
+          ) : 'Add Certification'}
         </Button>
       </div>
     </form>
