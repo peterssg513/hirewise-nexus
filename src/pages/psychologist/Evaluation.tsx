@@ -91,7 +91,7 @@ const Evaluation = () => {
           evaluation: {
             id: evaluationData.evaluation.id,
             status: evaluationData.evaluation.status,
-            submitted_at: evaluationData.evaluation.submitted_at || null,
+            submitted_at: evaluationData.evaluation.submitted_at,
             form_data: evaluationData.evaluation.form_data || {}
           },
           template: evaluationData.template

@@ -38,9 +38,9 @@ export interface Evaluation {
   status: string;
   created_at: string;
   updated_at: string;
-  submitted_at?: string;
-  approved_at?: string;
-  report_url?: string;
+  submitted_at: string | null;
+  approved_at: string | null;
+  report_url: string | null;
   application_id: string;
   form_data?: EvaluationFormData;
 }
