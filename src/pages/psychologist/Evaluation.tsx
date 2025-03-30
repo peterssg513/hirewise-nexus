@@ -87,7 +87,15 @@ const Evaluation = () => {
     <div className="max-w-5xl mx-auto p-6">
       <EvaluationForm 
         evaluationId={id as string}
-        evaluationData={evaluationData}
+        evaluationData={{
+          evaluation: {
+            id: evaluationData.evaluation.id,
+            status: evaluationData.evaluation.status,
+            submitted_at: evaluationData.evaluation.submitted_at || null,
+            form_data: evaluationData.evaluation.form_data
+          },
+          template: evaluationData.template
+        }}
       />
     </div>
   );

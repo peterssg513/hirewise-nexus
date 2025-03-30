@@ -43,7 +43,9 @@ export const getEvaluationData = async (evaluationId: string) => {
       approved_at: evaluation.approved_at || null,
       report_url: evaluation.report_url || null,
       application_id: evaluation.application_id,
-      form_data: hasFormDataColumn && evaluation.form_data ? evaluation.form_data as EvaluationFormData : {}
+      form_data: (hasFormDataColumn && evaluation.form_data) 
+        ? (evaluation.form_data as EvaluationFormData) 
+        : {}
     };
 
     return {
@@ -81,7 +83,7 @@ export const saveEvaluationFormData = async (evaluationId: string, formData: Eva
     const hasFormDataColumn = await checkColumnExists('evaluations', 'form_data');
     
     // Only allow updates if the evaluation is not submitted
-    if (currentEvaluation && (currentEvaluation.status === 'submitted' || currentEvaluation.status === 'approved')) {
+    if (currentEvaluation.status === 'submitted' || currentEvaluation.status === 'approved') {
       throw new Error('Cannot update a submitted or approved evaluation');
     }
 
@@ -134,7 +136,7 @@ export const submitEvaluation = async (evaluationId: string, formData: Evaluatio
     if (!currentEvaluation) throw new Error("Evaluation not found");
 
     // Only allow submission if the evaluation is not already submitted
-    if (currentEvaluation && (currentEvaluation.status === 'submitted' || currentEvaluation.status === 'approved')) {
+    if (currentEvaluation.status === 'submitted' || currentEvaluation.status === 'approved') {
       throw new Error('This evaluation has already been submitted or approved');
     }
 
