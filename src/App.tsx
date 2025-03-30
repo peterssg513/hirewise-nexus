@@ -17,11 +17,17 @@ import Profile from './pages/psychologist/Profile';
 import DashboardLayout from './layouts/DashboardLayout';
 import Settings from './pages/psychologist/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
+import Index from './pages/Index';
+import PsychologistsLanding from './pages/PsychologistsLanding';
+import DistrictsLanding from './pages/DistrictsLanding';
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/for-psychologists" element={<PsychologistsLanding />} />
+        <Route path="/for-districts" element={<DistrictsLanding />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -68,9 +74,6 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="settings" element={<Settings />} />
         </Route>
-
-        {/* Default Route */}
-        <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </AuthProvider>
   );
