@@ -86,7 +86,7 @@ const ProfileHeader = ({ profileData, onEditProfile }: ProfileHeaderProps) => {
         
         <motion.div variants={itemVariants}>
           <Button 
-            className="mt-6 bg-psyched-darkBlue hover:bg-psyched-darkBlue/80 transition-all duration-300 transform hover:scale-105"
+            className="mt-6 bg-psyched-darkBlue hover:bg-psyched-darkBlue/80 text-white transition-all duration-300 transform hover:scale-105"
             size="sm"
             onClick={onEditProfile}
           >

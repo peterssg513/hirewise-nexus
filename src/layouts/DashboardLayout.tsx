@@ -4,7 +4,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, ClipboardCheck, Users, Settings, LogOut, 
   Menu, X, ChevronRight, BriefcaseBusiness, User, FileSpreadsheet,
-  ChevronLeft, PanelLeft
+  ChevronLeft, PanelLeft, Phone, Mail
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -14,36 +14,65 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
-interface NavButtonProps {
-  children: React.ReactNode;
-  tooltip: string;
-  isActive?: boolean;
+// Sidebar Navigation Button Component
+const SidebarNavButton = ({ 
+  icon, 
+  label, 
+  active, 
+  onClick, 
+  expanded
+}: { 
+  icon: React.ReactNode; 
+  label: string; 
+  active?: boolean; 
   onClick?: () => void;
-}
-
-const NavButton: React.FC<NavButtonProps> = ({ children, tooltip, isActive, onClick }) => {
+  expanded: boolean;
+}) => {
   return (
-    <TooltipProvider>
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "h-12 w-12",
-              isActive && "bg-muted"
-            )}
-            onClick={onClick}
-          >
-            {children}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Button
+      variant="ghost"
+      size={expanded ? "default" : "icon"}
+      className={cn(
+        "relative w-full justify-start gap-3 px-3",
+        active && "bg-psyched-darkBlue/10 text-psyched-darkBlue font-medium"
+      )}
+      onClick={onClick}
+    >
+      {icon}
+      {expanded && (
+        <motion.span 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="overflow-hidden whitespace-nowrap"
+        >
+          {label}
+        </motion.span>
+      )}
+    </Button>
+  );
+};
+
+// Mobile Navigation Button Component
+const MobileNavButton = ({ 
+  icon, 
+  label, 
+  onClick
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+}) => {
+  return (
+    <Button 
+      variant="ghost" 
+      className="justify-start gap-2 my-1 hover:bg-psyched-darkBlue/10" 
+      onClick={onClick}
+    >
+      {icon}
+      {label}
+    </Button>
   );
 };
 
@@ -62,12 +91,13 @@ const DashboardLayout = () => {
     const fetchProfilePic = async () => {
       if (user?.id && role === 'psychologist') {
         try {
-          const { supabase } = await import('@/integrations/supabase/client');
           const { data, error } = await supabase
             .from('psychologists')
             .select('profile_picture_url')
             .eq('user_id', user.id)
             .single();
+            
+          console.log("Dashboard Layout - Profile Pic Data:", data);
             
           if (!error && data?.profile_picture_url) {
             setProfilePicUrl(data.profile_picture_url);
@@ -113,8 +143,17 @@ const DashboardLayout = () => {
     >
       <div className="flex items-center justify-center my-6 relative">
         <Avatar className="h-12 w-12 transition-all duration-300 hover:scale-105">
-          <AvatarImage src={profilePicUrl || "/logo.png"} alt="Profile" />
-          <AvatarFallback className="bg-psyched-darkBlue text-white">{getInitials()}</AvatarFallback>
+          {profilePicUrl ? (
+            <AvatarImage 
+              src={profilePicUrl} 
+              alt="Profile" 
+              className="object-cover" 
+            />
+          ) : (
+            <AvatarFallback className="bg-psyched-darkBlue text-white">
+              {getInitials()}
+            </AvatarFallback>
+          )}
         </Avatar>
         
         {isSidebarExpanded && (
@@ -141,170 +180,94 @@ const DashboardLayout = () => {
       <nav className="flex flex-col gap-2 items-center flex-grow w-full">
         {role === 'psychologist' && (
           <>
-            <Button
-              variant="ghost"
-              size={isSidebarExpanded ? "default" : "icon"}
-              className={cn(
-                "relative w-full justify-start gap-3 px-3",
-                pathname === '/psychologist-dashboard' && "bg-psyched-darkBlue/10 text-psyched-darkBlue font-medium"
-              )}
+            <SidebarNavButton
+              icon={<LayoutDashboard className="h-5 w-5 text-psyched-darkBlue" />}
+              label="Dashboard"
+              active={pathname === '/psychologist-dashboard'}
               onClick={() => navigate('/psychologist-dashboard')}
-            >
-              <LayoutDashboard className="h-5 w-5 text-psyched-darkBlue" />
-              {isSidebarExpanded && (
-                <motion.span 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="overflow-hidden whitespace-nowrap"
-                >
-                  Dashboard
-                </motion.span>
-              )}
-            </Button>
+              expanded={isSidebarExpanded}
+            />
             
-            <Button
-              variant="ghost"
-              size={isSidebarExpanded ? "default" : "icon"}
-              className={cn(
-                "relative w-full justify-start gap-3 px-3",
-                pathname === '/psychologist-dashboard/jobs' && "bg-psyched-darkBlue/10 text-psyched-darkBlue font-medium"
-              )}
+            <SidebarNavButton
+              icon={<BriefcaseBusiness className="h-5 w-5 text-psyched-darkBlue" />}
+              label="Job Listings"
+              active={pathname === '/psychologist-dashboard/jobs'}
               onClick={() => navigate('/psychologist-dashboard/jobs')}
-            >
-              <BriefcaseBusiness className="h-5 w-5 text-psyched-darkBlue" />
-              {isSidebarExpanded && (
-                <motion.span 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="overflow-hidden whitespace-nowrap"
-                >
-                  Job Listings
-                </motion.span>
-              )}
-            </Button>
+              expanded={isSidebarExpanded}
+            />
             
-            <Button
-              variant="ghost"
-              size={isSidebarExpanded ? "default" : "icon"}
-              className={cn(
-                "relative w-full justify-start gap-3 px-3",
-                pathname === '/psychologist-dashboard/evaluations' && "bg-psyched-darkBlue/10 text-psyched-darkBlue font-medium"
-              )}
+            <SidebarNavButton
+              icon={<FileSpreadsheet className="h-5 w-5 text-psyched-darkBlue" />}
+              label="Evaluations"
+              active={pathname === '/psychologist-dashboard/evaluations'}
               onClick={() => navigate('/psychologist-dashboard/evaluations')}
-            >
-              <FileSpreadsheet className="h-5 w-5 text-psyched-darkBlue" />
-              {isSidebarExpanded && (
-                <motion.span 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="overflow-hidden whitespace-nowrap"
-                >
-                  Evaluations
-                </motion.span>
-              )}
-            </Button>
+              expanded={isSidebarExpanded}
+            />
             
-            <Button
-              variant="ghost"
-              size={isSidebarExpanded ? "default" : "icon"}
-              className={cn(
-                "relative w-full justify-start gap-3 px-3",
-                pathname === '/psychologist-dashboard/applications' && "bg-psyched-darkBlue/10 text-psyched-darkBlue font-medium"
-              )}
+            <SidebarNavButton
+              icon={<ClipboardCheck className="h-5 w-5 text-psyched-darkBlue" />}
+              label="Applications"
+              active={pathname === '/psychologist-dashboard/applications'}
               onClick={() => navigate('/psychologist-dashboard/applications')}
-            >
-              <ClipboardCheck className="h-5 w-5 text-psyched-darkBlue" />
-              {isSidebarExpanded && (
-                <motion.span 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="overflow-hidden whitespace-nowrap"
-                >
-                  Applications
-                </motion.span>
-              )}
-            </Button>
+              expanded={isSidebarExpanded}
+            />
             
-            <Button
-              variant="ghost"
-              size={isSidebarExpanded ? "default" : "icon"}
-              className={cn(
-                "relative w-full justify-start gap-3 px-3",
-                pathname === '/psychologist-dashboard/profile' && "bg-psyched-darkBlue/10 text-psyched-darkBlue font-medium"
-              )}
+            <SidebarNavButton
+              icon={<User className="h-5 w-5 text-psyched-darkBlue" />}
+              label="Profile"
+              active={pathname === '/psychologist-dashboard/profile'}
               onClick={() => navigate('/psychologist-dashboard/profile')}
-            >
-              <User className="h-5 w-5 text-psyched-darkBlue" />
-              {isSidebarExpanded && (
-                <motion.span 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="overflow-hidden whitespace-nowrap"
-                >
-                  Profile
-                </motion.span>
-              )}
-            </Button>
+              expanded={isSidebarExpanded}
+            />
           </>
         )}
         
         {role === 'district' && (
           <>
-            <NavButton
-              tooltip="Dashboard"
-              isActive={pathname === '/district-dashboard'}
+            <SidebarNavButton
+              icon={<LayoutDashboard className="h-5 w-5 text-psyched-darkBlue" />}
+              label="Dashboard"
+              active={pathname === '/district-dashboard'}
               onClick={() => navigate('/district-dashboard')}
-            >
-              <LayoutDashboard className="h-5 w-5" />
-            </NavButton>
+              expanded={isSidebarExpanded}
+            />
             
-            <NavButton
-              tooltip="Users"
-              isActive={false}
-            >
-              <Users className="h-5 w-5" />
-            </NavButton>
+            <SidebarNavButton
+              icon={<Users className="h-5 w-5 text-psyched-darkBlue" />}
+              label="Users"
+              expanded={isSidebarExpanded}
+            />
           </>
         )}
         
         {role === 'admin' && (
           <>
-            <NavButton
-              tooltip="Dashboard"
-              isActive={pathname === '/admin-dashboard'}
+            <SidebarNavButton
+              icon={<LayoutDashboard className="h-5 w-5 text-psyched-darkBlue" />}
+              label="Dashboard"
+              active={pathname === '/admin-dashboard'}
               onClick={() => navigate('/admin-dashboard')}
-            >
-              <LayoutDashboard className="h-5 w-5" />
-            </NavButton>
+              expanded={isSidebarExpanded}
+            />
             
-            <NavButton
-              tooltip="Users"
-              isActive={false}
-            >
-              <Users className="h-5 w-5" />
-            </NavButton>
+            <SidebarNavButton
+              icon={<Users className="h-5 w-5 text-psyched-darkBlue" />}
+              label="Users"
+              expanded={isSidebarExpanded}
+            />
           </>
         )}
       </nav>
       
       <div className="mt-auto mb-6 w-full px-2">
         <Separator className="my-4" />
-        <Button
-          variant="ghost"
-          size={isSidebarExpanded ? "default" : "icon"}
-          className="relative w-full justify-start gap-3 px-3"
-        >
-          <Settings className="h-5 w-5 text-psyched-darkBlue" />
-          {isSidebarExpanded && (
-            <motion.span 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="overflow-hidden whitespace-nowrap"
-            >
-              Settings
-            </motion.span>
-          )}
-        </Button>
+        <SidebarNavButton
+          icon={<Settings className="h-5 w-5 text-psyched-darkBlue" />}
+          label="Settings"
+          active={pathname === '/psychologist-dashboard/settings'}
+          onClick={() => navigate('/psychologist-dashboard/settings')}
+          expanded={isSidebarExpanded}
+        />
         
         <Button 
           variant="ghost" 
@@ -338,8 +301,11 @@ const DashboardLayout = () => {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={profilePicUrl || "/logo.png"} alt="Profile" />
-              <AvatarFallback className="bg-psyched-darkBlue text-white">{getInitials()}</AvatarFallback>
+              {profilePicUrl ? (
+                <AvatarImage src={profilePicUrl} alt="Profile" className="object-cover" />
+              ) : (
+                <AvatarFallback className="bg-psyched-darkBlue text-white">{getInitials()}</AvatarFallback>
+              )}
             </Avatar>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -351,60 +317,72 @@ const DashboardLayout = () => {
           <nav className="flex flex-col p-2">
             {role === 'psychologist' && (
               <>
-                <Button variant="ghost" className="justify-start gap-2 my-1 hover:bg-psyched-darkBlue/10" onClick={() => navigate('/psychologist-dashboard')}>
-                  <LayoutDashboard className="h-4 w-4 text-psyched-darkBlue" />
-                  Dashboard
-                </Button>
-                <Button variant="ghost" className="justify-start gap-2 my-1 hover:bg-psyched-darkBlue/10" onClick={() => navigate('/psychologist-dashboard/jobs')}>
-                  <BriefcaseBusiness className="h-4 w-4 text-psyched-darkBlue" />
-                  Job Listings
-                </Button>
-                <Button variant="ghost" className="justify-start gap-2 my-1 hover:bg-psyched-darkBlue/10" onClick={() => navigate('/psychologist-dashboard/evaluations')}>
-                  <FileSpreadsheet className="h-4 w-4 text-psyched-darkBlue" />
-                  Evaluations
-                </Button>
-                <Button variant="ghost" className="justify-start gap-2 my-1 hover:bg-psyched-darkBlue/10" onClick={() => navigate('/psychologist-dashboard/applications')}>
-                  <ClipboardCheck className="h-4 w-4 text-psyched-darkBlue" />
-                  Applications
-                </Button>
-                <Button variant="ghost" className="justify-start gap-2 my-1 hover:bg-psyched-darkBlue/10" onClick={() => navigate('/psychologist-dashboard/profile')}>
-                  <User className="h-4 w-4 text-psyched-darkBlue" />
-                  Profile
-                </Button>
+                <MobileNavButton
+                  icon={<LayoutDashboard className="h-4 w-4 text-psyched-darkBlue" />}
+                  label="Dashboard"
+                  onClick={() => navigate('/psychologist-dashboard')}
+                />
+                <MobileNavButton
+                  icon={<BriefcaseBusiness className="h-4 w-4 text-psyched-darkBlue" />}
+                  label="Job Listings"
+                  onClick={() => navigate('/psychologist-dashboard/jobs')}
+                />
+                <MobileNavButton
+                  icon={<FileSpreadsheet className="h-4 w-4 text-psyched-darkBlue" />}
+                  label="Evaluations"
+                  onClick={() => navigate('/psychologist-dashboard/evaluations')}
+                />
+                <MobileNavButton
+                  icon={<ClipboardCheck className="h-4 w-4 text-psyched-darkBlue" />}
+                  label="Applications"
+                  onClick={() => navigate('/psychologist-dashboard/applications')}
+                />
+                <MobileNavButton
+                  icon={<User className="h-4 w-4 text-psyched-darkBlue" />}
+                  label="Profile"
+                  onClick={() => navigate('/psychologist-dashboard/profile')}
+                />
               </>
             )}
             {role === 'district' && (
               <>
-                <Button variant="ghost" className="justify-start gap-2" onClick={() => navigate('/district-dashboard')}>
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </Button>
-                <Button variant="ghost" className="justify-start gap-2">
-                  <Users className="h-4 w-4" />
-                  Users
-                </Button>
+                <MobileNavButton
+                  icon={<LayoutDashboard className="h-4 w-4 text-psyched-darkBlue" />}
+                  label="Dashboard"
+                  onClick={() => navigate('/district-dashboard')}
+                />
+                <MobileNavButton
+                  icon={<Users className="h-4 w-4 text-psyched-darkBlue" />}
+                  label="Users"
+                />
               </>
             )}
             {role === 'admin' && (
               <>
-                <Button variant="ghost" className="justify-start gap-2" onClick={() => navigate('/admin-dashboard')}>
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </Button>
-                <Button variant="ghost" className="justify-start gap-2">
-                  <Users className="h-4 w-4" />
-                  Users
-                </Button>
+                <MobileNavButton
+                  icon={<LayoutDashboard className="h-4 w-4 text-psyched-darkBlue" />}
+                  label="Dashboard"
+                  onClick={() => navigate('/admin-dashboard')}
+                />
+                <MobileNavButton
+                  icon={<Users className="h-4 w-4 text-psyched-darkBlue" />}
+                  label="Users"
+                />
               </>
             )}
           </nav>
           <Separator />
           <nav className="mt-auto p-2">
-            <Button variant="ghost" className="justify-start gap-2 my-1 hover:bg-psyched-darkBlue/10">
-              <Settings className="h-4 w-4 text-psyched-darkBlue" />
-              Settings
-            </Button>
-            <Button variant="ghost" className="justify-start gap-2 my-1 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
+            <MobileNavButton
+              icon={<Settings className="h-4 w-4 text-psyched-darkBlue" />}
+              label="Settings"
+              onClick={() => navigate('/psychologist-dashboard/settings')}
+            />
+            <Button 
+              variant="ghost" 
+              className="justify-start gap-2 my-1 text-red-500 hover:text-red-600 hover:bg-red-50" 
+              onClick={handleLogout}
+            >
               <LogOut className="h-4 w-4" />
               Logout
             </Button>

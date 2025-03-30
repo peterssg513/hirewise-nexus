@@ -42,6 +42,42 @@ const ProfileDetails = ({ experiences, educations, certifications, profileData }
       initial="hidden"
       animate="visible"
     >
+      {/* Contact Details */}
+      <motion.div variants={cardVariants}>
+        <Card className="shadow-sm hover:shadow transition-shadow duration-300 border-gray-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold text-psyched-darkBlue flex items-center gap-2">
+              <Mail className="h-5 w-5 text-psyched-lightBlue" />
+              Contact Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {profileData?.profiles?.email && (
+                <div className="flex items-center gap-3">
+                  <Mail className="h-5 w-5 text-psyched-lightBlue" />
+                  <p className="text-gray-600">{profileData.profiles.email}</p>
+                </div>
+              )}
+              {profileData?.phone_number && (
+                <div className="flex items-center gap-3">
+                  <Phone className="h-5 w-5 text-psyched-orange" />
+                  <p className="text-gray-600">{profileData.phone_number}</p>
+                </div>
+              )}
+              {profileData?.city && profileData?.state && (
+                <div className="flex items-start gap-3">
+                  <span className="i-lucide-map-pin h-5 w-5 text-psyched-darkBlue mt-0.5" />
+                  <p className="text-gray-600">
+                    {profileData.city}, {profileData.state} {profileData.zip_code || ''}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Experience */}
       {experiences && experiences.length > 0 && (
         <motion.div variants={cardVariants}>
@@ -55,7 +91,7 @@ const ProfileDetails = ({ experiences, educations, certifications, profileData }
             <CardContent>
               <div className="space-y-4">
                 {experiences.map((exp, index) => (
-                  <div key={index} className="border-l-2 border-psyched-lightBlue pl-4 py-1">
+                  <div key={exp.id || index} className="border-l-2 border-psyched-lightBlue pl-4 py-1">
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium text-psyched-darkBlue">{exp.position}</h4>
                       <Badge variant="outline" className="bg-blue-50">
@@ -85,7 +121,7 @@ const ProfileDetails = ({ experiences, educations, certifications, profileData }
             <CardContent>
               <div className="space-y-4">
                 {educations.map((edu, index) => (
-                  <div key={index} className="border-l-2 border-psyched-yellow pl-4 py-1">
+                  <div key={edu.id || index} className="border-l-2 border-psyched-yellow pl-4 py-1">
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium text-psyched-darkBlue">{edu.degree}</h4>
                       <Badge variant="outline" className="bg-amber-50">
@@ -115,7 +151,7 @@ const ProfileDetails = ({ experiences, educations, certifications, profileData }
             <CardContent>
               <div className="space-y-4">
                 {certifications.map((cert, index) => (
-                  <div key={index} className="border-l-2 border-green-500 pl-4 py-1">
+                  <div key={cert.id || index} className="border-l-2 border-green-500 pl-4 py-1">
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium text-psyched-darkBlue">{cert.name}</h4>
                       {cert.expirationDate && (
