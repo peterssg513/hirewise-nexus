@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,18 +113,16 @@ const PsychologistDashboard = () => {
         
       if (evaluationsError) throw evaluationsError;
       
-      if (evaluationsData) {
-        // Transform evaluations data - fixed 'eval' keyword issue by using 'item' instead
-        const evaluations = evaluationsData.map(item => ({
-          id: item.id,
-          status: item.status,
-          job_title: item.applications.jobs.title,
-          district_name: item.applications.jobs.districts.name,
-          created_at: item.created_at
-        }));
-        
-        setUpcomingEvaluations(evaluations);
-      }
+      // Transform evaluations data - fixed the reserved keyword 'eval'
+      const evaluations = evaluationsData.map(item => ({
+        id: item.id,
+        status: item.status,
+        job_title: item.applications.jobs.title,
+        district_name: item.applications.jobs.districts.name,
+        created_at: item.created_at
+      }));
+      
+      setUpcomingEvaluations(evaluations);
     } catch (error: any) {
       console.error('Error fetching dashboard data:', error);
       toast({

@@ -1,182 +1,291 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-export interface EvaluationFormData {
-  student_name: string;
-  student_grade: string;
-  evaluation_date: string;
-  test_scores: {
-    verbal: number;
-    math: number;
-    reasoning: number;
-  };
-  observations: string;
-  recommendations: string;
+// Define the interfaces needed for evaluations
+export interface EvaluationTemplate {
+  id: string;
+  name: string;
+  description: string;
+  sections: EvaluationTemplateSection[];
+}
+
+export interface EvaluationTemplateSection {
+  title: string;
+  fields: EvaluationFormField[];
 }
 
 export interface EvaluationFormField {
   id: string;
   label: string;
-  type: 'text' | 'number' | 'date' | 'textarea' | 'select';
+  type: 'text' | 'textarea' | 'number' | 'date' | 'select' | 'multiselect' | 'radio' | 'checkbox';
+  placeholder?: string; 
   options?: string[];
   required: boolean;
+  section: string;
 }
 
-export interface EvaluationTemplate {
-  id: string;
-  title: string;
-  fields: EvaluationFormField[];
+export interface EvaluationFormData {
+  student_name: string;
+  student_grade: string;
+  evaluation_date: string;
+  test_scores: Record<string, any>;
+  observations: Record<string, any>;
+  recommendations: string;
 }
 
-export interface EvaluationData {
-  id: string;
-  status: string;
-  evaluationId: string;
-  data: EvaluationFormData;
-}
-
-// Get evaluation template based on type
-export const getEvaluationTemplate = async (evaluationId: string): Promise<EvaluationTemplate> => {
+// Get evaluation data
+export const getEvaluationData = async (evaluationId: string) => {
   try {
-    const { data, error } = await supabase
-      .from('evaluation_templates')
-      .select('*')
+    // Fetch the evaluation
+    const { data: evaluation, error: evaluationError } = await supabase
+      .from('evaluations')
+      .select(`
+        id,
+        status,
+        created_at,
+        updated_at,
+        submitted_at,
+        approved_at,
+        report_url,
+        application_id,
+        form_data,
+        application:applications (
+          id,
+          status,
+          created_at,
+          updated_at,
+          psychologist_id,
+          job_id,
+          documents_urls,
+          jobs (
+            id,
+            title,
+            description,
+            district_id,
+            districts (
+              id,
+              name,
+              location
+            )
+          )
+        )
+      `)
       .eq('id', evaluationId)
       .single();
 
-    if (error) throw error;
+    if (evaluationError) throw evaluationError;
 
-    return data as unknown as EvaluationTemplate;
-  } catch (error) {
-    console.error('Error fetching evaluation template:', error);
-    // Return default template if not found
+    // For this implementation, we'll use a static template
+    // In a real implementation, you would fetch this from the database
+    const template = getDefaultTemplate();
+
     return {
-      id: 'default',
-      title: 'Standard Psychological Evaluation',
-      fields: [
-        {
-          id: 'student_name',
-          label: 'Student Name',
-          type: 'text',
-          required: true
-        },
-        {
-          id: 'student_grade',
-          label: 'Grade',
-          type: 'text',
-          required: true
-        },
-        {
-          id: 'evaluation_date',
-          label: 'Evaluation Date',
-          type: 'date',
-          required: true
-        },
-        {
-          id: 'test_scores_verbal',
-          label: 'Verbal Score',
-          type: 'number',
-          required: true
-        },
-        {
-          id: 'test_scores_math',
-          label: 'Math Score',
-          type: 'number',
-          required: true
-        },
-        {
-          id: 'test_scores_reasoning',
-          label: 'Reasoning Score',
-          type: 'number',
-          required: true
-        },
-        {
-          id: 'observations',
-          label: 'Observations',
-          type: 'textarea',
-          required: true
-        },
-        {
-          id: 'recommendations',
-          label: 'Recommendations',
-          type: 'textarea',
-          required: true
-        }
-      ]
+      evaluation,
+      template
     };
+  } catch (error) {
+    console.error('Error fetching evaluation:', error);
+    throw error;
   }
 };
 
-// Get existing evaluation data if available
-export const getEvaluationData = async (evaluationId: string): Promise<EvaluationData | null> => {
+// Alias for getEvaluationData for backward compatibility
+export const getEvaluationById = getEvaluationData;
+
+// Save evaluation form data
+export const saveEvaluationFormData = async (evaluationId: string, formData: EvaluationFormData) => {
   try {
-    const { data, error } = await supabase
+    // First get the current evaluation to check its status
+    const { data: currentEvaluation, error: fetchError } = await supabase
       .from('evaluations')
-      .select('*, application:applications(*)')
+      .select('status, form_data')
       .eq('id', evaluationId)
       .single();
 
-    if (error) throw error;
+    if (fetchError) throw fetchError;
 
-    // If data exists but no form data yet, return null for the form data
-    if (!data.form_data) {
-      return {
-        id: data.id,
-        status: data.status,
-        evaluationId: data.id,
-        data: {} as EvaluationFormData
-      };
+    // Only allow updates if the evaluation is not submitted
+    if (currentEvaluation.status === 'submitted' || currentEvaluation.status === 'approved') {
+      throw new Error('Cannot update a submitted or approved evaluation');
     }
 
-    return {
-      id: data.id,
-      status: data.status,
-      evaluationId: data.id,
-      data: data.form_data as EvaluationFormData
-    };
-  } catch (error) {
-    console.error('Error fetching evaluation data:', error);
-    return null;
-  }
-};
-
-// Save evaluation data (in-progress)
-export const saveEvaluationData = async (evaluationId: string, formData: EvaluationFormData): Promise<boolean> => {
-  try {
-    const { error } = await supabase
+    // Update the evaluation with the new form data
+    const { data, error } = await supabase
       .from('evaluations')
-      .update({
+      .update({ 
         form_data: formData,
         status: 'in_progress',
         updated_at: new Date().toISOString()
       })
-      .eq('id', evaluationId);
+      .eq('id', evaluationId)
+      .select();
 
     if (error) throw error;
-    return true;
+    return data;
   } catch (error) {
-    console.error('Error saving evaluation data:', error);
-    return false;
+    console.error('Error saving evaluation form data:', error);
+    throw error;
   }
 };
 
 // Submit completed evaluation
-export const submitEvaluation = async (evaluationId: string, formData: EvaluationFormData): Promise<boolean> => {
+export const submitEvaluation = async (evaluationId: string, formData: EvaluationFormData) => {
   try {
-    const { error } = await supabase
+    // First get the current evaluation to check its status
+    const { data: currentEvaluation, error: fetchError } = await supabase
       .from('evaluations')
-      .update({
+      .select('status')
+      .eq('id', evaluationId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Only allow submission if the evaluation is not already submitted
+    if (currentEvaluation.status === 'submitted' || currentEvaluation.status === 'approved') {
+      throw new Error('This evaluation has already been submitted or approved');
+    }
+
+    // Update the evaluation to submitted status
+    const { data, error } = await supabase
+      .from('evaluations')
+      .update({ 
         form_data: formData,
         status: 'submitted',
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('id', evaluationId);
+      .eq('id', evaluationId)
+      .select();
 
     if (error) throw error;
-    return true;
+    return data;
   } catch (error) {
     console.error('Error submitting evaluation:', error);
-    return false;
+    throw error;
   }
+};
+
+// Get a default evaluation template
+const getDefaultTemplate = (): EvaluationTemplate => {
+  return {
+    id: 'default-template',
+    name: 'Standard Psychological Evaluation',
+    description: 'Standard evaluation template for K-12 psychological assessment',
+    sections: [
+      {
+        title: 'Student Information',
+        fields: [
+          {
+            id: 'student_name',
+            label: 'Student Name',
+            type: 'text',
+            placeholder: 'Full name of student',
+            required: true,
+            section: 'Student Information'
+          },
+          {
+            id: 'student_grade',
+            label: 'Grade',
+            type: 'select',
+            options: ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+            required: true,
+            section: 'Student Information'
+          },
+          {
+            id: 'evaluation_date',
+            label: 'Evaluation Date',
+            type: 'date',
+            required: true,
+            section: 'Student Information'
+          }
+        ]
+      },
+      {
+        title: 'Assessment Results',
+        fields: [
+          {
+            id: 'cognitive_assessment',
+            label: 'Cognitive Assessment',
+            type: 'textarea',
+            placeholder: 'Describe cognitive assessment results',
+            required: true,
+            section: 'Assessment Results'
+          },
+          {
+            id: 'achievement_tests',
+            label: 'Achievement Tests',
+            type: 'textarea',
+            placeholder: 'Describe achievement test results',
+            required: true,
+            section: 'Assessment Results'
+          },
+          {
+            id: 'learning_style',
+            label: 'Learning Style',
+            type: 'multiselect',
+            options: ['Visual', 'Auditory', 'Kinesthetic', 'Read/Write'],
+            required: false,
+            section: 'Assessment Results'
+          }
+        ]
+      },
+      {
+        title: 'Behavioral Observations',
+        fields: [
+          {
+            id: 'classroom_behavior',
+            label: 'Classroom Behavior',
+            type: 'textarea',
+            placeholder: 'Describe observed behavior in classroom settings',
+            required: true,
+            section: 'Behavioral Observations'
+          },
+          {
+            id: 'social_interactions',
+            label: 'Social Interactions',
+            type: 'textarea',
+            placeholder: 'Describe social interaction patterns',
+            required: true,
+            section: 'Behavioral Observations'
+          },
+          {
+            id: 'adaptive_skills',
+            label: 'Adaptive Skills',
+            type: 'radio',
+            options: ['Below Average', 'Average', 'Above Average'],
+            required: true,
+            section: 'Behavioral Observations'
+          }
+        ]
+      },
+      {
+        title: 'Recommendations',
+        fields: [
+          {
+            id: 'eligibility',
+            label: 'Eligibility for Services',
+            type: 'checkbox',
+            options: [
+              'Special Education',
+              'Speech Therapy',
+              'Occupational Therapy',
+              'Counseling Services',
+              'Behavior Intervention Plan',
+              'None'
+            ],
+            required: true,
+            section: 'Recommendations'
+          },
+          {
+            id: 'recommendations',
+            label: 'Recommendations',
+            type: 'textarea',
+            placeholder: 'Provide detailed recommendations for supporting this student',
+            required: true,
+            section: 'Recommendations'
+          }
+        ]
+      }
+    ]
+  };
 };
