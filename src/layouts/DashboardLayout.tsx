@@ -39,7 +39,8 @@ const NavButton: React.FC<NavButtonProps> = ({ children, tooltip, isActive, onCl
         <TooltipContent side="right">
           <p>{tooltip}</p>
         </TooltipContent>
-      </TooltipProvider>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
