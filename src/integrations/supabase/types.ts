@@ -132,6 +132,7 @@ export type Database = {
           application_id: string
           approved_at: string | null
           created_at: string
+          form_data: Json | null
           id: string
           report_url: string | null
           status: string | null
@@ -142,6 +143,7 @@ export type Database = {
           application_id: string
           approved_at?: string | null
           created_at?: string
+          form_data?: Json | null
           id?: string
           report_url?: string | null
           status?: string | null
@@ -152,6 +154,7 @@ export type Database = {
           application_id?: string
           approved_at?: string | null
           created_at?: string
+          form_data?: Json | null
           id?: string
           report_url?: string | null
           status?: string | null
@@ -383,6 +386,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_form_data_column: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       apply_to_job: {
         Args: {
           _job_id: string

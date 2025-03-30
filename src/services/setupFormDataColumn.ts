@@ -9,14 +9,17 @@ export const setupFormDataColumn = async () => {
     const hasFormDataColumn = await checkColumnExists('evaluations', 'form_data');
     
     if (!hasFormDataColumn) {
+      console.log('Form data column does not exist, adding it now...');
+      
       // Execute Supabase function to add the column
-      // This requires a Supabase function to be created
-      const { error } = await supabase.rpc('add_form_data_column' as any);
+      const { error } = await supabase.rpc('add_form_data_column');
       if (error) {
         console.error('Error adding form_data column:', error);
       } else {
-        console.log('Added form_data column to evaluations table');
+        console.log('Successfully added form_data column to evaluations table');
       }
+    } else {
+      console.log('Form data column already exists in evaluations table');
     }
   } catch (error) {
     console.error('Error setting up form_data column:', error);

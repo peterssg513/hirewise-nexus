@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import React, { useEffect } from "react"; // Add explicit React import
+import React, { useEffect } from "react";
 
 // Import the storage setup
 import './services/setupStorageBuckets';
