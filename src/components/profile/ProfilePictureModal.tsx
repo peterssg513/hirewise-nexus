@@ -68,7 +68,7 @@ const ProfilePictureModal = ({
       // Generate a unique file name
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${userId}-${Date.now()}.${fileExt}`;
-      const filePath = `profile-pictures/${fileName}`;
+      const filePath = `${userId}/${fileName}`;
       
       // Upload to Supabase Storage
       const { data, error: uploadError } = await supabase.storage

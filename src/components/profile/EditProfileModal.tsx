@@ -1,13 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { 
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter 
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Loader2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Experience, Education } from '@/services/psychologistSignupService';
-import { Certification } from '@/services/certificationService';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -16,9 +17,9 @@ interface EditProfileModalProps {
   section: 'basic' | 'experience' | 'education' | 'certification' | null;
   itemId: string | null;
   profileData: any;
-  experienceData?: Experience;
-  educationData?: Education;
-  certificationData?: Certification;
+  experienceData?: any;
+  educationData?: any;
+  certificationData?: any;
 }
 
 const EditProfileModal = ({
@@ -30,79 +31,79 @@ const EditProfileModal = ({
   profileData,
   experienceData,
   educationData,
-  certificationData,
+  certificationData
 }: EditProfileModalProps) => {
-  const [formData, setFormData] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    // Initialize form data based on section and whether editing existing item
+  const [formData, setFormData] = useState(() => {
+    // Initialize form data based on section and itemId
     if (section === 'basic') {
-      setFormData({
-        bio: profileData?.bio || '',
-        phone_number: profileData?.phone_number || '',
-        city: profileData?.city || '',
-        state: profileData?.state || '',
-        zip_code: profileData?.zip_code || '',
-      });
+      return {
+        name: profileData.name || '',
+        email: profileData.email || '',
+        phone_number: profileData.phone_number || '',
+        city: profileData.city || '',
+        state: profileData.state || '',
+        zip_code: profileData.zip_code || '',
+        bio: profileData.bio || ''
+      };
     } else if (section === 'experience' && experienceData) {
-      setFormData({
+      return {
         position: experienceData.position || '',
         organization: experienceData.organization || '',
-        description: experienceData.description || '',
         startDate: experienceData.startDate || '',
         endDate: experienceData.endDate || '',
-        current: experienceData.current || false,
-      });
-    } else if (section === 'experience') {
-      setFormData({
-        position: '',
-        organization: '',
-        description: '',
-        startDate: '',
-        endDate: '',
-        current: false,
-      });
+        description: experienceData.description || '',
+        current: experienceData.current || false
+      };
     } else if (section === 'education' && educationData) {
-      setFormData({
+      return {
         institution: educationData.institution || '',
-        field: educationData.field || '',
         degree: educationData.degree || '',
+        field: educationData.field || '',
         startDate: educationData.startDate || '',
-        endDate: educationData.endDate || '',
-      });
-    } else if (section === 'education') {
-      setFormData({
-        institution: '',
-        field: '',
-        degree: '',
-        startDate: '',
-        endDate: '',
-      });
+        endDate: educationData.endDate || ''
+      };
     } else if (section === 'certification' && certificationData) {
-      setFormData({
+      return {
         name: certificationData.name || '',
         issuingAuthority: certificationData.issuingAuthority || '',
-        expirationDate: certificationData.expirationDate || '',
         startYear: certificationData.startYear || '',
-        endYear: certificationData.endYear || '',
+        expirationDate: certificationData.expirationDate || '',
         description: certificationData.description || '',
-        documentUrl: certificationData.documentUrl || '',
-      });
+        documentUrl: certificationData.documentUrl || ''
+      };
+    } else if (section === 'experience') {
+      return {
+        position: '',
+        organization: '',
+        startDate: '',
+        endDate: '',
+        description: '',
+        current: false
+      };
+    } else if (section === 'education') {
+      return {
+        institution: '',
+        degree: '',
+        field: '',
+        startDate: '',
+        endDate: ''
+      };
     } else if (section === 'certification') {
-      setFormData({
+      return {
         name: '',
         issuingAuthority: '',
-        expirationDate: '',
         startYear: '',
-        endYear: '',
+        expirationDate: '',
         description: '',
-        documentUrl: '',
-      });
+        documentUrl: ''
+      };
     }
-  }, [section, itemId, profileData, experienceData, educationData, certificationData]);
+    
+    return {};
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -114,337 +115,375 @@ const EditProfileModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+    
     try {
       await onSave(formData);
+      onClose();
     } catch (error) {
-      console.error('Error saving data:', error);
+      console.error("Error saving data:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Render form based on section
-  const renderForm = () => {
+  const renderTitle = () => {
     switch (section) {
       case 'basic':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                name="bio"
-                value={formData.bio || ''}
-                onChange={handleChange}
-                placeholder="Tell us about yourself"
-                rows={4}
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <Label htmlFor="phone_number">Phone Number</Label>
-                <Input
-                  id="phone_number"
-                  name="phone_number"
-                  value={formData.phone_number || ''}
-                  onChange={handleChange}
-                  placeholder="Enter your phone number"
-                />
-              </div>
-              <div>
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  name="city"
-                  value={formData.city || ''}
-                  onChange={handleChange}
-                  placeholder="Enter your city"
-                />
-              </div>
-              <div>
-                <Label htmlFor="state">State</Label>
-                <Input
-                  id="state"
-                  name="state"
-                  value={formData.state || ''}
-                  onChange={handleChange}
-                  placeholder="Enter your state"
-                />
-              </div>
-              <div>
-                <Label htmlFor="zip_code">ZIP Code</Label>
-                <Input
-                  id="zip_code"
-                  name="zip_code"
-                  value={formData.zip_code || ''}
-                  onChange={handleChange}
-                  placeholder="Enter your ZIP code"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
+        return 'Edit Contact Information';
       case 'experience':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="position">Position/Title</Label>
-              <Input
-                id="position"
-                name="position"
-                value={formData.position || ''}
-                onChange={handleChange}
-                placeholder="Enter your job title"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="organization">Organization/Company</Label>
-              <Input
-                id="organization"
-                name="organization"
-                value={formData.organization || ''}
-                onChange={handleChange}
-                placeholder="Enter organization name"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description || ''}
-                onChange={handleChange}
-                placeholder="Describe your responsibilities and achievements"
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input
-                  id="startDate"
-                  name="startDate"
-                  value={formData.startDate || ''}
-                  onChange={handleChange}
-                  placeholder="e.g., 2020"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="endDate">End Date</Label>
-                <Input
-                  id="endDate"
-                  name="endDate"
-                  value={formData.endDate || ''}
-                  onChange={handleChange}
-                  placeholder="e.g., 2023 or leave blank if current"
-                  disabled={formData.current}
-                />
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="current"
-                checked={!!formData.current}
-                onCheckedChange={handleCheckboxChange}
-              />
-              <Label htmlFor="current" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                This is my current position
-              </Label>
-            </div>
-          </div>
-        );
-
+        return itemId ? 'Edit Experience' : 'Add Experience';
       case 'education':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="institution">Institution/School</Label>
-              <Input
-                id="institution"
-                name="institution"
-                value={formData.institution || ''}
-                onChange={handleChange}
-                placeholder="Enter school name"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="degree">Degree</Label>
-              <Input
-                id="degree"
-                name="degree"
-                value={formData.degree || ''}
-                onChange={handleChange}
-                placeholder="e.g., Bachelor of Science"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="field">Field of Study</Label>
-              <Input
-                id="field"
-                name="field"
-                value={formData.field || ''}
-                onChange={handleChange}
-                placeholder="e.g., Psychology"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input
-                  id="startDate"
-                  name="startDate"
-                  value={formData.startDate || ''}
-                  onChange={handleChange}
-                  placeholder="e.g., 2016"
-                />
-              </div>
-              <div>
-                <Label htmlFor="endDate">Completion Date</Label>
-                <Input
-                  id="endDate"
-                  name="endDate"
-                  value={formData.endDate || ''}
-                  onChange={handleChange}
-                  placeholder="e.g., 2020"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-        );
-
+        return itemId ? 'Edit Education' : 'Add Education';
       case 'certification':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Certification Name</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name || ''}
-                onChange={handleChange}
-                placeholder="Enter certification name"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="issuingAuthority">Issuing Authority</Label>
-              <Input
-                id="issuingAuthority"
-                name="issuingAuthority"
-                value={formData.issuingAuthority || ''}
-                onChange={handleChange}
-                placeholder="Enter issuing organization"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="startYear">Issue Date</Label>
-                <Input
-                  id="startYear"
-                  name="startYear"
-                  value={formData.startYear || ''}
-                  onChange={handleChange}
-                  placeholder="e.g., 2020"
-                />
-              </div>
-              <div>
-                <Label htmlFor="expirationDate">Expiration Date</Label>
-                <Input
-                  id="expirationDate"
-                  name="expirationDate"
-                  value={formData.expirationDate || ''}
-                  onChange={handleChange}
-                  placeholder="e.g., 2025"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description || ''}
-                onChange={handleChange}
-                placeholder="Provide details about this certification"
-                rows={3}
-              />
-            </div>
-            <div>
-              <Label htmlFor="documentUrl">Document URL (optional)</Label>
-              <Input
-                id="documentUrl"
-                name="documentUrl"
-                value={formData.documentUrl || ''}
-                onChange={handleChange}
-                placeholder="Link to your certification document"
-              />
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  // Get dialog title based on section
-  const getDialogTitle = () => {
-    const action = itemId ? 'Edit' : 'Add';
-    
-    switch (section) {
-      case 'basic':
-        return 'Edit Profile Information';
-      case 'experience':
-        return `${action} Professional Experience`;
-      case 'education':
-        return `${action} Education`;
-      case 'certification':
-        return `${action} Certification`;
+        return itemId ? 'Edit Certification' : 'Add Certification';
       default:
         return 'Edit Profile';
     }
   };
 
+  const renderForm = () => {
+    switch (section) {
+      case 'basic':
+        return (
+          <>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Your full name"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Your email address"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="phone_number">Phone Number</Label>
+                <Input
+                  id="phone_number"
+                  name="phone_number"
+                  value={formData.phone_number}
+                  onChange={handleInputChange}
+                  placeholder="Your phone number"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    placeholder="City"
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="state">State</Label>
+                  <Input
+                    id="state"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleInputChange}
+                    placeholder="State"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="zip_code">Zip Code</Label>
+                <Input
+                  id="zip_code"
+                  name="zip_code"
+                  value={formData.zip_code}
+                  onChange={handleInputChange}
+                  placeholder="Zip code"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="bio">About Me</Label>
+                <Textarea
+                  id="bio"
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  placeholder="Tell us about yourself"
+                  rows={5}
+                />
+              </div>
+            </div>
+          </>
+        );
+      
+      case 'experience':
+        return (
+          <>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="position">Position</Label>
+                <Input
+                  id="position"
+                  name="position"
+                  value={formData.position}
+                  onChange={handleInputChange}
+                  placeholder="Job title"
+                  required
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="organization">Organization</Label>
+                <Input
+                  id="organization"
+                  name="organization"
+                  value={formData.organization}
+                  onChange={handleInputChange}
+                  placeholder="Company or organization name"
+                  required
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="startDate">Start Date</Label>
+                  <Input
+                    id="startDate"
+                    name="startDate"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    name="endDate"
+                    type="date"
+                    value={formData.endDate}
+                    onChange={handleInputChange}
+                    disabled={formData.current}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="current" 
+                  checked={formData.current} 
+                  onCheckedChange={handleCheckboxChange}
+                />
+                <Label htmlFor="current">I currently work here</Label>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe your responsibilities and accomplishments"
+                  rows={3}
+                />
+              </div>
+            </div>
+          </>
+        );
+      
+      case 'education':
+        return (
+          <>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="institution">Institution</Label>
+                <Input
+                  id="institution"
+                  name="institution"
+                  value={formData.institution}
+                  onChange={handleInputChange}
+                  placeholder="School or university name"
+                  required
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="degree">Degree</Label>
+                <Input
+                  id="degree"
+                  name="degree"
+                  value={formData.degree}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Bachelor's, Master's, Ph.D."
+                  required
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="field">Field of Study</Label>
+                <Input
+                  id="field"
+                  name="field"
+                  value={formData.field}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Psychology, Education"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="startDate">Start Date</Label>
+                  <Input
+                    id="startDate"
+                    name="startDate"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    name="endDate"
+                    type="date"
+                    value={formData.endDate}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      
+      case 'certification':
+        return (
+          <>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Certification Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Name of certification or license"
+                  required
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="issuingAuthority">Issuing Authority</Label>
+                <Input
+                  id="issuingAuthority"
+                  name="issuingAuthority"
+                  value={formData.issuingAuthority}
+                  onChange={handleInputChange}
+                  placeholder="Organization that issued the certification"
+                  required
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="startYear">Issue Date</Label>
+                  <Input
+                    id="startYear"
+                    name="startYear"
+                    type="date"
+                    value={formData.startYear}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="expirationDate">Expiration Date</Label>
+                  <Input
+                    id="expirationDate"
+                    name="expirationDate"
+                    type="date"
+                    value={formData.expirationDate}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="documentUrl">License Number or URL</Label>
+                <Input
+                  id="documentUrl"
+                  name="documentUrl"
+                  value={formData.documentUrl}
+                  onChange={handleInputChange}
+                  placeholder="License number or URL to the document"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Provide additional details about this certification"
+                  rows={3}
+                />
+              </div>
+            </div>
+          </>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[525px]">
+        <DialogHeader>
+          <DialogTitle>{renderTitle()}</DialogTitle>
+          <DialogDescription>
+            Update your profile information. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
+        
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>{getDialogTitle()}</DialogTitle>
-            <DialogDescription>
-              {itemId ? 'Update your information below.' : 'Fill in the details below to add new information.'}
-            </DialogDescription>
-          </DialogHeader>
+          {renderForm()}
           
-          <div className="py-4">
-            {renderForm()}
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : 'Save Changes'}
             </Button>
           </DialogFooter>
         </form>
