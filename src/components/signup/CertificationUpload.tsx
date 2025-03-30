@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
-  FileUploader, 
   Upload, 
   Loader2, 
   FileX, 
@@ -129,6 +128,7 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
     setIsSubmitting(true);
     
     try {
+      // Convert the certifications array to a JSON string for storage
       // Update psychologist certifications
       const { error } = await supabase
         .from('psychologists')
