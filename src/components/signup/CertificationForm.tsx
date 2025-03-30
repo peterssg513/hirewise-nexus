@@ -25,8 +25,8 @@ const CertificationForm: React.FC<CertificationFormProps> = ({ onAdd, onCancel }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent page refresh
+  const handleSubmit = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default behavior
     
     setIsSubmitting(true);
     
@@ -46,7 +46,7 @@ const CertificationForm: React.FC<CertificationFormProps> = ({ onAdd, onCancel }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border rounded-md bg-gray-50">
+    <div className="p-4 border rounded-md bg-gray-50">
       <div className="space-y-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium mb-1">Certification Name</label>
@@ -108,7 +108,8 @@ const CertificationForm: React.FC<CertificationFormProps> = ({ onAdd, onCancel }
           Cancel
         </Button>
         <Button 
-          type="submit" 
+          type="button" 
+          onClick={handleSubmit} 
           className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90 text-white"
           disabled={isSubmitting}
         >
@@ -120,7 +121,7 @@ const CertificationForm: React.FC<CertificationFormProps> = ({ onAdd, onCancel }
           ) : 'Add Certification'}
         </Button>
       </div>
-    </form>
+    </div>
   );
 };
 
