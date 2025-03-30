@@ -46,6 +46,12 @@ const PsychologistDashboard = () => {
     try {
       setIsLoading(true);
       
+      // Clear existing data to prevent showing stale data
+      setRecentApplications([]);
+      setUpcomingEvaluations([]);
+      
+      if (!user?.id) return;
+      
       // Fetch recent applications
       const { data: applicationsData, error: applicationsError } = await supabase
         .from('applications')
@@ -69,18 +75,20 @@ const PsychologistDashboard = () => {
         
       if (applicationsError) throw applicationsError;
       
-      // Transform applications data
-      const applications = applicationsData.map(app => ({
-        id: app.id,
-        job_title: app.jobs.title,
-        district_name: app.jobs.districts.name,
-        status: app.status,
-        created_at: app.created_at,
-        has_evaluation: app.evaluations && app.evaluations.length > 0,
-        evaluation_id: app.evaluations && app.evaluations.length > 0 ? app.evaluations[0].id : undefined
-      }));
-      
-      setRecentApplications(applications);
+      if (applicationsData) {
+        // Transform applications data
+        const applications = applicationsData.map(app => ({
+          id: app.id,
+          job_title: app.jobs.title,
+          district_name: app.jobs.districts.name,
+          status: app.status,
+          created_at: app.created_at,
+          has_evaluation: app.evaluations && app.evaluations.length > 0,
+          evaluation_id: app.evaluations && app.evaluations.length > 0 ? app.evaluations[0].id : undefined
+        }));
+        
+        setRecentApplications(applications);
+      }
       
       // Fetch upcoming evaluations (pending or in progress)
       const { data: evaluationsData, error: evaluationsError } = await supabase
@@ -106,16 +114,18 @@ const PsychologistDashboard = () => {
         
       if (evaluationsError) throw evaluationsError;
       
-      // Transform evaluations data
-      const evaluations = evaluationsData.map(eval => ({
-        id: eval.id,
-        status: eval.status,
-        job_title: eval.applications.jobs.title,
-        district_name: eval.applications.jobs.districts.name,
-        created_at: eval.created_at
-      }));
-      
-      setUpcomingEvaluations(evaluations);
+      if (evaluationsData) {
+        // Transform evaluations data - fixed 'eval' keyword issue by using 'item' instead
+        const evaluations = evaluationsData.map(item => ({
+          id: item.id,
+          status: item.status,
+          job_title: item.applications.jobs.title,
+          district_name: item.applications.jobs.districts.name,
+          created_at: item.created_at
+        }));
+        
+        setUpcomingEvaluations(evaluations);
+      }
     } catch (error: any) {
       console.error('Error fetching dashboard data:', error);
       toast({
@@ -131,7 +141,7 @@ const PsychologistDashboard = () => {
   const renderStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'approved':
-        return <Badge variant="success">Approved</Badge>;
+        return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Approved</Badge>;
       case 'rejected':
         return <Badge variant="destructive">Rejected</Badge>;
       default:
@@ -142,7 +152,7 @@ const PsychologistDashboard = () => {
   const renderEvaluationStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'submitted':
-        return <Badge variant="success">Submitted</Badge>;
+        return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Submitted</Badge>;
       case 'in_progress':
         return <Badge variant="secondary">In Progress</Badge>;
       default:
