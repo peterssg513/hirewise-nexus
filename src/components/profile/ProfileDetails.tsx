@@ -7,13 +7,28 @@ import { Separator } from '@/components/ui/separator';
 import { FileEdit, Trash2, Plus, Award, GraduationCap, Briefcase, Clock, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import EditProfileModal from './EditProfileModal';
+import { Experience, Education } from '@/services/psychologistSignupService';
+import { Certification } from '@/services/certificationService';
 
 interface ProfileDetailsProps {
   profileData: any;
-  onProfileUpdate: () => void;
+  onProfileUpdate?: () => void;
+  experiences: Experience[];
+  educations: Education[];
+  certifications: Certification[];
+  onEditItem: (section: 'basic' | 'experience' | 'education' | 'certification', itemId?: string) => void;
+  onDeleteItem: (section: 'experience' | 'education' | 'certification', itemId: string) => Promise<void>;
 }
 
-const ProfileDetails = ({ profileData, onProfileUpdate }: ProfileDetailsProps) => {
+const ProfileDetails = ({ 
+  profileData, 
+  onProfileUpdate,
+  experiences,
+  educations,
+  certifications,
+  onEditItem,
+  onDeleteItem 
+}: ProfileDetailsProps) => {
   const [showAddExperience, setShowAddExperience] = useState(false);
   const [showAddEducation, setShowAddEducation] = useState(false);
   const [showAddCertification, setShowAddCertification] = useState(false);
@@ -83,7 +98,9 @@ const ProfileDetails = ({ profileData, onProfileUpdate }: ProfileDetailsProps) =
     setCurrentExperience(null);
     setCurrentEducation(null);
     setCurrentCertification(null);
-    onProfileUpdate();
+    if (onProfileUpdate) {
+      onProfileUpdate();
+    }
   };
 
   return (
@@ -136,36 +153,33 @@ const ProfileDetails = ({ profileData, onProfileUpdate }: ProfileDetailsProps) =
                 <Award className="h-5 w-5 text-psyched-orange mr-2" />
                 <h3 className="text-xl font-semibold text-psyched-darkBlue">Certifications & Licenses</h3>
               </div>
-              <Button onClick={handleAddCertification} variant="outline" className="group text-psyched-darkBlue border-psyched-darkBlue hover:bg-psyched-darkBlue hover:text-white gap-1">
+              <Button onClick={() => onEditItem('certification')} variant="outline" className="group text-psyched-darkBlue border-psyched-darkBlue hover:bg-psyched-darkBlue hover:text-white gap-1">
                 <Plus className="h-4 w-4 group-hover:text-white" />
                 Add
               </Button>
             </div>
             
-            {profileData.certifications && profileData.certifications.length > 0 ? (
+            {certifications && certifications.length > 0 ? (
               <div className="space-y-4">
-                {profileData.certifications.map((cert: any, index: number) => (
-                  <div key={index} className="relative group p-4 border border-gray-100 rounded-md hover:border-psyched-lightBlue hover:bg-blue-50/30 transition-colors">
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleEditCertification(cert)} className="h-8 w-8 rounded-full hover:bg-blue-100">
+                {certifications.map((cert: Certification, index: number) => (
+                  <div key={cert.id || index} className="relative group p-4 border border-gray-100 rounded-md hover:border-psyched-lightBlue hover:bg-blue-50/30 transition-colors">
+                    <div className="absolute top-2 right-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
+                      <Button variant="ghost" size="icon" onClick={() => onEditItem('certification', cert.id)} className="h-8 w-8 rounded-full hover:bg-blue-100">
                         <FileEdit className="h-4 w-4 text-blue-600" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-red-100">
+                      <Button variant="ghost" size="icon" onClick={() => onDeleteItem('certification', cert.id)} className="h-8 w-8 rounded-full hover:bg-red-100">
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
                     <h4 className="font-medium text-psyched-darkBlue">{cert.name}</h4>
-                    <p className="text-sm text-gray-600">{cert.issuer}</p>
+                    <p className="text-sm text-gray-600">{cert.issuingAuthority}</p>
                     <div className="flex items-center mt-1 text-sm text-gray-500">
                       <Clock className="h-3 w-3 mr-1" />
-                      <span>Issued: {formatDate(cert.issue_date)}</span>
-                      {cert.expiry_date && (
-                        <span className="ml-2">• Expires: {formatDate(cert.expiry_date)}</span>
+                      <span>Issued: {formatDate(cert.startYear)}</span>
+                      {cert.expirationDate && (
+                        <span className="ml-2">• Expires: {formatDate(cert.expirationDate)}</span>
                       )}
                     </div>
-                    {cert.license_number && (
-                      <p className="text-sm text-gray-600 mt-1">License: {cert.license_number}</p>
-                    )}
                   </div>
                 ))}
               </div>
@@ -184,32 +198,32 @@ const ProfileDetails = ({ profileData, onProfileUpdate }: ProfileDetailsProps) =
                 <GraduationCap className="h-5 w-5 text-psyched-lightBlue mr-2" />
                 <h3 className="text-xl font-semibold text-psyched-darkBlue">Education</h3>
               </div>
-              <Button onClick={handleAddEducation} variant="outline" className="group text-psyched-darkBlue border-psyched-darkBlue hover:bg-psyched-darkBlue hover:text-white gap-1">
+              <Button onClick={() => onEditItem('education')} variant="outline" className="group text-psyched-darkBlue border-psyched-darkBlue hover:bg-psyched-darkBlue hover:text-white gap-1">
                 <Plus className="h-4 w-4 group-hover:text-white" />
                 Add
               </Button>
             </div>
             
-            {profileData.education && profileData.education.length > 0 ? (
+            {educations && educations.length > 0 ? (
               <div className="space-y-4">
-                {profileData.education.map((edu: any, index: number) => (
-                  <div key={index} className="relative group p-4 border border-gray-100 rounded-md hover:border-psyched-lightBlue hover:bg-blue-50/30 transition-colors">
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleEditEducation(edu)} className="h-8 w-8 rounded-full hover:bg-blue-100">
+                {educations.map((edu: Education, index: number) => (
+                  <div key={edu.id || index} className="relative group p-4 border border-gray-100 rounded-md hover:border-psyched-lightBlue hover:bg-blue-50/30 transition-colors">
+                    <div className="absolute top-2 right-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
+                      <Button variant="ghost" size="icon" onClick={() => onEditItem('education', edu.id)} className="h-8 w-8 rounded-full hover:bg-blue-100">
                         <FileEdit className="h-4 w-4 text-blue-600" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-red-100">
+                      <Button variant="ghost" size="icon" onClick={() => onDeleteItem('education', edu.id)} className="h-8 w-8 rounded-full hover:bg-red-100">
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
-                    <h4 className="font-medium text-psyched-darkBlue">{edu.degree}</h4>
+                    <h4 className="font-medium text-psyched-darkBlue">{edu.degree || edu.field}</h4>
                     <p className="text-sm text-gray-600">{edu.institution}</p>
                     <div className="flex items-center mt-1 text-sm text-gray-500">
                       <Clock className="h-3 w-3 mr-1" />
-                      <span>{formatDate(edu.start_date)} - {formatDate(edu.end_date)}</span>
+                      <span>{formatDate(edu.startDate)} - {formatDate(edu.endDate)}</span>
                     </div>
-                    {edu.field_of_study && (
-                      <p className="text-sm text-gray-600 mt-1">{edu.field_of_study}</p>
+                    {edu.field && (
+                      <p className="text-sm text-gray-600 mt-1">{edu.field}</p>
                     )}
                   </div>
                 ))}
@@ -229,29 +243,29 @@ const ProfileDetails = ({ profileData, onProfileUpdate }: ProfileDetailsProps) =
                 <Briefcase className="h-5 w-5 text-psyched-yellow mr-2" />
                 <h3 className="text-xl font-semibold text-psyched-darkBlue">Professional Experience</h3>
               </div>
-              <Button onClick={handleAddExperience} variant="outline" className="group text-psyched-darkBlue border-psyched-darkBlue hover:bg-psyched-darkBlue hover:text-white gap-1">
+              <Button onClick={() => onEditItem('experience')} variant="outline" className="group text-psyched-darkBlue border-psyched-darkBlue hover:bg-psyched-darkBlue hover:text-white gap-1">
                 <Plus className="h-4 w-4 group-hover:text-white" />
                 Add
               </Button>
             </div>
             
-            {profileData.experience && profileData.experience.length > 0 ? (
+            {experiences && experiences.length > 0 ? (
               <div className="space-y-4">
-                {profileData.experience.map((exp: any, index: number) => (
-                  <div key={index} className="relative group p-4 border border-gray-100 rounded-md hover:border-psyched-lightBlue hover:bg-blue-50/30 transition-colors">
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleEditExperience(exp)} className="h-8 w-8 rounded-full hover:bg-blue-100">
+                {experiences.map((exp: Experience, index: number) => (
+                  <div key={exp.id || index} className="relative group p-4 border border-gray-100 rounded-md hover:border-psyched-lightBlue hover:bg-blue-50/30 transition-colors">
+                    <div className="absolute top-2 right-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
+                      <Button variant="ghost" size="icon" onClick={() => onEditItem('experience', exp.id)} className="h-8 w-8 rounded-full hover:bg-blue-100">
                         <FileEdit className="h-4 w-4 text-blue-600" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-red-100">
+                      <Button variant="ghost" size="icon" onClick={() => onDeleteItem('experience', exp.id)} className="h-8 w-8 rounded-full hover:bg-red-100">
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
-                    <h4 className="font-medium text-psyched-darkBlue">{exp.title}</h4>
-                    <p className="text-sm text-gray-600">{exp.company}</p>
+                    <h4 className="font-medium text-psyched-darkBlue">{exp.position}</h4>
+                    <p className="text-sm text-gray-600">{exp.organization}</p>
                     <div className="flex items-center mt-1 text-sm text-gray-500">
                       <Clock className="h-3 w-3 mr-1" />
-                      <span>{formatDate(exp.start_date)} - {formatDate(exp.end_date)}</span>
+                      <span>{formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate || '')}</span>
                     </div>
                     {exp.description && (
                       <p className="text-sm text-gray-600 mt-2">{exp.description}</p>
@@ -318,7 +332,7 @@ const ProfileDetails = ({ profileData, onProfileUpdate }: ProfileDetailsProps) =
       
       {showAddExperience && (
         <EditProfileModal 
-          open={showAddExperience}
+          isOpen={showAddExperience}
           onClose={handleModalClose}
           type="experience"
           userId={profileData.user_id}
@@ -328,7 +342,7 @@ const ProfileDetails = ({ profileData, onProfileUpdate }: ProfileDetailsProps) =
       
       {showAddEducation && (
         <EditProfileModal 
-          open={showAddEducation}
+          isOpen={showAddEducation}
           onClose={handleModalClose}
           type="education"
           userId={profileData.user_id}
@@ -338,7 +352,7 @@ const ProfileDetails = ({ profileData, onProfileUpdate }: ProfileDetailsProps) =
       
       {showAddCertification && (
         <EditProfileModal 
-          open={showAddCertification}
+          isOpen={showAddCertification}
           onClose={handleModalClose}
           type="certification"
           userId={profileData.user_id}

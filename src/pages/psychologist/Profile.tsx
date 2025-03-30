@@ -40,11 +40,11 @@ const Profile = () => {
   const mapExperienceProperties = (exp: any): Experience => {
     return {
       id: exp.id || `exp-${Math.random().toString(36).substring(2, 9)}`,
-      position: exp.position || exp.jobTitle || '',
-      organization: exp.organization || exp.placeOfEmployment || '',
+      position: exp.position || exp.jobTitle || exp.title || '',
+      organization: exp.organization || exp.placeOfEmployment || exp.company || '',
       description: exp.description || '',
-      startDate: exp.startDate || exp.yearStarted || '',
-      endDate: exp.endDate || exp.yearWorked || '',
+      startDate: exp.startDate || exp.yearStarted || exp.start_date || '',
+      endDate: exp.endDate || exp.yearWorked || exp.end_date || '',
       current: exp.current || false
     };
   };
@@ -54,10 +54,10 @@ const Profile = () => {
     return {
       id: edu.id || `edu-${Math.random().toString(36).substring(2, 9)}`,
       institution: edu.institution || edu.schoolName || '',
-      field: edu.field || edu.major || '',
+      field: edu.field || edu.major || edu.field_of_study || '',
       degree: edu.degree || '',
-      startDate: edu.startDate || '',
-      endDate: edu.endDate || ''
+      startDate: edu.startDate || edu.start_date || '',
+      endDate: edu.endDate || edu.end_date || ''
     };
   };
   
@@ -67,12 +67,12 @@ const Profile = () => {
       id: cert.id || `cert-${Math.random().toString(36).substring(2, 9)}`,
       name: cert.name || cert.certificationName || '',
       issuingAuthority: cert.issuingAuthority || cert.issuer || '',
-      expirationDate: cert.expirationDate || cert.endYear || '',
-      startYear: cert.startYear || cert.date || '',
-      endYear: cert.endYear || cert.expirationDate || '',
+      expirationDate: cert.expirationDate || cert.endYear || cert.expiry_date || '',
+      startYear: cert.startYear || cert.date || cert.issue_date || '',
+      endYear: cert.endYear || cert.expirationDate || cert.expiry_date || '',
       description: cert.description || '',
       status: cert.status || 'pending',
-      documentUrl: cert.documentUrl || cert.url || null,
+      documentUrl: cert.documentUrl || cert.url || cert.license_number || null,
     }));
   };
   
@@ -96,22 +96,18 @@ const Profile = () => {
         if (data.experience) {
           const expData = typeof data.experience === 'string' 
             ? safeJsonParse(data.experience)
-            : data.experience;
+            : Array.isArray(data.experience) ? data.experience : [];
             
-          setExperiences(Array.isArray(expData) 
-            ? expData.map(mapExperienceProperties)
-            : []);
+          setExperiences(expData.map(mapExperienceProperties));
         }
         
         // Parse education data
         if (data.education) {
           const eduData = typeof data.education === 'string' 
             ? safeJsonParse(data.education)
-            : data.education;
+            : Array.isArray(data.education) ? data.education : [];
             
-          setEducations(Array.isArray(eduData) 
-            ? eduData.map(mapEducationProperties)
-            : []);
+          setEducations(eduData.map(mapEducationProperties));
         }
         
         // Parse certification data
@@ -121,9 +117,9 @@ const Profile = () => {
           if (typeof data.certification_details === 'string') {
             certData = safeJsonParse(data.certification_details);
           } else if (Array.isArray(data.certification_details)) {
-            certData = data.certification_details as any[];
+            certData = data.certification_details;
           } else if (typeof data.certification_details === 'object') {
-            certData = Object.values(data.certification_details as object);
+            certData = Object.values(data.certification_details);
           }
           
           setCertifications(processCertificationData(certData));
@@ -161,6 +157,7 @@ const Profile = () => {
     setIsEditModalOpen(false);
     setEditSection(null);
     setEditItemId(null);
+    fetchProfile(); // Refresh data after modal closes
   };
 
   const handleSaveProfile = async (updatedData: any) => {
