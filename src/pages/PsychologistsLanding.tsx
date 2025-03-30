@@ -1,7 +1,9 @@
+
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Sparkles, Calendar, FileText, Search, Award, ClipboardCheck, Check } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Sparkles, Calendar, FileText, Search, Award, ClipboardCheck, Check, Quote } from 'lucide-react';
 import HeroSection from '@/components/landing/HeroSection';
 import BenefitsSection from '@/components/landing/BenefitsSection';
 import ProcessSection from '@/components/landing/ProcessSection';
