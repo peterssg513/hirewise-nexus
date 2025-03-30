@@ -9,6 +9,9 @@ import Footer from '@/components/Footer';
 import TestimonialCarousel from '@/components/TestimonialCarousel';
 import Partners from '@/components/Partners';
 import WorkflowVisualization from '@/components/WorkflowVisualization';
+import CaseStudies from '@/components/CaseStudies';
+import AIFeatureShowcase from '@/components/AIFeatureShowcase';
+import Motto from '@/components/Motto';
 
 const Index = () => {
   return (
@@ -16,8 +19,11 @@ const Index = () => {
       <Navbar />
       <main>
         <Hero />
-        <WorkflowVisualization />
+        <Motto />
         <Features />
+        <AIFeatureShowcase />
+        <WorkflowVisualization />
+        <CaseStudies />
         <TestimonialCarousel />
         <Partners />
         <Stats />

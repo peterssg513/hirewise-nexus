@@ -5,22 +5,44 @@ const Partners = () => {
   return (
     <section className="py-12 bg-gray-50">
       <div className="psyched-container">
-        <h2 className="text-center text-xl text-gray-600 mb-8">
-          Trusted by top school districts nationwide
+        <h2 className="text-center text-2xl font-bold text-psyched-darkBlue mb-3">
+          Trusted by Top School Districts
         </h2>
+        <p className="text-center text-gray-600 mb-10 max-w-2xl mx-auto">
+          Join the leading school districts across the nation that are transforming 
+          their psychology services with PsychedHire!
+        </p>
         
         <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 lg:gap-16">
-          <div className="grayscale hover:grayscale-0 transition-all duration-300">
-            <div className="font-bold text-xl md:text-2xl text-gray-700">Chicago Public Schools</div>
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-psyched-yellow/20 to-psyched-orange/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative p-6 grayscale hover:grayscale-0 transition-all duration-300 transform group-hover:scale-105">
+              <div className="font-bold text-xl md:text-2xl text-gray-700">Chicago Public Schools</div>
+              <div className="text-sm text-gray-500 mt-1">Since 2023</div>
+            </div>
           </div>
           
-          <div className="grayscale hover:grayscale-0 transition-all duration-300">
-            <div className="font-bold text-xl md:text-2xl text-gray-700">Los Angeles Unified</div>
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-psyched-yellow/20 to-psyched-orange/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative p-6 grayscale hover:grayscale-0 transition-all duration-300 transform group-hover:scale-105">
+              <div className="font-bold text-xl md:text-2xl text-gray-700">Los Angeles Unified</div>
+              <div className="text-sm text-gray-500 mt-1">Since 2023</div>
+            </div>
           </div>
           
-          <div className="grayscale hover:grayscale-0 transition-all duration-300">
-            <div className="font-bold text-xl md:text-2xl text-gray-700">NYC DOE</div>
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-psyched-yellow/20 to-psyched-orange/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative p-6 grayscale hover:grayscale-0 transition-all duration-300 transform group-hover:scale-105">
+              <div className="font-bold text-xl md:text-2xl text-gray-700">NYC DOE</div>
+              <div className="text-sm text-gray-500 mt-1">Since 2023</div>
+            </div>
           </div>
+        </div>
+        
+        <div className="mt-12 text-center">
+          <p className="text-gray-500 text-sm">
+            And many more school districts across the United States
+          </p>
         </div>
       </div>
     </section>
