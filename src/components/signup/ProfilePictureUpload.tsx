@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload } from 'lucide-react';
+import { Upload, Loader2 } from 'lucide-react';
 
 interface ProfilePictureUploadProps {
   profilePictureUrl: string | null;
@@ -27,7 +27,8 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       
       // Create a unique file path
       const fileExt = file.name.split('.').pop();
-      const filePath = `${userId}/profile-picture.${fileExt}`;
+      const fileName = `profile-picture-${Date.now()}.${fileExt}`;
+      const filePath = `${userId}/${fileName}`;
       
       // Upload the file
       const { error: uploadError } = await supabase.storage
@@ -62,7 +63,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     <div className="mb-8">
       <label className="block text-sm font-medium mb-2">Profile Picture</label>
       <div className="flex flex-col items-center">
-        <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 mb-4">
+        <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 mb-4 bg-gray-100">
           {profilePictureUrl ? (
             <img 
               src={profilePictureUrl} 
@@ -70,7 +71,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center">
               <span className="text-gray-400">No image</span>
             </div>
           )}
@@ -78,7 +79,12 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         
         <label className="cursor-pointer bg-psyched-lightBlue hover:bg-psyched-lightBlue/90 text-white py-2 px-4 rounded flex items-center">
           <Upload className="w-4 h-4 mr-2" />
-          {uploadingImage ? 'Uploading...' : 'Upload Photo'}
+          {uploadingImage ? (
+            <span className="flex items-center">
+              <Loader2 className="animate-spin mr-2 h-4 w-4" />
+              Uploading...
+            </span>
+          ) : 'Upload Photo'}
           <input 
             type="file" 
             className="hidden" 

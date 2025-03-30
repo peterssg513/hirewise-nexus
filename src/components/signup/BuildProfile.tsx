@@ -102,14 +102,15 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     setIsSubmitting(true);
     
     try {
-      // Update psychologist profile
+      // Update psychologist profile - using experience_details as the column name
       const { error } = await supabase
         .from('psychologists')
         .update({
           profile_picture_url: profileData.profilePictureUrl,
-          // Store the whole experience and education objects as JSON
-          education: JSON.stringify(profileData.education),
-          experience_details: JSON.stringify(profileData.experiences),
+          // Store the whole education object as JSON
+          education: profileData.education,
+          // The column name is experience_details not experience_details 
+          experience_details: profileData.experiences,
           signup_progress: 3, // Move to next step
         })
         .eq('user_id', user.id);
