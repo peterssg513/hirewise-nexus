@@ -20,9 +20,12 @@ const ProfileHeader = ({ profileData, onEditProfile, onProfilePictureUpdate }: P
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  // Ensure we're displaying the correct name from the profile data
+  const displayName = profileData.profiles?.name || profileData.name || "New Psychologist";
+
   return (
     <motion.div 
-      className="w-full md:w-1/3"
+      className="w-full mb-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -33,10 +36,10 @@ const ProfileHeader = ({ profileData, onEditProfile, onProfilePictureUpdate }: P
             <Avatar className="h-24 w-24 border-2 border-gray-200">
               <AvatarImage 
                 src={profileData.profile_picture_url} 
-                alt={profileData.name || "Profile"} 
+                alt={displayName} 
               />
               <AvatarFallback className="bg-psyched-lightBlue text-white text-xl">
-                {getInitials(profileData.name || "User")}
+                {getInitials(displayName)}
               </AvatarFallback>
             </Avatar>
             
@@ -52,7 +55,7 @@ const ProfileHeader = ({ profileData, onEditProfile, onProfilePictureUpdate }: P
           
           <div className="text-center mb-4">
             <h2 className="text-xl font-semibold text-psyched-darkBlue">
-              {profileData.name || "New Psychologist"}
+              {displayName}
             </h2>
             
             {profileData.status === "approved" && (
