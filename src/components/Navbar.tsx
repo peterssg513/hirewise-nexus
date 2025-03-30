@@ -45,7 +45,7 @@ const Navbar = () => {
                 </Link>
                 <Link 
                   to="/psychologist-dashboard/evaluations" 
-                  className={`font-medium ${location.pathname === '/psychologist-dashboard/evaluations' ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`font-medium ${location.pathname.includes('/psychologist-dashboard/evaluations') ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
                 >
                   Evaluations
                 </Link>

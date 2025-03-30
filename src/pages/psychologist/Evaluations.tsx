@@ -3,26 +3,26 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, FileText, Info } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Loader2, FileText, Info, Search, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Evaluation, fetchAvailableEvaluations, applyForEvaluation } from '@/services/evaluationService';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Evaluations = () => {
-  const [evaluations, setEvaluations] = useState<any[]>([]);
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [applying, setApplying] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchEvaluations = async () => {
       try {
         setLoading(true);
-        // Retrieve evaluations available for psychologists
-        const { data, error } = await supabase
-          .from('active_jobs_with_district')
-          .select('*')
-          .eq('status', 'active');
-
-        if (error) throw error;
+        const data = await fetchAvailableEvaluations();
         setEvaluations(data || []);
       } catch (error: any) {
         console.error('Error fetching evaluations:', error);
@@ -40,17 +40,26 @@ const Evaluations = () => {
   }, [toast]);
 
   const handleApply = async (evaluationId: string) => {
-    try {
-      const { data, error } = await supabase.rpc('apply_to_job', {
-        _job_id: evaluationId,
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please log in to apply for evaluations',
+        variant: 'destructive',
       });
-
-      if (error) throw error;
+      return;
+    }
+    
+    try {
+      setApplying(evaluationId);
+      await applyForEvaluation(evaluationId);
 
       toast({
         title: 'Application submitted',
         description: 'Your application has been submitted successfully.',
       });
+      
+      // Remove the evaluation from the list or mark it as applied
+      setEvaluations(prev => prev.filter(e => e.id !== evaluationId));
     } catch (error: any) {
       console.error('Error applying for evaluation:', error);
       toast({
@@ -58,8 +67,16 @@ const Evaluations = () => {
         description: error.message,
         variant: 'destructive',
       });
+    } finally {
+      setApplying(null);
     }
   };
+
+  const filteredEvaluations = evaluations.filter(evaluation => 
+    evaluation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    evaluation.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    evaluation.district_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -76,21 +93,34 @@ const Evaluations = () => {
           <h1 className="text-2xl font-bold text-gray-900">Evaluations</h1>
           <p className="text-gray-500 mt-1">Browse and apply for evaluation opportunities</p>
         </div>
+        
+        <div className="mt-4 md:mt-0 w-full md:w-auto">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="text"
+              placeholder="Search evaluations..."
+              className="pl-8 pr-4 w-full md:w-64"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
       </div>
 
-      {evaluations.length === 0 ? (
+      {filteredEvaluations.length === 0 ? (
         <Card className="bg-slate-50 border-dashed">
           <CardContent className="pt-6 text-center">
             <Info className="h-12 w-12 text-slate-400 mx-auto mb-2" />
             <h3 className="text-lg font-medium text-slate-700 mb-2">No evaluations available</h3>
             <p className="text-slate-500">
-              There are currently no evaluation opportunities available. Please check back later.
+              {searchTerm ? 'No evaluations match your search criteria.' : 'There are currently no evaluation opportunities available. Please check back later.'}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {evaluations.map((evaluation) => (
+          {filteredEvaluations.map((evaluation) => (
             <Card key={evaluation.id} className="transition-all hover:shadow-md">
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -105,8 +135,8 @@ const Evaluations = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-gray-600 mb-4">
-                  <div className="flex items-center mb-2">
-                    <FileText className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-start mb-2">
+                    <FileText className="h-4 w-4 mr-2 text-gray-400 mt-1 shrink-0" />
                     <span>
                       {evaluation.description?.substring(0, 100)}
                       {evaluation.description?.length > 100 ? '...' : ''}
@@ -125,8 +155,14 @@ const Evaluations = () => {
                 <Button 
                   className="w-full bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
                   onClick={() => handleApply(evaluation.id)}
+                  disabled={applying === evaluation.id}
                 >
-                  Apply
+                  {applying === evaluation.id ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Applying...
+                    </>
+                  ) : 'Apply'}
                 </Button>
               </CardFooter>
             </Card>
