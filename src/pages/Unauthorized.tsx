@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 
 const Unauthorized = () => {
-  const { user, logout } = useAuth();
+  const { profile, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-psyched-cream">
@@ -18,21 +18,21 @@ const Unauthorized = () => {
         
         <p className="text-lg mb-8 max-w-2xl">
           You don't have permission to access this page. 
-          {user?.role && (
-            <span> Your current role is <strong>{user.role}</strong>.</span>
+          {profile?.role && (
+            <span> Your current role is <strong>{profile.role}</strong>.</span>
           )}
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4">
-          {user?.role && (
-            <Link to={`/${user.role}-dashboard`}>
+          {profile?.role && (
+            <Link to={`/${profile.role}-dashboard`}>
               <Button className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90">
                 Go to Your Dashboard
               </Button>
             </Link>
           )}
           
-          <Button onClick={logout} variant="outline">
+          <Button onClick={() => logout()} variant="outline">
             Log Out
           </Button>
         </div>

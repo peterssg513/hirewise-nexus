@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
 import RoleSelector from '@/components/RoleSelector';
 import Navbar from '@/components/Navbar';
+import { useAuth } from '@/contexts/AuthContext';
 
 type Role = 'psychologist' | 'district' | 'admin';
 
@@ -21,17 +23,64 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { signUp, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(-1);
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, we would handle registration here
-    console.log({ selectedRole, email, password, name, agreeTerms });
     
-    // For demo purposes, let's simulate a successful registration
-    // and redirect to the appropriate dashboard
-    if (selectedRole) {
-      navigate(`/${selectedRole}-dashboard`);
+    if (!selectedRole) {
+      toast({
+        title: "Role required",
+        description: "Please select your role to continue",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!email || !password || !name) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (password.length < 8) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 8 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!agreeTerms) {
+      toast({
+        title: "Terms agreement required",
+        description: "You must agree to the Terms of Service and Privacy Policy",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      await signUp(email, password, name, selectedRole);
+    } catch (error) {
+      // Error is already handled in the auth context
+      setIsLoading(false);
     }
   };
 
@@ -66,6 +115,7 @@ const Register = () => {
                     placeholder="John Doe"
                     required
                     className="w-full"
+                    disabled={isLoading}
                   />
                 </div>
                 
@@ -79,6 +129,7 @@ const Register = () => {
                     placeholder="you@example.com"
                     required
                     className="w-full"
+                    disabled={isLoading}
                   />
                 </div>
                 
@@ -92,6 +143,7 @@ const Register = () => {
                     placeholder="••••••••••••"
                     required
                     className="w-full"
+                    disabled={isLoading}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Must be at least 8 characters with 1 uppercase, 1 number, and 1 special character
@@ -104,6 +156,7 @@ const Register = () => {
                     checked={agreeTerms}
                     onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
                     className="mr-2"
+                    disabled={isLoading}
                   />
                   <Label htmlFor="terms" className="text-sm">
                     I agree to the 
@@ -121,9 +174,14 @@ const Register = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-                disabled={!selectedRole || !agreeTerms}
+                disabled={!selectedRole || !agreeTerms || isLoading}
               >
-                Create Account
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></span>
+                    Creating Account...
+                  </span>
+                ) : "Create Account"}
               </Button>
             </form>
             

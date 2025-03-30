@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,28 +10,24 @@ import RoleSelector from '@/components/RoleSelector';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Role = 'psychologist' | 'district' | 'admin';
-
 const Login = () => {
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(-1);
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!selectedRole) {
-      toast({
-        title: "Role required",
-        description: "Please select your role to continue",
-        variant: "destructive",
-      });
-      return;
-    }
     
     if (!email || !password) {
       toast({
@@ -45,19 +41,14 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      await login(email, password, selectedRole);
+      await login(email, password);
       
       toast({
         title: "Login successful",
         description: "Welcome back to PsychedHire!",
       });
     } catch (error) {
-      toast({
-        title: "Login failed",
-        description: "Invalid credentials. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
+      // Error is already handled in the auth context
       setIsLoading(false);
     }
   };
@@ -75,14 +66,6 @@ const Login = () => {
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="role" className="block mb-3">Select Your Role</Label>
-                  <RoleSelector 
-                    selectedRole={selectedRole} 
-                    onChange={setSelectedRole} 
-                  />
-                </div>
-                
                 <div>
                   <Label htmlFor="email" className="block mb-1">Email</Label>
                   <Input
@@ -131,7 +114,7 @@ const Login = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-                disabled={!selectedRole || isLoading}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <span className="flex items-center">

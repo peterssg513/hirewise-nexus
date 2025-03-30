@@ -12,7 +12,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   allowedRoles = [] 
 }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, profile } = useAuth();
 
   if (isLoading) {
     // Show loading state
@@ -27,7 +27,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles.length > 0 && user?.role && !allowedRoles.includes(user.role)) {
+  if (allowedRoles.length > 0 && profile?.role && !allowedRoles.includes(profile.role)) {
     // User doesn't have the required role
     return <Navigate to="/unauthorized" replace />;
   }

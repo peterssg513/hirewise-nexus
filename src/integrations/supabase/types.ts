@@ -9,7 +9,250 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          created_at: string
+          documents_urls: string[] | null
+          id: string
+          job_id: string
+          notes: string | null
+          psychologist_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          documents_urls?: string[] | null
+          id?: string
+          job_id: string
+          notes?: string | null
+          psychologist_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          documents_urls?: string[] | null
+          id?: string
+          job_id?: string
+          notes?: string | null
+          psychologist_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "psychologists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      districts: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          id: string
+          location: string | null
+          name: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      evaluations: {
+        Row: {
+          application_id: string
+          approved_at: string | null
+          created_at: string
+          id: string
+          report_url: string | null
+          status: string | null
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          application_id: string
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          report_url?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          report_url?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          created_at: string
+          description: string
+          district_id: string
+          documents_required: string[] | null
+          id: string
+          location: string | null
+          skills_required: string[] | null
+          status: string | null
+          timeframe: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          district_id: string
+          documents_required?: string[] | null
+          id?: string
+          location?: string | null
+          skills_required?: string[] | null
+          status?: string | null
+          timeframe?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          district_id?: string
+          documents_required?: string[] | null
+          id?: string
+          location?: string | null
+          skills_required?: string[] | null
+          status?: string | null
+          timeframe?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      psychologists: {
+        Row: {
+          availability: string | null
+          certifications: string[] | null
+          created_at: string
+          education: string | null
+          experience_years: number | null
+          id: string
+          specialties: string[] | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          availability?: string | null
+          certifications?: string[] | null
+          created_at?: string
+          education?: string | null
+          experience_years?: number | null
+          id?: string
+          specialties?: string[] | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          availability?: string | null
+          certifications?: string[] | null
+          created_at?: string
+          education?: string | null
+          experience_years?: number | null
+          id?: string
+          specialties?: string[] | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
