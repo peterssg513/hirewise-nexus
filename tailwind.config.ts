@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom colors for PsychedHire
+				psyched: {
+					yellow: '#F7C600',
+					darkBlue: '#2A3950',
+					lightBlue: '#8DD3F7',
+					orange: '#FF9052',
+					cream: '#FFF9E7',
 				}
 			},
 			borderRadius: {
