@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { File, Upload, Loader2, X } from 'lucide-react';
+import { File, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { 
   saveCertifications, 
-  uploadCertificationFile, 
+  uploadCertificationFile,
   Certification 
 } from '@/services/certificationService';
 import CertificationList from './CertificationList';
@@ -61,8 +60,10 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
       const newCertification: Certification = {
         ...certification,
         url: fileUrl,
+        documentUrl: fileUrl, // Set documentUrl for Profile view compatibility
         status: 'pending',
         uploadedAt: new Date().toISOString(),
+        date: certification.startYear, // Set date for Profile view compatibility
       };
       
       setCertifications(prev => [...prev, newCertification]);

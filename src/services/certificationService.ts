@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 export interface Certification {
   id: string;
@@ -15,6 +16,40 @@ export interface Certification {
   expirationDate?: string;
   documentUrl?: string;
 }
+
+/**
+ * Uploads a certification file to storage
+ */
+export const uploadCertificationFile = async (
+  userId: string, 
+  file: File, 
+  certificationName: string
+): Promise<string> => {
+  if (!userId || !file) {
+    throw new Error('User ID and file are required');
+  }
+  
+  try {
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${userId}/${Date.now()}-${certificationName.replace(/\s+/g, '-').toLowerCase()}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from('certifications')
+      .upload(filePath, file);
+      
+    if (error) throw error;
+    
+    // Get the public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('certifications')
+      .getPublicUrl(filePath);
+      
+    return publicUrlData.publicUrl;
+  } catch (error: any) {
+    console.error('Failed to upload certification file:', error);
+    throw new Error(`Failed to upload certification file: ${error.message || 'Unknown error'}`);
+  }
+};
 
 /**
  * Saves certifications for a psychologist
@@ -42,7 +77,12 @@ export const saveCertifications = async (userId: string, certifications: Certifi
       status: cert.status || 'pending',
       uploadedAt: cert.uploadedAt || new Date().toISOString(),
       startYear: cert.startYear,
-      endYear: cert.endYear
+      endYear: cert.endYear,
+      // Add these fields to ensure compatibility with Profile view
+      issuer: cert.issuer || null,
+      date: cert.date || cert.startYear,
+      expirationDate: cert.expirationDate || null,
+      documentUrl: cert.documentUrl || cert.url || null
     }));
     
     // Update psychologist record
@@ -98,9 +138,11 @@ export const getCertifications = async (userId: string): Promise<Certification[]
     
     // Handle both array and object formats
     if (Array.isArray(data.certification_details)) {
-      return data.certification_details as Certification[];
+      // Type assertion to Certification[] since we know the structure matches
+      return data.certification_details as unknown as Certification[];
     } else if (typeof data.certification_details === 'object') {
-      return Object.values(data.certification_details) as Certification[];
+      // Type assertion to Certification[] since we know the structure matches
+      return Object.values(data.certification_details) as unknown as Certification[];
     }
     
     return [];

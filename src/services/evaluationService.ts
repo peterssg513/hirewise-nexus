@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // Define the interfaces needed for evaluations
@@ -129,7 +128,7 @@ export const saveEvaluationFormData = async (evaluationId: string, formData: Eva
       const { data, error } = await supabase
         .from('evaluations')
         .update({ 
-          form_data: formData,
+          form_data: ...(formData as object),
           status: 'in_progress',
           updated_at: new Date().toISOString()
         })
@@ -189,7 +188,7 @@ export const submitEvaluation = async (evaluationId: string, formData: Evaluatio
       const { data, error } = await supabase
         .from('evaluations')
         .update({ 
-          form_data: formData,
+          form_data: ...(formData as object),
           status: 'submitted',
           submitted_at: new Date().toISOString(),
           updated_at: new Date().toISOString()

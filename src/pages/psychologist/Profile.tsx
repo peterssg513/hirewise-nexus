@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, MapPin, BriefcaseBusiness, GraduationCap, Scroll, FileEdit } from 'lucide-react';
 import { Certification } from '@/services/certificationService';
 import { Experience, Education } from '@/services/psychologistSignupService';
+import { Json } from '@/integrations/supabase/types';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -18,6 +19,43 @@ const Profile = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [certifications, setCertifications] = useState<Certification[]>([]);
+
+  // Helper function to safely parse JSON data
+  const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any[] => {
+    if (!jsonString) return defaultValue;
+    try {
+      const parsed = JSON.parse(jsonString);
+      return Array.isArray(parsed) ? parsed : defaultValue;
+    } catch (err) {
+      console.error('Error parsing JSON data:', err);
+      return defaultValue;
+    }
+  };
+
+  // Map between different property names
+  const mapExperienceProperties = (exp: any): Experience => {
+    return {
+      id: exp.id,
+      position: exp.position || exp.jobTitle || '',
+      organization: exp.organization || exp.placeOfEmployment || '',
+      description: exp.description || '',
+      startDate: exp.startDate || exp.yearStarted || '',
+      endDate: exp.endDate || exp.yearWorked || '',
+      current: exp.current || false
+    };
+  };
+
+  // Map between different education property names
+  const mapEducationProperties = (edu: any): Education => {
+    return {
+      id: edu.id,
+      institution: edu.institution || edu.schoolName || '',
+      field: edu.field || edu.major || '',
+      degree: edu.degree || '',
+      startDate: edu.startDate || '',
+      endDate: edu.endDate || ''
+    };
+  };
   
   useEffect(() => {
     const fetchProfile = async () => {
@@ -39,10 +77,14 @@ const Profile = () => {
         if (error) throw error;
         setProfile(data);
         
-        // Parse experience data - try both experience and experience_details fields
+        // Parse experience data
         try {
-          const expData = data.experience ? JSON.parse(data.experience) : [];
-          setExperiences(Array.isArray(expData) ? expData : []);
+          if (data.experience) {
+            const expData = safeJsonParse(data.experience);
+            setExperiences(expData.map(mapExperienceProperties));
+          } else {
+            setExperiences([]);
+          }
         } catch (err) {
           console.error('Error parsing experience data:', err);
           setExperiences([]);
@@ -50,8 +92,12 @@ const Profile = () => {
         
         // Parse education data
         try {
-          const eduData = data.education ? JSON.parse(data.education) : [];
-          setEducations(Array.isArray(eduData) ? eduData : []);
+          if (data.education) {
+            const eduData = safeJsonParse(data.education);
+            setEducations(eduData.map(mapEducationProperties));
+          } else {
+            setEducations([]);
+          }
         } catch (err) {
           console.error('Error parsing education data:', err);
           setEducations([]);
@@ -60,13 +106,15 @@ const Profile = () => {
         // Parse certification data
         try {
           if (data.certification_details) {
-            const certData = Array.isArray(data.certification_details) 
-              ? data.certification_details 
-              : typeof data.certification_details === 'object'
-                ? Object.values(data.certification_details)
-                : [];
-                
-            setCertifications(certData as Certification[]);
+            let certData: any[] = [];
+            
+            if (Array.isArray(data.certification_details)) {
+              certData = data.certification_details as any[];
+            } else if (typeof data.certification_details === 'object') {
+              certData = Object.values(data.certification_details as object);
+            }
+            
+            setCertifications(certData as unknown as Certification[]);
           }
         } catch (err) {
           console.error('Error parsing certification data:', err);
@@ -197,11 +245,11 @@ const Profile = () => {
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle>{exp.position || exp.jobTitle}</CardTitle>
-                            <CardDescription>{exp.organization || exp.placeOfEmployment}</CardDescription>
+                            <CardTitle>{exp.position}</CardTitle>
+                            <CardDescription>{exp.organization}</CardDescription>
                           </div>
                           <Badge variant="outline">
-                            {exp.startDate || exp.yearStarted} - {exp.current ? 'Present' : (exp.endDate || exp.yearWorked)}
+                            {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -228,8 +276,8 @@ const Profile = () => {
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle>{edu.field || edu.major}</CardTitle>
-                            <CardDescription>{edu.institution || edu.schoolName}</CardDescription>
+                            <CardTitle>{edu.field}</CardTitle>
+                            <CardDescription>{edu.institution}</CardDescription>
                           </div>
                           <Badge variant="outline">
                             {edu.startDate || edu.degree} - {edu.endDate}
@@ -264,9 +312,9 @@ const Profile = () => {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        {cert.documentUrl && (
+                        {(cert.documentUrl || cert.url) && (
                           <Button variant="outline" size="sm" className="text-blue-600">
-                            <a href={cert.documentUrl} target="_blank" rel="noopener noreferrer">
+                            <a href={cert.documentUrl || cert.url} target="_blank" rel="noopener noreferrer">
                               View Certificate
                             </a>
                           </Button>
