@@ -1,9 +1,18 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
+  const { isAuthenticated, profile } = useAuth();
+  const location = useLocation();
+
+  const getDashboardLink = () => {
+    if (!profile?.role) return '/login';
+    return `/${profile.role}-dashboard`;
+  };
+
   return (
     <header className="bg-white border-b border-gray-200">
       <div className="psyched-container py-4">
@@ -14,7 +23,7 @@ const Navbar = () => {
                 Psyched
               </div>
               <div className="text-psyched-darkBlue font-semibold">
-                Hire
+                Hire!
               </div>
             </Link>
           </div>
@@ -22,29 +31,39 @@ const Navbar = () => {
           <div className="hidden md:flex space-x-6">
             <Link 
               to="/for-psychologists" 
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className={`font-medium ${location.pathname === '/for-psychologists' ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
             >
               For School Psychologists
             </Link>
             <Link 
               to="/for-districts" 
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className={`font-medium ${location.pathname === '/for-districts' ? 'text-psyched-orange' : 'text-gray-600 hover:text-gray-900'}`}
             >
               For Districts/Schools
             </Link>
           </div>
           
           <div className="flex items-center space-x-3">
-            <Link to="/login">
-              <Button variant="ghost" className="text-psyched-darkBlue">
-                Log in
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button className="bg-psyched-darkBlue text-white hover:bg-psyched-darkBlue/90">
-                Sign up
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to={getDashboardLink()}>
+                <Button className="bg-psyched-darkBlue text-white hover:bg-psyched-darkBlue/90">
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" className="text-psyched-darkBlue">
+                    Log in
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button className="bg-psyched-darkBlue text-white hover:bg-psyched-darkBlue/90">
+                    Sign up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

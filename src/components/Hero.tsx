@@ -10,19 +10,26 @@ const Hero = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <div className="inline-block px-3 py-1 mb-4 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
-              K-12 Psychology Recruitment
+              The Future of School Psychology
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-psyched-darkBlue mb-6 leading-tight">
-              PsychedHire: The Easy Way to Find K-12 Psychology Jobs!
+              PsychedHire!
             </h1>
             <p className="text-lg text-gray-600 mb-8 max-w-lg">
               Connecting qualified psychologists with K-12 schools efficiently, helping provide essential mental health support for students.
             </p>
-            <Link to="/register">
-              <Button size="lg" className="bg-psyched-yellow text-psyched-darkBlue hover:bg-psyched-yellow/90">
-                Get Started <span className="ml-2">→</span>
-              </Button>
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/for-psychologists">
+                <Button size="lg" className="bg-psyched-lightBlue text-psyched-darkBlue hover:bg-psyched-lightBlue/90 mb-2 sm:mb-0">
+                  For Psychologists <span className="ml-2">→</span>
+                </Button>
+              </Link>
+              <Link to="/for-districts">
+                <Button size="lg" className="bg-psyched-orange text-white hover:bg-psyched-orange/90">
+                  For Districts <span className="ml-2">→</span>
+                </Button>
+              </Link>
+            </div>
           </div>
           <div className="hidden lg:block">
             <div className="bg-white rounded-lg p-8 shadow-lg border border-gray-100 transform rotate-1">

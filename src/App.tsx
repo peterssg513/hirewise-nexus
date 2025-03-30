@@ -16,6 +16,8 @@ import Unauthorized from "./pages/Unauthorized";
 import PsychologistDashboard from "./pages/PsychologistDashboard";
 import DistrictDashboard from "./pages/DistrictDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import PsychologistsLanding from "./pages/PsychologistsLanding";
+import DistrictsLanding from "./pages/DistrictsLanding";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -41,8 +43,8 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/unauthorized" element={<Unauthorized />} />
-                <Route path="/for-psychologists" element={<Index />} />
-                <Route path="/for-districts" element={<Index />} />
+                <Route path="/for-psychologists" element={<PsychologistsLanding />} />
+                <Route path="/for-districts" element={<DistrictsLanding />} />
                 
                 {/* Protected Routes - Psychologist */}
                 <Route path="/psychologist-dashboard" element={
