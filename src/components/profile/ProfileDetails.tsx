@@ -136,20 +136,20 @@ const ProfileDetails = ({
                     <p className="text-sm text-gray-500 mt-1">{exp.description}</p>
                     
                     {onEditItem && onDeleteItem && (
-                      <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <div className="absolute right-0 top-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-gray-500 hover:text-psyched-darkBlue"
+                          className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 border border-blue-200"
                           onClick={() => onEditItem('experience', exp.id)}
                         >
                           <Pencil className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Button>
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-gray-500 hover:text-red-500"
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 border border-red-200"
                           onClick={() => onDeleteItem('experience', exp.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -202,20 +202,20 @@ const ProfileDetails = ({
                     <p className="text-sm text-gray-500 mt-1">{edu.field}</p>
                     
                     {onEditItem && onDeleteItem && (
-                      <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <div className="absolute right-0 top-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-gray-500 hover:text-psyched-darkBlue"
+                          className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 border border-blue-200"
                           onClick={() => onEditItem('education', edu.id)}
                         >
                           <Pencil className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Button>
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-gray-500 hover:text-red-500"
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 border border-red-200"
                           onClick={() => onDeleteItem('education', edu.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -280,20 +280,20 @@ const ProfileDetails = ({
                     </Badge>
                     
                     {onEditItem && onDeleteItem && (
-                      <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <div className="absolute right-0 top-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-gray-500 hover:text-psyched-darkBlue"
+                          className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 border border-blue-200"
                           onClick={() => onEditItem('certification', cert.id)}
                         >
                           <Pencil className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Button>
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
-                          className="h-8 w-8 p-0 text-gray-500 hover:text-red-500"
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 border border-red-200"
                           onClick={() => onDeleteItem('certification', cert.id)}
                         >
                           <Trash2 className="h-4 w-4" />

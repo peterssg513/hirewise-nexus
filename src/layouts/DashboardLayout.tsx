@@ -146,7 +146,7 @@ const DashboardLayout = () => {
           {profilePicUrl ? (
             <AvatarImage 
               src={profilePicUrl} 
-              alt="Profile" 
+              alt={profile?.name || 'Profile'} 
               className="object-cover" 
             />
           ) : (

@@ -37,6 +37,9 @@ export const fetchPsychologistProfile = async (userId: string) => {
       
       throw psychologistError;
     }
+
+    console.log("Fetched psychologist data:", psychologistData);
+    console.log("Profile picture URL:", psychologistData.profile_picture_url);
     
     // Combine the data
     return {

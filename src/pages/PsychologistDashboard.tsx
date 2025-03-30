@@ -34,18 +34,22 @@ const PsychologistDashboard = () => {
   const [recentApplications, setRecentApplications] = useState<JobApplication[]>([]);
   const [upcomingEvaluations, setUpcomingEvaluations] = useState<Evaluation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [psychologistName, setPsychologistName] = useState<string>('');
   
   useEffect(() => {
+    if (profile?.name) {
+      setPsychologistName(profile.name);
+    }
+    
     if (user) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [user, profile]);
   
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
       
-      // Fetch recent applications
       const { data: applicationsData, error: applicationsError } = await supabase
         .from('applications')
         .select(`
@@ -68,7 +72,6 @@ const PsychologistDashboard = () => {
         
       if (applicationsError) throw applicationsError;
       
-      // Transform applications data
       const applications = applicationsData.map(app => ({
         id: app.id,
         job_title: app.jobs.title,
@@ -81,7 +84,6 @@ const PsychologistDashboard = () => {
       
       setRecentApplications(applications);
       
-      // Fetch upcoming evaluations (pending or in progress)
       const { data: evaluationsData, error: evaluationsError } = await supabase
         .from('evaluations')
         .select(`
@@ -105,7 +107,6 @@ const PsychologistDashboard = () => {
         
       if (evaluationsError) throw evaluationsError;
       
-      // Transform evaluations data
       const evaluations = evaluationsData.map(evaluation => ({
         id: evaluation.id,
         status: evaluation.status,
@@ -151,17 +152,15 @@ const PsychologistDashboard = () => {
   
   return (
     <div className="space-y-6">
-      {/* Welcome */}
       <div>
         <h1 className="text-2xl font-bold text-psyched-darkBlue">
-          Welcome back, {profile?.name || 'Psychologist'}!
+          Welcome back, {psychologistName || profile?.name || 'Psychologist'}!
         </h1>
         <p className="text-gray-600">
           Here's an overview of your recent activity
         </p>
       </div>
       
-      {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -227,7 +226,6 @@ const PsychologistDashboard = () => {
         </Card>
       </div>
       
-      {/* Recent Applications */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-psyched-darkBlue">Recent Applications</h2>
@@ -296,7 +294,6 @@ const PsychologistDashboard = () => {
         )}
       </div>
       
-      {/* Upcoming Evaluations */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-psyched-darkBlue">Upcoming Evaluations</h2>

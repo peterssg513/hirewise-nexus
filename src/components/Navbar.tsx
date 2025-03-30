@@ -41,6 +41,8 @@ const Navbar = () => {
             .select('profile_picture_url')
             .eq('user_id', user.id)
             .single();
+          
+          console.log("Navbar - Profile picture data:", data);
             
           if (!error && data?.profile_picture_url) {
             setProfilePicUrl(data.profile_picture_url);
