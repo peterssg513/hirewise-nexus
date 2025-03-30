@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
 import RoleSelector from '@/components/RoleSelector';
 import Navbar from '@/components/Navbar';
+import { useAuth } from '@/contexts/AuthContext';
 
 type Role = 'psychologist' | 'district' | 'admin';
 
@@ -15,17 +17,48 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, we would handle authentication here
-    console.log({ selectedRole, email, password, rememberMe });
     
-    // For demo purposes, let's simulate a successful login
-    // and redirect to the appropriate dashboard
-    if (selectedRole) {
-      navigate(`/${selectedRole}-dashboard`);
+    if (!selectedRole) {
+      toast({
+        title: "Role required",
+        description: "Please select your role to continue",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!email || !password) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      await login(email, password, selectedRole);
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back to PsychedHire!",
+      });
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -60,6 +93,7 @@ const Login = () => {
                     placeholder="you@example.com"
                     required
                     className="w-full"
+                    disabled={isLoading}
                   />
                 </div>
                 
@@ -78,6 +112,7 @@ const Login = () => {
                     placeholder="••••••••••••"
                     required
                     className="w-full"
+                    disabled={isLoading}
                   />
                 </div>
                 
@@ -87,6 +122,7 @@ const Login = () => {
                     checked={rememberMe}
                     onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                     className="mr-2"
+                    disabled={isLoading}
                   />
                   <Label htmlFor="remember" className="text-sm">Remember me</Label>
                 </div>
@@ -95,9 +131,14 @@ const Login = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-                disabled={!selectedRole}
+                disabled={!selectedRole || isLoading}
               >
-                Log In
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></span>
+                    Logging in...
+                  </span>
+                ) : "Log In"}
               </Button>
             </form>
             
