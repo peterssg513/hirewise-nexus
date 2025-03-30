@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data: Json
+          event_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           created_at: string
@@ -41,6 +65,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "active_jobs_with_district"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "applications_job_id_fkey"
             columns: ["job_id"]
@@ -182,10 +213,47 @@ export type Database = {
             foreignKeyName: "jobs_district_id_fkey"
             columns: ["district_id"]
             isOneToOne: false
+            referencedRelation: "active_jobs_with_district"
+            referencedColumns: ["district_id"]
+          },
+          {
+            foreignKeyName: "jobs_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
             referencedRelation: "districts"
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean | null
+          related_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean | null
+          related_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean | null
+          related_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -255,10 +323,63 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      active_jobs_with_district: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          district_id: string | null
+          district_location: string | null
+          district_name: string | null
+          id: string | null
+          location: string | null
+          skills_required: string[] | null
+          status: string | null
+          timeframe: string | null
+          title: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      apply_to_job: {
+        Args: {
+          _job_id: string
+          _documents_urls?: string[]
+          _notes?: string
+        }
+        Returns: string
+      }
+      approve_application: {
+        Args: {
+          application_id: string
+        }
+        Returns: string
+      }
+      approve_district: {
+        Args: {
+          district_id: string
+        }
+        Returns: undefined
+      }
+      approve_job: {
+        Args: {
+          job_id: string
+        }
+        Returns: undefined
+      }
+      approve_psychologist: {
+        Args: {
+          psychologist_id: string
+        }
+        Returns: undefined
+      }
+      log_analytics_event: {
+        Args: {
+          _event_type: string
+          _event_data: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
