@@ -16,6 +16,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface BasicInformationProps {
   onComplete: () => void;
@@ -31,14 +38,11 @@ const basicInfoSchema = z.object({
   phoneNumber: z.string().min(10, {
     message: "Please enter a valid phone number.",
   }),
-  address: z.string().min(5, {
-    message: "Address must be at least 5 characters.",
-  }),
   city: z.string().min(2, {
     message: "City must be at least 2 characters.",
   }),
   state: z.string().min(2, {
-    message: "State must be at least 2 characters.",
+    message: "Please select a state.",
   }),
   zipCode: z.string().min(5, {
     message: "Zip code must be at least 5 characters.",
@@ -46,6 +50,60 @@ const basicInfoSchema = z.object({
 });
 
 type BasicInfoFormValues = z.infer<typeof basicInfoSchema>;
+
+// List of US states for dropdown
+const US_STATES = [
+  { code: "AL", name: "Alabama" },
+  { code: "AK", name: "Alaska" },
+  { code: "AZ", name: "Arizona" },
+  { code: "AR", name: "Arkansas" },
+  { code: "CA", name: "California" },
+  { code: "CO", name: "Colorado" },
+  { code: "CT", name: "Connecticut" },
+  { code: "DE", name: "Delaware" },
+  { code: "FL", name: "Florida" },
+  { code: "GA", name: "Georgia" },
+  { code: "HI", name: "Hawaii" },
+  { code: "ID", name: "Idaho" },
+  { code: "IL", name: "Illinois" },
+  { code: "IN", name: "Indiana" },
+  { code: "IA", name: "Iowa" },
+  { code: "KS", name: "Kansas" },
+  { code: "KY", name: "Kentucky" },
+  { code: "LA", name: "Louisiana" },
+  { code: "ME", name: "Maine" },
+  { code: "MD", name: "Maryland" },
+  { code: "MA", name: "Massachusetts" },
+  { code: "MI", name: "Michigan" },
+  { code: "MN", name: "Minnesota" },
+  { code: "MS", name: "Mississippi" },
+  { code: "MO", name: "Missouri" },
+  { code: "MT", name: "Montana" },
+  { code: "NE", name: "Nebraska" },
+  { code: "NV", name: "Nevada" },
+  { code: "NH", name: "New Hampshire" },
+  { code: "NJ", name: "New Jersey" },
+  { code: "NM", name: "New Mexico" },
+  { code: "NY", name: "New York" },
+  { code: "NC", name: "North Carolina" },
+  { code: "ND", name: "North Dakota" },
+  { code: "OH", name: "Ohio" },
+  { code: "OK", name: "Oklahoma" },
+  { code: "OR", name: "Oregon" },
+  { code: "PA", name: "Pennsylvania" },
+  { code: "RI", name: "Rhode Island" },
+  { code: "SC", name: "South Carolina" },
+  { code: "SD", name: "South Dakota" },
+  { code: "TN", name: "Tennessee" },
+  { code: "TX", name: "Texas" },
+  { code: "UT", name: "Utah" },
+  { code: "VT", name: "Vermont" },
+  { code: "VA", name: "Virginia" },
+  { code: "WA", name: "Washington" },
+  { code: "WV", name: "West Virginia" },
+  { code: "WI", name: "Wisconsin" },
+  { code: "WY", name: "Wyoming" },
+];
 
 const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
   const { toast } = useToast();
@@ -58,7 +116,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
       firstName: profile?.name?.split(' ')[0] || '',
       lastName: profile?.name?.split(' ')[1] || '',
       phoneNumber: '',
-      address: '',
       city: '',
       state: '',
       zipCode: '',
@@ -93,7 +150,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
         .from('psychologists')
         .update({
           phone_number: values.phoneNumber,
-          address: values.address,
           city: values.city,
           state: values.state,
           zip_code: values.zipCode,
@@ -170,20 +226,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
             )}
           />
           
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Address</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField
               control={form.control}
@@ -206,7 +248,21 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
                 <FormItem>
                   <FormLabel>State</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {US_STATES.map(state => (
+                          <SelectItem key={state.code} value={state.code}>
+                            {state.code} - {state.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -230,7 +286,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
           
           <Button 
             type="submit" 
-            className="w-full bg-psyched-darkBlue hover:bg-psyched-darkBlue/90" 
+            className="w-full bg-psyched-darkBlue hover:bg-psyched-darkBlue/90 text-white" 
             disabled={isSubmitting}
           >
             {isSubmitting ? (

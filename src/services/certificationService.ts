@@ -47,8 +47,7 @@ export const saveCertifications = async (
   userId: string, 
   certifications: Certification[]
 ): Promise<void> => {
-  // Extract the certification URLs as strings to store in the database
-  // This matches the string[] type expected by the database
+  // Store only the URLs as strings in the database
   const certificationUrls = certifications.map(cert => cert.url);
   
   const { error } = await supabase
