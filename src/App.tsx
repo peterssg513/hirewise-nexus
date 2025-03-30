@@ -9,7 +9,7 @@ import UpdatePassword from './pages/UpdatePassword';
 import PsychologistSignup from './pages/PsychologistSignup';
 import AdminDashboard from './pages/AdminDashboard';
 import DistrictDashboard from './pages/DistrictDashboard';
-import PsychologistDashboard from './pages/psychologist/PsychologistDashboard';
+import PsychologistDashboard from './pages/PsychologistDashboard';
 import JobListings from './pages/psychologist/JobListings';
 import Evaluations from './pages/psychologist/Evaluations';
 import Applications from './pages/psychologist/Applications';
