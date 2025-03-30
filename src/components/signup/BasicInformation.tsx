@@ -69,7 +69,17 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
     setIsSubmitting(true);
     
     try {
-      await saveBasicInfo(user.id, values);
+      // Ensure all required fields are present and non-optional before calling saveBasicInfo
+      const basicInfo = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        phoneNumber: values.phoneNumber,
+        city: values.city,
+        state: values.state,
+        zipCode: values.zipCode,
+      };
+      
+      await saveBasicInfo(user.id, basicInfo);
       
       toast({
         title: 'Information saved',
