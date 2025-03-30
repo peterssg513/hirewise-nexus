@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -16,28 +16,12 @@ import Applications from './pages/psychologist/Applications';
 import Profile from './pages/psychologist/Profile';
 import DashboardLayout from './layouts/DashboardLayout';
 import Settings from './pages/psychologist/Settings';
-
-// ProtectedRoute component
-const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
-  const { user, profile } = useAuth();
-
-  if (!user) {
-    // Redirect to login if not authenticated
-    return <Navigate to="/login" />;
-  }
-
-  if (profile && allowedRoles && !allowedRoles.includes(profile.role)) {
-    // Redirect to unauthorized page or another appropriate route
-    return <Navigate to="/unauthorized" />;
-  }
-
-  return children;
-};
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -89,8 +73,8 @@ function App() {
           {/* Default Route */}
           <Route path="/" element={<Navigate to="/login" />} />
         </Routes>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 
