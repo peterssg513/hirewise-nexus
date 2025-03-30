@@ -103,9 +103,8 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     setIsSubmitting(true);
     
     try {
-      // Check if experience or experience_details exists
+      // Check if the experience column exists
       const hasExperienceColumn = await columnExists('psychologists', 'experience');
-      const experienceColumnName = hasExperienceColumn ? 'experience' : 'experience_details';
       
       // Update psychologist profile with the correct column name
       const updateData: Record<string, any> = {
@@ -114,8 +113,8 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
         signup_progress: 3
       };
       
-      // Use the correct column name for experience
-      updateData[experienceColumnName] = JSON.stringify(profileData.experiences);
+      // Use the experience column
+      updateData.experience = JSON.stringify(profileData.experiences);
       
       const { error } = await supabase
         .from('psychologists')

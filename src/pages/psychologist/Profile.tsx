@@ -2,388 +2,291 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Loader2, Edit, MapPin, Phone, Mail, Award, Building, GraduationCap } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import { Experience, Education } from '@/services/psychologistSignupService';
+import { Loader2, MapPin, BriefcaseBusiness, GraduationCap, Scroll, FileEdit } from 'lucide-react';
 import { Certification } from '@/services/certificationService';
-import { Json } from '@/integrations/supabase/types';
-
-interface ProfileData {
-  name: string;
-  email: string;
-  profile_picture_url: string | null;
-  phone_number: string | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  zip_code: string | null;
-  experience: Experience[];
-  education: Education[];
-  certifications: Certification[];
-  specialties: string[] | null;
-  status: string;
-  work_types: string[] | null;
-  evaluation_types: string[] | null;
-  open_to_relocation: boolean;
-  desired_locations: string[] | null;
-}
+import { Experience, Education } from '@/services/psychologistSignupService';
 
 const Profile = () => {
-  const { user, profile } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [educations, setEducations] = useState<Education[]>([]);
+  const [certifications, setCertifications] = useState<Certification[]>([]);
+  
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchProfile = async () => {
       if (!user) return;
-
+      
       try {
-        setIsLoading(true);
         const { data, error } = await supabase
           .from('psychologists')
-          .select('*')
+          .select(`
+            *,
+            profiles:user_id(
+              name,
+              email
+            )
+          `)
           .eq('user_id', user.id)
           .single();
-
-        if (error) throw error;
-
-        // Check for experience in either column (experience or experience_details)
-        const experienceData = data.experience || data.experience_details || '[]';
-        
-        // Parse JSON strings into objects if needed
-        const parsedExperience = typeof experienceData === 'string' 
-          ? JSON.parse(experienceData) as Experience[]
-          : experienceData as Experience[];
-        
-        const educationData = data.education || '[]';
-        const parsedEducation = typeof educationData === 'string' 
-          ? JSON.parse(educationData) as Education[]
-          : educationData as Education[];
-
-        // Parse certification details with type assertion
-        const certificationData = data.certification_details || [];
-        const certifications = Array.isArray(certificationData) 
-          ? certificationData as unknown as Certification[]
-          : [];
           
-        // Create a complete profile data object
-        const completeProfileData: ProfileData = {
-          name: profile?.name || '',
-          email: profile?.email || '',
-          profile_picture_url: data.profile_picture_url,
-          phone_number: data.phone_number,
-          address: data.address,
-          city: data.city,
-          state: data.state,
-          zip_code: data.zip_code,
-          experience: parsedExperience,
-          education: parsedEducation,
-          certifications: certifications,
-          specialties: data.specialties || [],
-          status: data.status,
-          work_types: data.work_types || [],
-          evaluation_types: data.evaluation_types || [],
-          open_to_relocation: data.open_to_relocation || false,
-          desired_locations: data.desired_locations || []
-        };
-
-        setProfileData(completeProfileData);
-      } catch (error: any) {
-        console.error('Error fetching profile data:', error);
-        toast({
-          title: 'Error loading profile',
-          description: error.message || 'Failed to load profile data',
-          variant: 'destructive',
-        });
+        if (error) throw error;
+        setProfile(data);
+        
+        // Parse experience data - try both experience and experience_details fields
+        try {
+          const expData = data.experience ? JSON.parse(data.experience) : [];
+          setExperiences(Array.isArray(expData) ? expData : []);
+        } catch (err) {
+          console.error('Error parsing experience data:', err);
+          setExperiences([]);
+        }
+        
+        // Parse education data
+        try {
+          const eduData = data.education ? JSON.parse(data.education) : [];
+          setEducations(Array.isArray(eduData) ? eduData : []);
+        } catch (err) {
+          console.error('Error parsing education data:', err);
+          setEducations([]);
+        }
+        
+        // Parse certification data
+        try {
+          if (data.certification_details) {
+            const certData = Array.isArray(data.certification_details) 
+              ? data.certification_details 
+              : typeof data.certification_details === 'object'
+                ? Object.values(data.certification_details)
+                : [];
+                
+            setCertifications(certData as Certification[]);
+          }
+        } catch (err) {
+          console.error('Error parsing certification data:', err);
+          setCertifications([]);
+        }
+      } catch (err) {
+        console.error('Error fetching profile:', err);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-
-    fetchProfileData();
-  }, [user, toast, profile]);
-
-  if (isLoading) {
+    
+    fetchProfile();
+  }, [user]);
+  
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-40">
+      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
         <Loader2 className="h-8 w-8 animate-spin text-psyched-darkBlue" />
       </div>
     );
   }
-
-  if (!profileData) {
+  
+  if (!profile) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-600 mb-4">Profile data not found.</p>
-        <Button onClick={() => navigate('/psychologist-signup')}>
-          Complete Your Profile
-        </Button>
+      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">Profile Not Found</h2>
+          <p className="text-gray-500">Unable to retrieve your profile information.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-psyched-darkBlue">My Profile</h1>
-          <p className="text-gray-600">View and manage your psychologist profile</p>
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-8 flex flex-col md:flex-row gap-6 items-start">
+        <div className="w-full md:w-1/3 bg-white rounded-lg shadow-sm p-6">
+          <div className="flex flex-col items-center text-center">
+            <Avatar className="h-32 w-32 mb-4">
+              {profile.profile_picture_url ? (
+                <AvatarImage src={profile.profile_picture_url} alt={profile.profiles?.name || 'User'} />
+              ) : (
+                <AvatarFallback className="text-2xl bg-psyched-lightBlue text-white">
+                  {profile.profiles?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <h2 className="text-2xl font-bold">{profile.profiles?.name || 'Anonymous User'}</h2>
+            <p className="text-gray-600 mb-3">{profile.profiles?.email}</p>
+            
+            {profile.status === 'approved' ? (
+              <Badge className="bg-green-500">Verified Psychologist</Badge>
+            ) : (
+              <Badge variant="outline" className="border-yellow-500 text-yellow-700">
+                Verification Pending
+              </Badge>
+            )}
+            
+            {profile.city && profile.state && (
+              <div className="flex items-center gap-1 mt-3 text-gray-600">
+                <MapPin className="h-4 w-4" />
+                <span>{profile.city}, {profile.state}</span>
+              </div>
+            )}
+            
+            <Button 
+              className="mt-6 bg-psyched-darkBlue hover:bg-psyched-darkBlue/80"
+              size="sm"
+            >
+              <FileEdit className="h-4 w-4 mr-2" /> Edit Profile
+            </Button>
+          </div>
+          
+          <div className="mt-8">
+            <h3 className="font-medium text-gray-900 mb-2">Work Preferences</h3>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {profile.work_types?.map((type: string) => (
+                <Badge key={type} variant="outline" className="bg-blue-50">
+                  {type}
+                </Badge>
+              ))}
+            </div>
+            
+            <h3 className="font-medium text-gray-900 mb-2">Evaluation Types</h3>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {profile.evaluation_types?.map((type: string) => (
+                <Badge key={type} variant="outline" className="bg-purple-50">
+                  {type}
+                </Badge>
+              ))}
+            </div>
+            
+            <h3 className="font-medium text-gray-900 mb-2">Desired Locations</h3>
+            <div className="flex flex-wrap gap-2">
+              {profile.desired_locations?.map((location: string) => (
+                <Badge key={location} variant="outline" className="bg-green-50">
+                  {location}
+                </Badge>
+              ))}
+            </div>
+            
+            {profile.open_to_relocation && (
+              <Badge className="mt-2 bg-psyched-lightBlue">Open to Relocation</Badge>
+            )}
+          </div>
         </div>
-        <Button 
-          onClick={() => navigate('/psychologist-signup')}
-          className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-        >
-          <Edit className="mr-2 h-4 w-4" />
-          Edit Profile
-        </Button>
-      </div>
-
-      {/* Profile Overview Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Overview</CardTitle>
-          <CardDescription>Your public profile information</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Profile Picture */}
-            <div className="flex-shrink-0">
-              {profileData.profile_picture_url ? (
-                <img 
-                  src={profileData.profile_picture_url} 
-                  alt={profileData.name || 'Profile picture'} 
-                  className="w-32 h-32 rounded-full object-cover border-2 border-psyched-lightBlue"
-                />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                  <span className="text-3xl font-semibold">
-                    {profile?.name?.charAt(0) || '?'}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Profile Info */}
-            <div className="flex-grow space-y-4">
-              <div>
-                <h2 className="text-xl font-semibold">{profile?.name}</h2>
-                <p className="text-gray-600">School Psychologist</p>
-                
-                <div className="flex items-center mt-2">
-                  <div className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {profileData.status === 'approved' ? 'Verified' : 'Pending Verification'}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="h-4 w-4 mr-2" />
-                  <span>
-                    {profileData.city && profileData.state
-                      ? `${profileData.city}, ${profileData.state}`
-                      : 'Location not specified'}
-                  </span>
-                </div>
-                
-                <div className="flex items-center text-gray-600">
-                  <Phone className="h-4 w-4 mr-2" />
-                  <span>{profileData.phone_number || 'Phone not specified'}</span>
-                </div>
-                
-                <div className="flex items-center text-gray-600">
-                  <Mail className="h-4 w-4 mr-2" />
-                  <span>{profile?.email}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Experience Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Professional Experience</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {profileData.experience && profileData.experience.length > 0 ? (
-            <div className="space-y-6">
-              {profileData.experience.map((exp, index) => (
-                <div key={exp.id || index}>
-                  {index > 0 && <Separator className="my-4" />}
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-gray-100 rounded-md">
-                      <Building className="h-5 w-5 text-psyched-darkBlue" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{exp.position}</h3>
-                      <p className="text-gray-600">{exp.organization}</p>
-                      <p className="text-sm text-gray-500">
-                        {exp.startDate} — {exp.current ? 'Present' : exp.endDate}
-                      </p>
-                      <p className="mt-2 text-sm">{exp.description}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No experience information added yet.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Education Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Education</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {profileData.education && profileData.education.length > 0 ? (
-            <div className="space-y-6">
-              {profileData.education.map((edu, index) => (
-                <div key={edu.id || index}>
-                  {index > 0 && <Separator className="my-4" />}
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-gray-100 rounded-md">
-                      <GraduationCap className="h-5 w-5 text-psyched-darkBlue" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{edu.degree} in {edu.field}</h3>
-                      <p className="text-gray-600">{edu.institution}</p>
-                      <p className="text-sm text-gray-500">
-                        {edu.startDate} — {edu.endDate}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No education information added yet.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Certifications Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Certifications</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {profileData.certifications && profileData.certifications.length > 0 ? (
-            <div className="space-y-6">
-              {profileData.certifications.map((cert, index) => (
-                <div key={cert.id || index}>
-                  {index > 0 && <Separator className="my-4" />}
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-gray-100 rounded-md">
-                      <Award className="h-5 w-5 text-psyched-darkBlue" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{cert.name}</h3>
-                      <p className="text-gray-600">Valid from {cert.startYear} to {cert.endYear}</p>
-                      <p className="text-sm text-gray-500">
-                        Status: {cert.status}
-                      </p>
-                      {cert.url && (
-                        <Button variant="link" className="p-0 h-auto text-psyched-lightBlue">
-                          <a href={cert.url} target="_blank" rel="noopener noreferrer">
-                            View Certificate
-                          </a>
-                        </Button>
+        
+        <div className="w-full md:w-2/3">
+          <Tabs defaultValue="experience" className="w-full">
+            <TabsList className="grid grid-cols-3 mb-6">
+              <TabsTrigger value="experience" className="flex items-center gap-1">
+                <BriefcaseBusiness className="h-4 w-4" /> Experience
+              </TabsTrigger>
+              <TabsTrigger value="education" className="flex items-center gap-1">
+                <GraduationCap className="h-4 w-4" /> Education
+              </TabsTrigger>
+              <TabsTrigger value="certifications" className="flex items-center gap-1">
+                <Scroll className="h-4 w-4" /> Certifications
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="experience">
+              <div className="space-y-4">
+                {experiences.length > 0 ? (
+                  experiences.map((exp) => (
+                    <Card key={exp.id}>
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle>{exp.position || exp.jobTitle}</CardTitle>
+                            <CardDescription>{exp.organization || exp.placeOfEmployment}</CardDescription>
+                          </div>
+                          <Badge variant="outline">
+                            {exp.startDate || exp.yearStarted} - {exp.current ? 'Present' : (exp.endDate || exp.yearWorked)}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      {exp.description && (
+                        <CardContent>
+                          <p className="text-sm text-gray-600">{exp.description}</p>
+                        </CardContent>
                       )}
-                    </div>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center p-8 border border-dashed rounded-lg">
+                    <p className="text-gray-500">No experience information added yet.</p>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No certifications added yet.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Preferences Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Preferences & Specialties</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-medium mb-2">Specialties</h3>
-              {profileData.specialties && profileData.specialties.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profileData.specialties.map((specialty, index) => (
-                    <span key={index} className="px-3 py-1 rounded-full text-xs font-medium bg-psyched-cream text-psyched-darkBlue">
-                      {specialty}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No specialties specified.</p>
-              )}
-            </div>
+                )}
+              </div>
+            </TabsContent>
             
-            <div>
-              <h3 className="font-medium mb-2">Work Types</h3>
-              {profileData.work_types && profileData.work_types.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profileData.work_types.map((type, index) => (
-                    <span key={index} className="px-3 py-1 rounded-full text-xs font-medium bg-psyched-cream text-psyched-darkBlue">
-                      {type}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No work types specified.</p>
-              )}
-            </div>
+            <TabsContent value="education">
+              <div className="space-y-4">
+                {educations.length > 0 ? (
+                  educations.map((edu) => (
+                    <Card key={edu.id}>
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle>{edu.field || edu.major}</CardTitle>
+                            <CardDescription>{edu.institution || edu.schoolName}</CardDescription>
+                          </div>
+                          <Badge variant="outline">
+                            {edu.startDate || edu.degree} - {edu.endDate}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center p-8 border border-dashed rounded-lg">
+                    <p className="text-gray-500">No education information added yet.</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
             
-            <div>
-              <h3 className="font-medium mb-2">Evaluation Types</h3>
-              {profileData.evaluation_types && profileData.evaluation_types.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profileData.evaluation_types.map((type, index) => (
-                    <span key={index} className="px-3 py-1 rounded-full text-xs font-medium bg-psyched-cream text-psyched-darkBlue">
-                      {type}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No evaluation types specified.</p>
-              )}
-            </div>
-            
-            <div>
-              <h3 className="font-medium mb-2">Location Preferences</h3>
-              <p className="text-gray-600 mb-1">
-                {profileData.open_to_relocation ? 'Open to relocation' : 'Not open to relocation'}
-              </p>
-              
-              {profileData.desired_locations && profileData.desired_locations.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profileData.desired_locations.map((location, index) => (
-                    <span key={index} className="px-3 py-1 rounded-full text-xs font-medium bg-psyched-cream text-psyched-darkBlue">
-                      {location}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No preferred locations specified.</p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            <TabsContent value="certifications">
+              <div className="space-y-4">
+                {certifications.length > 0 ? (
+                  certifications.map((cert) => (
+                    <Card key={cert.id}>
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle>{cert.name}</CardTitle>
+                            {cert.issuer && <CardDescription>{cert.issuer}</CardDescription>}
+                          </div>
+                          <div>
+                            <Badge variant="outline">{cert.date || cert.startYear}</Badge>
+                            {cert.expirationDate && <Badge variant="outline" className="ml-2">Expires: {cert.expirationDate}</Badge>}
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        {cert.documentUrl && (
+                          <Button variant="outline" size="sm" className="text-blue-600">
+                            <a href={cert.documentUrl} target="_blank" rel="noopener noreferrer">
+                              View Certificate
+                            </a>
+                          </Button>
+                        )}
+                        <Badge className={`ml-2 ${cert.status === 'verified' ? 'bg-green-500' : 'bg-yellow-500'}`}>
+                          {cert.status === 'verified' ? 'Verified' : 'Pending Verification'}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center p-8 border border-dashed rounded-lg">
+                    <p className="text-gray-500">No certification information added yet.</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 };

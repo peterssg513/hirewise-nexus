@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { saveCertifications, Certification } from './certificationService';
+import { columnExists } from './databaseHelpers';
 
 export interface Education {
   id: string;
@@ -119,27 +120,18 @@ export const saveProfileData = async (userId: string, data: ProfileData): Promis
   const validUserId = validateUserId(userId);
   
   try {
-    // Check if experience or experience_details column exists
-    const { data: columnData, error: columnError } = await supabase
-      .from('psychologists')
-      .select('*')
-      .limit(1)
-      .single();
-    
-    if (columnError && columnError.code !== 'PGRST116') throw columnError;
-    
-    const hasExperienceColumn = columnData && 'experience' in columnData;
-    const experienceColumnName = hasExperienceColumn ? 'experience' : 'experience_details';
+    // Use the experience column
+    const updateData = {
+      profile_picture_url: data.profilePictureUrl,
+      education: JSON.stringify(data.education),
+      experience: JSON.stringify(data.experiences),
+      signup_progress: 3,
+    };
     
     // Update psychologist profile
     const { error } = await supabase
       .from('psychologists')
-      .update({
-        profile_picture_url: data.profilePictureUrl,
-        education: JSON.stringify(data.education),
-        [experienceColumnName]: JSON.stringify(data.experiences),
-        signup_progress: 3,
-      })
+      .update(updateData)
       .eq('user_id', validUserId);
       
     if (error) throw error;

@@ -293,6 +293,7 @@ export type Database = {
           desired_locations: string[] | null
           education: string | null
           evaluation_types: string[] | null
+          experience: string | null
           experience_years: number | null
           id: string
           open_to_relocation: boolean | null
@@ -318,6 +319,7 @@ export type Database = {
           desired_locations?: string[] | null
           education?: string | null
           evaluation_types?: string[] | null
+          experience?: string | null
           experience_years?: number | null
           id?: string
           open_to_relocation?: boolean | null
@@ -343,6 +345,7 @@ export type Database = {
           desired_locations?: string[] | null
           education?: string | null
           evaluation_types?: string[] | null
+          experience?: string | null
           experience_years?: number | null
           id?: string
           open_to_relocation?: boolean | null
@@ -412,12 +415,29 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_column_info: {
+        Args: {
+          table_name: string
+          column_name: string
+        }
+        Returns: {
+          table_catalog: string
+          table_schema: string
+          table_name: string
+          column_name: string
+          data_type: string
+        }[]
+      }
       log_analytics_event: {
         Args: {
           _event_type: string
           _event_data: Json
         }
         Returns: string
+      }
+      setup_column_check_function: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

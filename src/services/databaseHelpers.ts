@@ -6,18 +6,21 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export const columnExists = async (tableName: string, columnName: string): Promise<boolean> => {
   try {
-    // More reliable method to check if column exists using raw SQL query
-    const { data, error } = await supabase.rpc('get_column_info', {
-      table_name: tableName,
-      column_name: columnName
-    });
+    // Use raw SQL query to check column existence
+    const { data, error } = await supabase.rpc(
+      'get_column_info' as any, // Type assertion needed until types are updated
+      {
+        table_name: tableName,
+        column_name: columnName
+      }
+    );
     
     if (error) {
       console.error('Error checking column existence:', error);
       
       // Fallback method if RPC is not available
       const { data: tableData, error: tableError } = await supabase
-        .from(tableName)
+        .from(tableName as any) // Type assertion needed until types are updated
         .select('*')
         .limit(1)
         .single();
@@ -43,9 +46,9 @@ export const columnExists = async (tableName: string, columnName: string): Promi
  */
 export const setupColumnCheckFunction = async (): Promise<void> => {
   try {
-    // Direct SQL execution isn't available in frontend code
-    // This is just a placeholder, the actual function is created in the SQL migration
-    console.log('Column check function should be set up via SQL migration');
+    // Call the setup function
+    await supabase.rpc('setup_column_check_function' as any);
+    console.log('Column check function has been set up');
   } catch (error) {
     console.error('Error setting up column check function:', error);
   }
