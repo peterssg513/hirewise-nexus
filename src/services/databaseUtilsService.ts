@@ -14,7 +14,7 @@ export const checkColumnExists = async (tableName: string, columnName: string): 
       
       // Fallback method if RPC is not available
       const { data: tableData, error: tableError } = await supabase
-        .from(tableName)
+        .from(tableName as any)
         .select('*')
         .limit(1);
         

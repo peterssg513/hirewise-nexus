@@ -8,7 +8,7 @@ export const columnExists = async (tableName: string, columnName: string): Promi
   try {
     // Use raw SQL query to check column existence
     const { data, error } = await supabase.rpc(
-      'get_column_info' as any, // Type assertion needed until types are updated
+      'get_column_info', 
       {
         table_name: tableName,
         column_name: columnName
@@ -20,7 +20,7 @@ export const columnExists = async (tableName: string, columnName: string): Promi
       
       // Fallback method if RPC is not available
       const { data: tableData, error: tableError } = await supabase
-        .from(tableName as any) // Type assertion needed until types are updated
+        .from(tableName as any) 
         .select('*')
         .limit(1)
         .single();
@@ -47,7 +47,7 @@ export const columnExists = async (tableName: string, columnName: string): Promi
 export const setupColumnCheckFunction = async (): Promise<void> => {
   try {
     // Call the setup function
-    await supabase.rpc('setup_column_check_function' as any);
+    await supabase.rpc('setup_column_check_function');
     console.log('Column check function has been set up');
   } catch (error) {
     console.error('Error setting up column check function:', error);
