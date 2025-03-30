@@ -198,6 +198,9 @@ const Profile = () => {
 
   console.log("Rendering profile with data:", profile);
   console.log("Profile picture URL:", profile.profile_picture_url);
+  console.log("Experiences:", experiences);
+  console.log("Educations:", educations);
+  console.log("Certifications:", certifications);
 
   return (
     <div className="container mx-auto py-8 px-4">
