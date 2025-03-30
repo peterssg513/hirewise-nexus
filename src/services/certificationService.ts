@@ -34,20 +34,38 @@ export const uploadCertificationFile = async (
   const timestamp = new Date().getTime();
   const filePath = `${userId}/certifications/${timestamp}_${certName.replace(/\s+/g, '-').toLowerCase()}.${fileExt}`;
   
-  const { error: uploadError } = await supabase.storage
-    .from('psychologist_files')
-    .upload(filePath, file);
-    
-  if (uploadError) {
-    console.error('Certification upload error:', uploadError);
-    throw new Error(`Failed to upload certification: ${uploadError.message}`);
+  // Ensure storage bucket exists
+  try {
+    const { data: buckets } = await supabase.storage.listBuckets();
+    if (!buckets?.find(bucket => bucket.name === 'psychologist_files')) {
+      await supabase.storage.createBucket('psychologist_files', {
+        public: true,
+        fileSizeLimit: 5242880 // 5MB
+      });
+    }
+  } catch (error) {
+    console.error("Error checking/creating bucket:", error);
+    // Continue anyway as the bucket might exist but the user may not have permission to list/create
   }
   
-  const { data: urlData } = supabase.storage
-    .from('psychologist_files')
-    .getPublicUrl(filePath);
+  try {
+    const { error: uploadError } = await supabase.storage
+      .from('psychologist_files')
+      .upload(filePath, file);
+      
+    if (uploadError) {
+      throw uploadError;
+    }
     
-  return urlData.publicUrl;
+    const { data: urlData } = supabase.storage
+      .from('psychologist_files')
+      .getPublicUrl(filePath);
+      
+    return urlData.publicUrl;
+  } catch (error: any) {
+    console.error('Certification upload error:', error);
+    throw new Error(`Failed to upload certification: ${error.message}`);
+  }
 };
 
 /**
@@ -67,7 +85,7 @@ export const saveCertifications = async (
   
   try {
     // Convert certifications to DTOs with just the necessary information
-    const certificationDTOs = certifications.map(cert => ({
+    const certificationDTOs: CertificationDTO[] = certifications.map(cert => ({
       url: cert.url,
       name: cert.name,
       startYear: cert.startYear,
@@ -75,7 +93,7 @@ export const saveCertifications = async (
     }));
     
     // Store the certifications as an array of strings (URLs) to match the expected type
-    const certificationUrls = certifications.map(cert => cert.url);
+    const certificationUrls: string[] = certifications.map(cert => cert.url);
     
     // Update the psychologist profile with both the certification URLs and detailed info
     const { error } = await supabase

@@ -4,16 +4,16 @@ import { saveCertifications, Certification } from './certificationService';
 
 export interface Education {
   id: string;
-  schoolName: string;
-  major: string;
+  institution: string;
+  field: string;
   degree: string;
-  startYear: string;
-  endYear: string;
+  startDate: string;
+  endDate: string;
 }
 
 export interface Experience {
   id: string;
-  companyName: string;
+  organization: string;
   position: string;
   description: string;
   startDate: string;
@@ -119,13 +119,25 @@ export const saveProfileData = async (userId: string, data: ProfileData): Promis
   const validUserId = validateUserId(userId);
   
   try {
+    // Check if experience or experience_details column exists
+    const { data: columnData, error: columnError } = await supabase
+      .from('psychologists')
+      .select('*')
+      .limit(1)
+      .single();
+    
+    if (columnError && columnError.code !== 'PGRST116') throw columnError;
+    
+    const hasExperienceColumn = columnData && 'experience' in columnData;
+    const experienceColumnName = hasExperienceColumn ? 'experience' : 'experience_details';
+    
     // Update psychologist profile
     const { error } = await supabase
       .from('psychologists')
       .update({
         profile_picture_url: data.profilePictureUrl,
         education: JSON.stringify(data.education),
-        experience_details: JSON.stringify(data.experiences),
+        [experienceColumnName]: JSON.stringify(data.experiences),
         signup_progress: 3,
       })
       .eq('user_id', validUserId);

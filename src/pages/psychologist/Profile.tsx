@@ -8,34 +8,9 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, Edit, MapPin, Phone, Mail, Award, Building, GraduationCap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-
-interface Experience {
-  id: string;
-  jobTitle: string;
-  placeOfEmployment: string;
-  yearStarted: string;
-  yearWorked: string;
-  description?: string;
-}
-
-interface Education {
-  id: string;
-  schoolName: string;
-  major: string;
-  degree: string;
-  startYear: string;
-  endYear: string;
-}
-
-interface Certification {
-  id: string;
-  name: string;
-  url: string;
-  status: 'pending' | 'verified';
-  uploadedAt: string;
-  startYear: string;
-  endYear: string;
-}
+import { Experience, Education } from '@/services/psychologistSignupService';
+import { Certification } from '@/services/certificationService';
+import { Json } from '@/integrations/supabase/types';
 
 interface ProfileData {
   name: string;
@@ -78,14 +53,24 @@ const Profile = () => {
 
         if (error) throw error;
 
-        // Parse JSON strings into objects if needed
-        const parsedExperience = data.experience ? 
-          (typeof data.experience === 'string' ? JSON.parse(data.experience) : data.experience) : [];
+        // Check for experience in either column (experience or experience_details)
+        const experienceData = data.experience || data.experience_details || '[]';
         
-        const parsedEducation = data.education ? 
-          (typeof data.education === 'string' ? JSON.parse(data.education) : data.education) : [];
+        // Parse JSON strings into objects if needed
+        const parsedExperience = typeof experienceData === 'string' 
+          ? JSON.parse(experienceData) as Experience[]
+          : experienceData as Experience[];
+        
+        const educationData = data.education || '[]';
+        const parsedEducation = typeof educationData === 'string' 
+          ? JSON.parse(educationData) as Education[]
+          : educationData as Education[];
 
-        const certificationDetails = data.certification_details || [];
+        // Parse certification details with type assertion
+        const certificationData = data.certification_details || [];
+        const certifications = Array.isArray(certificationData) 
+          ? certificationData as unknown as Certification[]
+          : [];
           
         // Create a complete profile data object
         const completeProfileData: ProfileData = {
@@ -99,7 +84,7 @@ const Profile = () => {
           zip_code: data.zip_code,
           experience: parsedExperience,
           education: parsedEducation,
-          certifications: certificationDetails as Certification[],
+          certifications: certifications,
           specialties: data.specialties || [],
           status: data.status,
           work_types: data.work_types || [],
@@ -304,14 +289,13 @@ const Profile = () => {
                     </div>
                     <div>
                       <h3 className="font-medium">{cert.name}</h3>
-                      <p className="text-gray-600">Issued by {cert.issuer}</p>
+                      <p className="text-gray-600">Valid from {cert.startYear} to {cert.endYear}</p>
                       <p className="text-sm text-gray-500">
-                        Issued: {cert.date}
-                        {cert.expirationDate && ` • Expires: ${cert.expirationDate}`}
+                        Status: {cert.status}
                       </p>
-                      {cert.documentUrl && (
+                      {cert.url && (
                         <Button variant="link" className="p-0 h-auto text-psyched-lightBlue">
-                          <a href={cert.documentUrl} target="_blank" rel="noopener noreferrer">
+                          <a href={cert.url} target="_blank" rel="noopener noreferrer">
                             View Certificate
                           </a>
                         </Button>

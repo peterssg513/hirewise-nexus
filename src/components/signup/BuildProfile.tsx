@@ -10,6 +10,7 @@ import { Education } from './EducationForm';
 import ProfilePictureUpload from './ProfilePictureUpload';
 import ExperienceSection from './ExperienceSection';
 import EducationSection from './EducationSection';
+import { columnExists } from '@/services/databaseHelpers';
 
 interface BuildProfileProps {
   onComplete: () => void;
@@ -102,17 +103,23 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     setIsSubmitting(true);
     
     try {
-      // Update psychologist profile with the correct column name 'experience' instead of 'experience_details'
+      // Check if experience or experience_details exists
+      const hasExperienceColumn = await columnExists('psychologists', 'experience');
+      const experienceColumnName = hasExperienceColumn ? 'experience' : 'experience_details';
+      
+      // Update psychologist profile with the correct column name
+      const updateData: Record<string, any> = {
+        profile_picture_url: profileData.profilePictureUrl,
+        education: JSON.stringify(profileData.education),
+        signup_progress: 3
+      };
+      
+      // Use the correct column name for experience
+      updateData[experienceColumnName] = JSON.stringify(profileData.experiences);
+      
       const { error } = await supabase
         .from('psychologists')
-        .update({
-          profile_picture_url: profileData.profilePictureUrl,
-          // Store the education objects as JSON
-          education: JSON.stringify(profileData.education),
-          // Use the correct column name 'experience' not 'experience_details'
-          experience: JSON.stringify(profileData.experiences),
-          signup_progress: 3, // Move to next step
-        })
+        .update(updateData)
         .eq('user_id', user.id);
         
       if (error) throw error;
