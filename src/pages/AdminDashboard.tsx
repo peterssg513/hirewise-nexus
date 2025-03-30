@@ -4,11 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Welcome, {user?.name}</h1>
+      <h1 className="text-2xl font-bold">Welcome, {profile?.name || 'Admin'}</h1>
       <p className="text-muted-foreground">Platform administration and oversight</p>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,13 +17,13 @@ import { Button } from '@/components/ui/button';
 import { Calendar, FileText, Home, LogOut, Settings, User } from 'lucide-react';
 
 const DashboardLayout = () => {
-  const { user, logout } = useAuth();
+  const { profile, logout } = useAuth();
 
-  const roleName = user?.role ? {
+  const roleName = profile?.role ? {
     'psychologist': 'School Psychologist',
     'district': 'School District',
     'admin': 'Administrator'
-  }[user.role] : 'User';
+  }[profile.role] : 'User';
 
   return (
     <SidebarProvider defaultOpen>
@@ -48,7 +47,7 @@ const DashboardLayout = () => {
                   </div>
                   <div className="truncate">
                     <div className="text-sm font-medium truncate">
-                      {user?.name || 'Guest'}
+                      {profile?.name || 'Guest'}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
                       {roleName}
@@ -67,7 +66,7 @@ const DashboardLayout = () => {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               
-              {user?.role === 'psychologist' && (
+              {profile?.role === 'psychologist' && (
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton tooltip="Job Listings">
@@ -90,7 +89,7 @@ const DashboardLayout = () => {
                 </>
               )}
               
-              {user?.role === 'district' && (
+              {profile?.role === 'district' && (
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton tooltip="Job Postings">
@@ -113,7 +112,7 @@ const DashboardLayout = () => {
                 </>
               )}
               
-              {user?.role === 'admin' && (
+              {profile?.role === 'admin' && (
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton tooltip="Users">
