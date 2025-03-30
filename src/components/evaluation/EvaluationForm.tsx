@@ -35,12 +35,14 @@ const EvaluationForm = ({ evaluationId, evaluationData }: EvaluationFormProps) =
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   useEffect(() => {
+    // Ensure form_data exists before attempting to use it
     if (evaluationData?.evaluation?.form_data) {
       setFormData(evaluationData.evaluation.form_data);
     }
   }, [evaluationData]);
   
   useEffect(() => {
+    // Make sure sections exist and have length
     if (evaluationData?.template?.sections?.length > 0) {
       setActiveTab(evaluationData.template.sections[0]);
     }
@@ -119,6 +121,7 @@ const EvaluationForm = ({ evaluationId, evaluationData }: EvaluationFormProps) =
     }
   };
 
+  // Safely access status and submitted_at with defaults
   const status = evaluationData.evaluation.status || 'assigned';
   const submittedAt = evaluationData.evaluation.submitted_at;
   const isSubmitted = status === 'submitted';

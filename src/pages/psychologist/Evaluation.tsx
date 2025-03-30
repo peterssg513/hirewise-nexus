@@ -25,6 +25,9 @@ const Evaluation = () => {
     queryFn: () => getEvaluationById(id as string),
     enabled: !!id,
     retry: 1,
+    onError: (error) => {
+      console.error('Error fetching evaluation:', error);
+    }
   });
   
   if (isLoadingEvaluation) {
