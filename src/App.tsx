@@ -1,13 +1,15 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import React from "react"; // Add explicit React import
+import React, { useEffect } from "react"; // Add explicit React import
 
 // Import the storage setup
 import './services/setupStorageBuckets';
+import { setupFormDataColumn } from './services/setupFormDataColumn';
 
 // Pages
 import Index from "./pages/Index";
@@ -38,6 +40,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Setup the form_data column when the app starts
+  useEffect(() => {
+    setupFormDataColumn();
+  }, []);
+  
   return (
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
