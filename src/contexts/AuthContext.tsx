@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
@@ -32,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Fetch user profile data
   const fetchProfile = async (userId: string) => {
@@ -96,6 +98,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initializeAuth();
   }, []);
+
+  // Handle redirect after authentication changes
+  useEffect(() => {
+    // Only attempt navigation if we have loaded the profile and we're not on an auth page
+    if (!isLoading && profile && !location.pathname.includes('/login') && !location.pathname.includes('/register') && !location.pathname.includes('/psychologist-signup')) {
+      const role = profile.role;
+      if (role && location.pathname === '/') {
+        navigate(`/${role}-dashboard`);
+      }
+    }
+  }, [profile, isLoading, navigate, location.pathname]);
 
   const login = async (email: string, password: string) => {
     try {
