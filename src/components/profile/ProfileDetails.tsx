@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -177,7 +176,7 @@ const ProfileDetails = ({
                       <Clock className="h-3 w-3 mr-1" />
                       <span>Issued: {formatDate(cert.startYear)}</span>
                       {cert.expirationDate && (
-                        <span className="ml-2">• Expires: {formatDate(cert.expirationDate)}</span>
+                        <span className="ml-2">Expires: {formatDate(cert.expirationDate)}</span>
                       )}
                     </div>
                   </div>
@@ -334,9 +333,13 @@ const ProfileDetails = ({
         <EditProfileModal 
           isOpen={showAddExperience}
           onClose={handleModalClose}
-          type="experience"
-          userId={profileData.user_id}
-          data={currentExperience}
+          onSave={async (data) => {
+            handleModalClose();
+          }}
+          section="experience"
+          itemId={currentExperience?.id || null}
+          profileData={profileData}
+          experienceData={currentExperience}
         />
       )}
       
@@ -344,9 +347,13 @@ const ProfileDetails = ({
         <EditProfileModal 
           isOpen={showAddEducation}
           onClose={handleModalClose}
-          type="education"
-          userId={profileData.user_id}
-          data={currentEducation}
+          onSave={async (data) => {
+            handleModalClose();
+          }}
+          section="education"
+          itemId={currentEducation?.id || null}
+          profileData={profileData}
+          educationData={currentEducation}
         />
       )}
       
@@ -354,9 +361,13 @@ const ProfileDetails = ({
         <EditProfileModal 
           isOpen={showAddCertification}
           onClose={handleModalClose}
-          type="certification"
-          userId={profileData.user_id}
-          data={currentCertification}
+          onSave={async (data) => {
+            handleModalClose();
+          }}
+          section="certification"
+          itemId={currentCertification?.id || null}
+          profileData={profileData}
+          certificationData={currentCertification}
         />
       )}
     </motion.div>
