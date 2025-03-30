@@ -7,18 +7,22 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, MapPin, BriefcaseBusiness, GraduationCap, Scroll, FileEdit } from 'lucide-react';
 import { Certification } from '@/services/certificationService';
 import { Experience, Education } from '@/services/psychologistSignupService';
-import { Json } from '@/integrations/supabase/types';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [certifications, setCertifications] = useState<Certification[]>([]);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Helper function to safely parse JSON data
   const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any[] => {
@@ -59,9 +63,15 @@ const Profile = () => {
   
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        setError("User not authenticated");
+        return;
+      }
       
       try {
+        console.log("Fetching profile for user:", user.id);
+        
         const { data, error } = await supabase
           .from('psychologists')
           .select(`
@@ -74,7 +84,18 @@ const Profile = () => {
           .eq('user_id', user.id)
           .single();
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching psychologist profile:', error);
+          setError("Error fetching profile data");
+          toast({
+            title: 'Error',
+            description: 'Failed to fetch profile data. Please try again.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        
+        console.log("Profile data retrieved:", data);
         setProfile(data);
         
         // Parse experience data
@@ -121,14 +142,24 @@ const Profile = () => {
           setCertifications([]);
         }
       } catch (err) {
-        console.error('Error fetching profile:', err);
+        console.error('Error in fetchProfile:', err);
+        setError("An unexpected error occurred");
       } finally {
         setLoading(false);
       }
     };
     
     fetchProfile();
-  }, [user]);
+  }, [user, toast]);
+  
+  const handleEditProfile = () => {
+    // For now, navigate to signup flow
+    navigate('/psychologist-signup');
+    toast({
+      title: 'Edit Profile',
+      description: 'You can update your profile information here.',
+    });
+  };
   
   if (loading) {
     return (
@@ -138,12 +169,32 @@ const Profile = () => {
     );
   }
   
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">Error Loading Profile</h2>
+          <p className="text-gray-500 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  
   if (!profile) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-700 mb-2">Profile Not Found</h2>
-          <p className="text-gray-500">Unable to retrieve your profile information.</p>
+          <p className="text-gray-500 mb-4">Unable to retrieve your profile information.</p>
+          <Button 
+            className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90 text-white"
+            onClick={() => navigate('/psychologist-signup')}
+          >
+            Complete Your Profile
+          </Button>
         </div>
       </div>
     );
@@ -184,6 +235,7 @@ const Profile = () => {
             <Button 
               className="mt-6 bg-psyched-darkBlue hover:bg-psyched-darkBlue/80"
               size="sm"
+              onClick={handleEditProfile}
             >
               <FileEdit className="h-4 w-4 mr-2" /> Edit Profile
             </Button>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, ClipboardCheck, Users, Settings, LogOut, 
-  Menu, X, ChevronRight, BriefcaseBusiness, User
+  Menu, X, ChevronRight, BriefcaseBusiness, User, FileSpreadsheet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -87,6 +87,14 @@ const DashboardLayout = () => {
               onClick={() => navigate('/psychologist-dashboard/jobs')}
             >
               <BriefcaseBusiness className="h-5 w-5" />
+            </NavButton>
+            
+            <NavButton
+              tooltip="Evaluations"
+              isActive={pathname === '/psychologist-dashboard/evaluations'}
+              onClick={() => navigate('/psychologist-dashboard/evaluations')}
+            >
+              <FileSpreadsheet className="h-5 w-5" />
             </NavButton>
             
             <NavButton
@@ -197,6 +205,10 @@ const DashboardLayout = () => {
                 <Button variant="ghost" className="justify-start gap-2" onClick={() => navigate('/psychologist-dashboard/jobs')}>
                   <BriefcaseBusiness className="h-4 w-4" />
                   Job Listings
+                </Button>
+                <Button variant="ghost" className="justify-start gap-2" onClick={() => navigate('/psychologist-dashboard/evaluations')}>
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Evaluations
                 </Button>
                 <Button variant="ghost" className="justify-start gap-2" onClick={() => navigate('/psychologist-dashboard/applications')}>
                   <ClipboardCheck className="h-4 w-4" />

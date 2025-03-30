@@ -29,18 +29,49 @@ const Navbar = () => {
           </div>
           
           <div className="hidden md:flex space-x-6">
-            <Link 
-              to="/for-psychologists" 
-              className={`font-medium ${location.pathname === '/for-psychologists' ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              For School Psychologists
-            </Link>
-            <Link 
-              to="/for-districts" 
-              className={`font-medium ${location.pathname === '/for-districts' ? 'text-psyched-orange' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              For Districts/Schools
-            </Link>
+            {isAuthenticated && profile?.role === 'psychologist' ? (
+              <>
+                <Link 
+                  to="/psychologist-dashboard" 
+                  className={`font-medium ${location.pathname === '/psychologist-dashboard' ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  to="/psychologist-dashboard/jobs" 
+                  className={`font-medium ${location.pathname === '/psychologist-dashboard/jobs' ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  Jobs
+                </Link>
+                <Link 
+                  to="/psychologist-dashboard/evaluations" 
+                  className={`font-medium ${location.pathname === '/psychologist-dashboard/evaluations' ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  Evaluations
+                </Link>
+                <Link 
+                  to="/psychologist-dashboard/profile" 
+                  className={`font-medium ${location.pathname === '/psychologist-dashboard/profile' ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  Profile
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/for-psychologists" 
+                  className={`font-medium ${location.pathname === '/for-psychologists' ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  For School Psychologists
+                </Link>
+                <Link 
+                  to="/for-districts" 
+                  className={`font-medium ${location.pathname === '/for-districts' ? 'text-psyched-orange' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  For Districts/Schools
+                </Link>
+              </>
+            )}
           </div>
           
           <div className="flex items-center space-x-3">

@@ -28,6 +28,7 @@ import PsychologistSignup from "./pages/PsychologistSignup";
 import JobListings from "./pages/psychologist/JobListings";
 import Applications from "./pages/psychologist/Applications";
 import Profile from "./pages/psychologist/Profile";
+import Evaluations from "./pages/psychologist/Evaluations";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -73,10 +74,9 @@ const App = () => {
                   <Route index element={<PsychologistDashboard />} />
                   <Route path="jobs" element={<JobListings />} />
                   <Route path="applications" element={<Applications />} />
+                  <Route path="evaluations" element={<Evaluations />} />
                   <Route path="profile" element={<Profile />} />
                 </Route>
-                
-                {/* Note: Evaluation route removed as requested */}
                 
                 {/* Protected Routes - District */}
                 <Route path="/district-dashboard" element={
