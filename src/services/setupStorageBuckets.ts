@@ -14,6 +14,7 @@ export const setupStorageBuckets = async (): Promise<void> => {
     if (bucketsError) throw bucketsError;
     
     const certificationsBucketExists = buckets.some(b => b.name === 'certifications');
+    const psychologistFilesBucketExists = buckets.some(b => b.name === 'psychologist_files');
     
     if (!certificationsBucketExists) {
       // Create the certifications bucket
@@ -27,6 +28,20 @@ export const setupStorageBuckets = async (): Promise<void> => {
       if (createBucketError) throw createBucketError;
       
       console.log('Created certifications storage bucket');
+    }
+    
+    if (!psychologistFilesBucketExists) {
+      // Create the psychologist_files bucket
+      const { error: createBucketError } = await supabase
+        .storage
+        .createBucket('psychologist_files', {
+          public: true,
+          fileSizeLimit: 5242880, // 5MB
+        });
+        
+      if (createBucketError) throw createBucketError;
+      
+      console.log('Created psychologist_files storage bucket');
     }
   } catch (error) {
     console.error('Error setting up storage buckets:', error);

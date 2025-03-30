@@ -17,6 +17,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 }) => {
   const { toast } = useToast();
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(profilePictureUrl);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,14 +32,23 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       const filePath = `${userId}/${fileName}`;
       
       // Check if the psychologist_files bucket exists, create if not
-      const { data: buckets } = await supabase.storage.listBuckets();
+      const { data: buckets, error: listBucketsError } = await supabase.storage.listBuckets();
+      
+      if (listBucketsError) {
+        throw listBucketsError;
+      }
       
       if (!buckets?.find(bucket => bucket.name === 'psychologist_files')) {
-        await supabase.storage.createBucket('psychologist_files', {
+        const { error: createError } = await supabase.storage.createBucket('psychologist_files', {
           public: true,
           fileSizeLimit: 5242880 // 5MB
         });
+        
+        if (createError) throw createError;
       }
+      
+      // First create a local preview for immediate feedback
+      setImagePreview(URL.createObjectURL(file));
       
       // Upload the file
       const { error: uploadError } = await supabase.storage
@@ -52,7 +62,9 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         .from('psychologist_files')
         .getPublicUrl(filePath);
         
-      onUploadComplete(urlData.publicUrl);
+      if (!urlData?.publicUrl) {
+        throw new Error('Failed to get public URL');
+      }
       
       // Update the psychologist record with the profile picture URL
       const { error: updateError } = await supabase
@@ -61,6 +73,9 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         .eq('user_id', userId);
         
       if (updateError) throw updateError;
+      
+      // Update parent component
+      onUploadComplete(urlData.publicUrl);
       
       toast({
         title: 'Image uploaded',
@@ -73,6 +88,8 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         description: error.message || 'An unexpected error occurred',
         variant: 'destructive',
       });
+      // Reset the preview on error
+      setImagePreview(profilePictureUrl);
     } finally {
       setUploadingImage(false);
     }
@@ -82,10 +99,10 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     <div className="mb-8">
       <label className="block text-sm font-medium mb-2">Profile Picture</label>
       <div className="flex flex-col items-center">
-        <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 mb-4 bg-gray-100">
-          {profilePictureUrl ? (
+        <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 mb-4 bg-gray-100 relative">
+          {imagePreview ? (
             <img 
-              src={profilePictureUrl} 
+              src={imagePreview} 
               alt="Profile" 
               className="w-full h-full object-cover"
             />
