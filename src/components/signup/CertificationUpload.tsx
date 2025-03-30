@@ -12,7 +12,7 @@ import {
   getCertifications
 } from '@/services/certificationService';
 import CertificationList from './CertificationList';
-import CertificationForm from './CertificationForm';
+import CertificationFormSection from './CertificationFormSection';
 
 interface CertificationUploadProps {
   onComplete: () => void;
@@ -23,7 +23,6 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const [showCertificationForm, setShowCertificationForm] = useState(false);
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +64,6 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
     };
     
     setCertifications(prev => [...prev, newCertification]);
-    setShowCertificationForm(false);
     
     toast({
       title: 'Certification added',
@@ -134,28 +132,10 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
       <h2 className="text-2xl font-bold text-psyched-darkBlue mb-6">Your Certifications</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <label className="block text-sm font-medium">Certifications</label>
-            {!showCertificationForm && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowCertificationForm(true)}
-                className="text-psyched-darkBlue border-psyched-darkBlue"
-              >
-                Add Certification
-              </Button>
-            )}
-          </div>
-          
-          {showCertificationForm && (
-            <CertificationForm 
-              onAdd={handleAddCertification}
-              onCancel={() => setShowCertificationForm(false)}
-            />
-          )}
-        </div>
+        <CertificationFormSection 
+          certifications={certifications}
+          onAddCertification={handleAddCertification}
+        />
         
         <div className="mt-6">
           <CertificationList 
