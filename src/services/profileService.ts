@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 /**
  * Fetches the psychologist profile data
@@ -10,7 +11,7 @@ export const fetchPsychologistProfile = async (userId: string) => {
       .from('psychologists')
       .select(`
         *,
-        profiles:user_id(
+        profiles:profiles(
           name,
           email
         )
@@ -18,7 +19,18 @@ export const fetchPsychologistProfile = async (userId: string) => {
       .eq('user_id', userId)
       .single();
       
-    if (error) throw error;
+    if (error) {
+      console.error("Error details:", error);
+      
+      // If record not found, create a new profile
+      if (error.code === 'PGRST116') {
+        await createPsychologistProfile(userId);
+        return fetchPsychologistProfile(userId);
+      }
+      
+      throw error;
+    }
+    
     return data;
   } catch (error) {
     console.error('Error fetching psychologist profile:', error);
@@ -38,9 +50,22 @@ export const updatePsychologistProfile = async (userId: string, profileData: any
       .select();
       
     if (error) throw error;
+    
+    toast({
+      title: "Profile updated",
+      description: "Your profile has been successfully updated.",
+    });
+    
     return data;
   } catch (error) {
     console.error('Error updating psychologist profile:', error);
+    
+    toast({
+      title: "Update failed",
+      description: "There was an error updating your profile. Please try again.",
+      variant: "destructive",
+    });
+    
     throw error;
   }
 };
@@ -68,12 +93,57 @@ export const createPsychologistProfile = async (userId: string) => {
         .single();
         
       if (error) throw error;
+      
+      toast({
+        title: "Profile created",
+        description: "Your profile has been created. Complete your profile to improve your experience.",
+      });
+      
       return data;
     }
     
     return existingProfile;
   } catch (error) {
     console.error('Error creating psychologist profile:', error);
+    
+    toast({
+      title: "Profile creation failed",
+      description: "There was an error creating your profile. Please try again.",
+      variant: "destructive",
+    });
+    
+    throw error;
+  }
+};
+
+/**
+ * Updates a specific field in the psychologist profile
+ */
+export const updateProfileField = async (userId: string, field: string, value: any) => {
+  try {
+    const { data, error } = await supabase
+      .from('psychologists')
+      .update({ [field]: value })
+      .eq('user_id', userId)
+      .select();
+      
+    if (error) throw error;
+    
+    toast({
+      title: "Profile updated",
+      description: `Your ${field.replace('_', ' ')} has been updated.`,
+    });
+    
+    return data;
+  } catch (error) {
+    console.error(`Error updating profile field ${field}:`, error);
+    
+    toast({
+      title: "Update failed",
+      description: "There was an error updating your profile. Please try again.",
+      variant: "destructive",
+    });
+    
     throw error;
   }
 };

@@ -1,132 +1,171 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { BriefcaseBusiness, GraduationCap, Scroll } from 'lucide-react';
-import { Experience, Education } from '@/services/psychologistSignupService';
-import { Certification } from '@/services/certificationService';
+import { Briefcase, GraduationCap, Award, Phone, Mail } from 'lucide-react';
 
 interface ProfileDetailsProps {
-  experiences: Experience[];
-  educations: Education[];
-  certifications: Certification[];
+  profileData: any;
 }
 
-const ProfileDetails = ({ experiences, educations, certifications }: ProfileDetailsProps) => {
+const ProfileDetails = ({ profileData }: ProfileDetailsProps) => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.1,
+        delayChildren: 0.3
+      }
+    }
+  };
+  
+  const cardVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100 }
+    }
+  };
+
   return (
-    <div className="w-full md:w-2/3">
-      <Tabs defaultValue="experience" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-6">
-          <TabsTrigger value="experience" className="flex items-center gap-1">
-            <BriefcaseBusiness className="h-4 w-4" /> Experience
-          </TabsTrigger>
-          <TabsTrigger value="education" className="flex items-center gap-1">
-            <GraduationCap className="h-4 w-4" /> Education
-          </TabsTrigger>
-          <TabsTrigger value="certifications" className="flex items-center gap-1">
-            <Scroll className="h-4 w-4" /> Certifications
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="experience">
-          <div className="space-y-4">
-            {experiences.length > 0 ? (
-              experiences.map((exp) => (
-                <Card key={exp.id}>
-                  <CardHeader>
+    <motion.div 
+      className="w-full md:w-2/3 space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Contact Information */}
+      <motion.div variants={cardVariants}>
+        <Card className="shadow-sm hover:shadow transition-shadow duration-300 border-gray-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold text-psyched-darkBlue flex items-center gap-2">
+              <Mail className="h-5 w-5 text-psyched-orange" />
+              Contact Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Email</p>
+                <p className="font-medium">{profileData.profiles?.email}</p>
+              </div>
+              {profileData.phone_number && (
+                <div>
+                  <p className="text-sm text-gray-500">Phone Number</p>
+                  <p className="font-medium">{profileData.phone_number}</p>
+                </div>
+              )}
+              {(profileData.city || profileData.state) && (
+                <div>
+                  <p className="text-sm text-gray-500">Location</p>
+                  <p className="font-medium">
+                    {[profileData.city, profileData.state].filter(Boolean).join(', ')}
+                    {profileData.zip_code && ` ${profileData.zip_code}`}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Experience */}
+      {profileData.experience && profileData.experience.length > 0 && (
+        <motion.div variants={cardVariants}>
+          <Card className="shadow-sm hover:shadow transition-shadow duration-300 border-gray-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-semibold text-psyched-darkBlue flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-psyched-orange" />
+                Professional Experience
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Array.isArray(profileData.experience) && profileData.experience.map((exp: any, index: number) => (
+                  <div key={index} className="border-l-2 border-psyched-lightBlue pl-4 py-1">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>{exp.position}</CardTitle>
-                        <CardDescription>{exp.organization}</CardDescription>
-                      </div>
-                      <Badge variant="outline">
-                        {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                      <h4 className="font-medium text-psyched-darkBlue">{exp.title}</h4>
+                      <Badge variant="outline" className="bg-blue-50">
+                        {exp.start_date} - {exp.end_date || 'Present'}
                       </Badge>
                     </div>
-                  </CardHeader>
-                  {exp.description && (
-                    <CardContent>
-                      <p className="text-sm text-gray-600">{exp.description}</p>
-                    </CardContent>
-                  )}
-                </Card>
-              ))
-            ) : (
-              <div className="text-center p-8 border border-dashed rounded-lg">
-                <p className="text-gray-500">No experience information added yet.</p>
+                    <p className="text-gray-600">{exp.company}</p>
+                    <p className="text-sm text-gray-500 mt-1">{exp.description}</p>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="education">
-          <div className="space-y-4">
-            {educations.length > 0 ? (
-              educations.map((edu) => (
-                <Card key={edu.id}>
-                  <CardHeader>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Education */}
+      {profileData.education && profileData.education.length > 0 && (
+        <motion.div variants={cardVariants}>
+          <Card className="shadow-sm hover:shadow transition-shadow duration-300 border-gray-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-semibold text-psyched-darkBlue flex items-center gap-2">
+                <GraduationCap className="h-5 w-5 text-psyched-lightBlue" />
+                Education
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Array.isArray(profileData.education) && profileData.education.map((edu: any, index: number) => (
+                  <div key={index} className="border-l-2 border-psyched-yellow pl-4 py-1">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>{edu.field}</CardTitle>
-                        <CardDescription>{edu.institution}</CardDescription>
-                      </div>
-                      <Badge variant="outline">
-                        {edu.startDate || edu.degree} - {edu.endDate}
+                      <h4 className="font-medium text-psyched-darkBlue">{edu.degree}</h4>
+                      <Badge variant="outline" className="bg-amber-50">
+                        {edu.graduation_year}
                       </Badge>
                     </div>
-                  </CardHeader>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center p-8 border border-dashed rounded-lg">
-                <p className="text-gray-500">No education information added yet.</p>
+                    <p className="text-gray-600">{edu.institution}</p>
+                    <p className="text-sm text-gray-500 mt-1">{edu.field_of_study}</p>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="certifications">
-          <div className="space-y-4">
-            {certifications.length > 0 ? (
-              certifications.map((cert) => (
-                <Card key={cert.id}>
-                  <CardHeader>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Certifications */}
+      {profileData.certification_details && profileData.certification_details.length > 0 && (
+        <motion.div variants={cardVariants}>
+          <Card className="shadow-sm hover:shadow transition-shadow duration-300 border-gray-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-semibold text-psyched-darkBlue flex items-center gap-2">
+                <Award className="h-5 w-5 text-psyched-orange" />
+                Certifications & Licenses
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Array.isArray(profileData.certification_details) && profileData.certification_details.map((cert: any, index: number) => (
+                  <div key={index} className="border-l-2 border-green-500 pl-4 py-1">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>{cert.name}</CardTitle>
-                        {cert.issuer && <CardDescription>{cert.issuer}</CardDescription>}
-                      </div>
-                      <div>
-                        <Badge variant="outline">{cert.date || cert.startYear}</Badge>
-                        {cert.expirationDate && <Badge variant="outline" className="ml-2">Expires: {cert.expirationDate}</Badge>}
-                      </div>
+                      <h4 className="font-medium text-psyched-darkBlue">{cert.name}</h4>
+                      {cert.expiration_date && (
+                        <Badge variant="outline" className="bg-green-50">
+                          Expires: {cert.expiration_date}
+                        </Badge>
+                      )}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    {(cert.documentUrl || cert.url) && (
-                      <Button variant="outline" size="sm" className="text-blue-600">
-                        <a href={cert.documentUrl || cert.url} target="_blank" rel="noopener noreferrer">
-                          View Certificate
-                        </a>
-                      </Button>
+                    <p className="text-gray-600">{cert.issuing_authority}</p>
+                    {cert.description && (
+                      <p className="text-sm text-gray-500 mt-1">{cert.description}</p>
                     )}
-                    <Badge className={`ml-2 ${cert.status === 'verified' ? 'bg-green-500' : 'bg-yellow-500'}`}>
-                      {cert.status === 'verified' ? 'Verified' : 'Pending Verification'}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center p-8 border border-dashed rounded-lg">
-                <p className="text-gray-500">No certification information added yet.</p>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </motion.div>
   );
 };
 
