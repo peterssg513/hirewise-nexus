@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -7,7 +8,8 @@ import { Button } from '@/components/ui/button';
 
 import { 
   saveCertifications, 
-  Certification 
+  Certification,
+  getCertifications
 } from '@/services/certificationService';
 import CertificationList from './CertificationList';
 import CertificationForm from './CertificationForm';
@@ -24,12 +26,28 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
   const [showCertificationForm, setShowCertificationForm] = useState(false);
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    // Load existing certifications if needed
-  }, []);
+    // Load existing certifications
+    const loadCertifications = async () => {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        const existingCertifications = await getCertifications(user.id);
+        setCertifications(existingCertifications);
+      } catch (error) {
+        console.error('Error loading certifications:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadCertifications();
+  }, [user]);
   
-  const handleAddCertification = async (certification: Certification) => {
+  const handleAddCertification = (certification: Certification) => {
     if (!user) {
       toast({
         title: 'Authentication error',
@@ -102,6 +120,14 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
       setIsSubmitting(false);
     }
   };
+  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-psyched-darkBlue" />
+      </div>
+    );
+  }
   
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
