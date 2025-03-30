@@ -1,83 +1,165 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Search, Award, ClipboardCheck, TrendingDown, Sparkles, ArrowRight, Check, Star, School, FileText, Quote } from 'lucide-react';
+import { Clock, Search, Award, TrendingDown, School, FileText, Sparkles, Check } from 'lucide-react';
+import HeroSection from '@/components/landing/HeroSection';
+import BenefitsSection from '@/components/landing/BenefitsSection';
+import ProcessSection from '@/components/landing/ProcessSection';
+import TestimonialsSection from '@/components/landing/TestimonialsSection';
+import CTASection from '@/components/landing/CTASection';
 
 const DistrictsLanding = () => {
+  const heroStats = [
+    {
+      icon: Clock,
+      iconColor: "text-orange-600",
+      bgColor: "bg-orange-100",
+      title: "75% Faster Hiring",
+      description: "Reduce hiring cycles dramatically"
+    },
+    {
+      icon: Award,
+      iconColor: "text-green-600",
+      bgColor: "bg-green-100",
+      title: "Qualified Candidates",
+      description: "Pre-screened professionals"
+    },
+    {
+      icon: TrendingDown,
+      iconColor: "text-blue-600",
+      bgColor: "bg-blue-100",
+      title: "Clear Backlogs",
+      description: "Reduce evaluation waitlists"
+    }
+  ];
+
+  const benefits = [
+    {
+      icon: Clock,
+      iconColor: "text-psyched-orange",
+      borderColor: "border-t-psyched-orange",
+      title: "Faster Hiring",
+      description: "Reduce your hiring cycle by up to 75% with our streamlined matching system.",
+      features: [
+        "Simplified job posting process",
+        "Pre-screened candidates",
+        "Rapid application review"
+      ]
+    },
+    {
+      icon: Award,
+      iconColor: "text-psyched-yellow",
+      borderColor: "border-t-psyched-yellow",
+      title: "Quality Candidates",
+      description: "Access pre-screened, qualified psychologists who match your specific needs.",
+      features: [
+        "Verified credentials and experience",
+        "Skill-based matching",
+        "Background checks included"
+      ]
+    },
+    {
+      icon: TrendingDown,
+      iconColor: "text-psyched-lightBlue",
+      borderColor: "border-t-psyched-lightBlue",
+      title: "Backlog Reduction",
+      description: "Clear evaluation backlogs quickly with our efficient process and qualified professionals.",
+      features: [
+        "Streamlined evaluation workflows",
+        "AI-assisted report generation",
+        "Compliance monitoring"
+      ]
+    }
+  ];
+
+  const processSteps = [
+    {
+      number: 1,
+      title: "Create District Profile",
+      description: "Set up your district profile with key information and requirements.",
+      features: [
+        "District information",
+        "Compliance requirements",
+        "Admin user management"
+      ],
+      borderColor: "border-l-psyched-orange",
+      dotColor: "bg-psyched-orange"
+    },
+    {
+      number: 2,
+      title: "Post Job Openings",
+      description: "Create detailed job postings with specific requirements and timeframes.",
+      features: [
+        "Intuitive job form",
+        "Skills specification",
+        "Timeline definition"
+      ],
+      borderColor: "border-l-psyched-yellow",
+      dotColor: "bg-psyched-yellow"
+    },
+    {
+      number: 3,
+      title: "Review Applications",
+      description: "Browse applications from qualified candidates and select the best matches.",
+      features: [
+        "Candidate comparison",
+        "Credential verification",
+        "Interview scheduling"
+      ],
+      borderColor: "border-l-psyched-lightBlue",
+      dotColor: "bg-psyched-lightBlue"
+    },
+    {
+      number: 4,
+      title: "Access Reports",
+      description: "Receive comprehensive, compliant evaluation reports through our secure platform.",
+      features: [
+        "Secure document access",
+        "Compliance verification",
+        "Digital record keeping"
+      ],
+      borderColor: "border-l-psyched-darkBlue",
+      dotColor: "bg-psyched-darkBlue"
+    }
+  ];
+
+  const testimonials = [
+    {
+      initials: "JM",
+      name: "Jessica Martinez",
+      role: "HR Director",
+      organization: "Chicago Public Schools",
+      quote: "PsychedHire! has been a game-changer for our district. We've reduced our hiring time significantly and found quality psychologists who match our specific needs. The platform is intuitive and has streamlined our entire process.",
+      bgColor: "bg-psyched-orange/20"
+    },
+    {
+      initials: "RJ",
+      name: "Robert Johnson",
+      role: "Special Education Director",
+      organization: "Los Angeles Unified",
+      quote: "The evaluation backlog that used to take months to address can now be cleared in weeks. PsychedHire! has transformed how we support our students' mental health needs and has given us access to top-quality professionals.",
+      bgColor: "bg-psyched-yellow/20"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="pt-20 pb-24 bg-gradient-to-br from-psyched-cream to-white relative overflow-hidden">
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-psyched-orange/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-psyched-yellow/10 rounded-full blur-3xl"></div>
-        
-        <div className="psyched-container relative z-10">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center">
-              <div className="inline-flex items-center px-4 py-1.5 mb-4 bg-orange-100 text-orange-600 rounded-full text-sm font-medium">
-                <Sparkles className="w-4 h-4 mr-2" />
-                The Future of School Psychology
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-psyched-darkBlue mb-6">
-                Streamline School Psychology Staffing
-              </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Find qualified psychologists quickly, reduce backlogs, and improve student support
-                <span className="font-medium text-psyched-darkBlue"> — so you can focus on what matters most.</span>
-              </p>
-              
-              <div className="flex justify-center mb-8">
-                <Link to="/register?role=district">
-                  <Button size="lg" className="group bg-psyched-orange text-white hover:bg-psyched-orange/90">
-                    Join as a District
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-100">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-orange-100 rounded-full p-2 mr-3">
-                    <Clock className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-psyched-darkBlue">75% Faster Hiring</p>
-                    <p className="text-sm text-gray-600">Reduce hiring cycles dramatically</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-green-100 rounded-full p-2 mr-3">
-                    <Award className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-psyched-darkBlue">Qualified Candidates</p>
-                    <p className="text-sm text-gray-600">Pre-screened professionals</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-blue-100 rounded-full p-2 mr-3">
-                    <TrendingDown className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-psyched-darkBlue">Clear Backlogs</p>
-                    <p className="text-sm text-gray-600">Reduce evaluation waitlists</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection 
+        badge="The Future of School Psychology"
+        badgeIcon={Sparkles}
+        badgeBgColor="bg-orange-100"
+        badgeTextColor="text-orange-600"
+        title="Streamline School Psychology Staffing"
+        description="Find qualified psychologists quickly, reduce backlogs, and improve student support — so you can focus on what matters most."
+        ctaLink="/register?role=district"
+        ctaText="Join as a District"
+        ctaBgColor="bg-psyched-orange"
+        ctaTextColor="text-white"
+        stats={heroStats}
+      />
       
       {/* Case Study Section */}
       <section className="py-16 bg-white">
@@ -199,245 +281,22 @@ const DistrictsLanding = () => {
                   </div>
                 </li>
               </ul>
-              
-              <Link to="/register?role=district">
-                <Button className="group bg-psyched-orange text-white hover:bg-psyched-orange/90">
-                  See More Success Stories
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
       </section>
       
-      {/* Benefits Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="psyched-container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-psyched-darkBlue mb-4">
-              Benefits for School Districts
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              PsychedHire! provides comprehensive solutions to your school psychology staffing challenges.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-t-4 border-t-psyched-orange shadow-md hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex flex-col items-center text-center">
-                  <Clock className="text-psyched-orange h-10 w-10 mb-4" />
-                  <h3 className="text-xl font-semibold text-psyched-darkBlue mb-2">
-                    Faster Hiring
-                  </h3>
-                  <p className="text-gray-600">
-                    Reduce your hiring cycle by up to 75% with our streamlined matching system.
-                  </p>
-                  <ul className="mt-4 text-left space-y-2 w-full">
-                    <li className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">Simplified job posting process</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">Pre-screened candidates</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">Rapid application review</span>
-                    </li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-t-4 border-t-psyched-yellow shadow-md hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex flex-col items-center text-center">
-                  <Award className="text-psyched-yellow h-10 w-10 mb-4" />
-                  <h3 className="text-xl font-semibold text-psyched-darkBlue mb-2">
-                    Quality Candidates
-                  </h3>
-                  <p className="text-gray-600">
-                    Access pre-screened, qualified psychologists who match your specific needs.
-                  </p>
-                  <ul className="mt-4 text-left space-y-2 w-full">
-                    <li className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">Verified credentials and experience</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">Skill-based matching</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">Background checks included</span>
-                    </li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-t-4 border-t-psyched-lightBlue shadow-md hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex flex-col items-center text-center">
-                  <TrendingDown className="text-psyched-lightBlue h-10 w-10 mb-4" />
-                  <h3 className="text-xl font-semibold text-psyched-darkBlue mb-2">
-                    Backlog Reduction
-                  </h3>
-                  <p className="text-gray-600">
-                    Clear evaluation backlogs quickly with our efficient process and qualified professionals.
-                  </p>
-                  <ul className="mt-4 text-left space-y-2 w-full">
-                    <li className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">Streamlined evaluation workflows</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">AI-assisted report generation</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">Compliance monitoring</span>
-                    </li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      <BenefitsSection 
+        title="Benefits for School Districts"
+        subtitle="PsychedHire! provides comprehensive solutions to your school psychology staffing challenges."
+        benefits={benefits}
+      />
       
-      {/* Process Section */}
-      <section className="py-16 bg-white">
-        <div className="psyched-container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-psyched-darkBlue mb-4">
-              Simplified Job Posting Process
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              We've streamlined every step from posting to report delivery
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="relative">
-              <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow h-full border-l-4 border-l-psyched-orange">
-                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-psyched-darkBlue text-white flex items-center justify-center font-bold shadow-lg">
-                  1
-                </div>
-                <h3 className="text-lg font-semibold text-psyched-darkBlue mb-3 mt-2">
-                  Create District Profile
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Set up your district profile with key information and requirements.
-                </p>
-                <ul className="text-sm space-y-1 text-gray-500">
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-orange rounded-full mr-2 flex-shrink-0"></div>
-                    District information
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-orange rounded-full mr-2 flex-shrink-0"></div>
-                    Compliance requirements
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-orange rounded-full mr-2 flex-shrink-0"></div>
-                    Admin user management
-                  </li>
-                </ul>
-              </div>
-            </div>
-            
-            <div className="relative">
-              <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow h-full border-l-4 border-l-psyched-yellow">
-                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-psyched-darkBlue text-white flex items-center justify-center font-bold shadow-lg">
-                  2
-                </div>
-                <h3 className="text-lg font-semibold text-psyched-darkBlue mb-3 mt-2">
-                  Post Job Openings
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Create detailed job postings with specific requirements and timeframes.
-                </p>
-                <ul className="text-sm space-y-1 text-gray-500">
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-yellow rounded-full mr-2 flex-shrink-0"></div>
-                    Intuitive job form
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-yellow rounded-full mr-2 flex-shrink-0"></div>
-                    Skills specification
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-yellow rounded-full mr-2 flex-shrink-0"></div>
-                    Timeline definition
-                  </li>
-                </ul>
-              </div>
-            </div>
-            
-            <div className="relative">
-              <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow h-full border-l-4 border-l-psyched-lightBlue">
-                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-psyched-darkBlue text-white flex items-center justify-center font-bold shadow-lg">
-                  3
-                </div>
-                <h3 className="text-lg font-semibold text-psyched-darkBlue mb-3 mt-2">
-                  Review Applications
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Browse applications from qualified candidates and select the best matches.
-                </p>
-                <ul className="text-sm space-y-1 text-gray-500">
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-lightBlue rounded-full mr-2 flex-shrink-0"></div>
-                    Candidate comparison
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-lightBlue rounded-full mr-2 flex-shrink-0"></div>
-                    Credential verification
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-lightBlue rounded-full mr-2 flex-shrink-0"></div>
-                    Interview scheduling
-                  </li>
-                </ul>
-              </div>
-            </div>
-            
-            <div className="relative">
-              <div className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow h-full border-l-4 border-l-psyched-darkBlue">
-                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-psyched-darkBlue text-white flex items-center justify-center font-bold shadow-lg">
-                  4
-                </div>
-                <h3 className="text-lg font-semibold text-psyched-darkBlue mb-3 mt-2">
-                  Access Reports
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Receive comprehensive, compliant evaluation reports through our secure platform.
-                </p>
-                <ul className="text-sm space-y-1 text-gray-500">
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-darkBlue rounded-full mr-2 flex-shrink-0"></div>
-                    Secure document access
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-darkBlue rounded-full mr-2 flex-shrink-0"></div>
-                    Compliance verification
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-psyched-darkBlue rounded-full mr-2 flex-shrink-0"></div>
-                    Digital record keeping
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <ProcessSection 
+        title="Simplified Job Posting Process"
+        subtitle="We've streamlined every step from posting to report delivery"
+        steps={processSteps}
+      />
       
       {/* Stats Section */}
       <section className="py-16 bg-psyched-cream">
@@ -473,110 +332,22 @@ const DistrictsLanding = () => {
         </div>
       </section>
       
-      {/* Testimonial Section */}
-      <section className="py-16 bg-white">
-        <div className="psyched-container">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center px-4 py-1.5 mb-4 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
-              <Star className="w-4 h-4 mr-2 text-amber-500" />
-              Testimonials
-            </div>
-            <h2 className="text-3xl font-bold text-psyched-darkBlue mb-4">
-              What Districts Say
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Hear from the districts who have transformed their psychology services with PsychedHire!
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card className="shadow-lg border-none overflow-hidden">
-              <CardContent className="p-0">
-                <div className="flex flex-col md:flex-row">
-                  <div className="bg-psyched-orange/20 p-8 md:w-1/3 flex flex-col justify-center items-center">
-                    <div className="w-16 h-16 flex items-center justify-center bg-white rounded-full shadow-md mb-4">
-                      <p className="font-bold text-2xl text-psyched-darkBlue">JM</p>
-                    </div>
-                    <p className="font-semibold text-psyched-darkBlue text-center">Jessica Martinez</p>
-                    <p className="text-sm text-gray-600 text-center">HR Director</p>
-                    <p className="text-xs text-gray-500 text-center">Chicago Public Schools</p>
-                  </div>
-                  <div className="p-8 md:w-2/3">
-                    <Quote className="h-8 w-8 text-psyched-yellow mb-4" />
-                    <p className="italic text-gray-700 mb-6">
-                      "PsychedHire! has been a game-changer for our district. We've reduced our hiring time significantly and found quality psychologists who match our specific needs. The platform is intuitive and has streamlined our entire process."
-                    </p>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-amber-500 fill-amber-500" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="shadow-lg border-none overflow-hidden">
-              <CardContent className="p-0">
-                <div className="flex flex-col md:flex-row">
-                  <div className="bg-psyched-yellow/20 p-8 md:w-1/3 flex flex-col justify-center items-center">
-                    <div className="w-16 h-16 flex items-center justify-center bg-white rounded-full shadow-md mb-4">
-                      <p className="font-bold text-2xl text-psyched-darkBlue">RJ</p>
-                    </div>
-                    <p className="font-semibold text-psyched-darkBlue text-center">Robert Johnson</p>
-                    <p className="text-sm text-gray-600 text-center">Special Education Director</p>
-                    <p className="text-xs text-gray-500 text-center">Los Angeles Unified</p>
-                  </div>
-                  <div className="p-8 md:w-2/3">
-                    <Quote className="h-8 w-8 text-psyched-yellow mb-4" />
-                    <p className="italic text-gray-700 mb-6">
-                      "The evaluation backlog that used to take months to address can now be cleared in weeks. PsychedHire! has transformed how we support our students' mental health needs and has given us access to top-quality professionals."
-                    </p>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-amber-500 fill-amber-500" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      <TestimonialsSection 
+        title="What Districts Say"
+        subtitle="Hear from the districts who have transformed their psychology services with PsychedHire!"
+        badge="Testimonials"
+        testimonials={testimonials}
+      />
       
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-psyched-cream to-white">
-        <div className="psyched-container">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-100">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-psyched-darkBlue mb-6">
-                  Ready to Transform Your District's Psychology Services?
-                </h2>
-                <p className="text-xl text-gray-600 mb-8">
-                  Join PsychedHire! today to streamline your hiring process, reduce backlogs, and better support your students.
-                </p>
-                <Link to="/register?role=district">
-                  <Button size="lg" className="group bg-psyched-orange text-white hover:bg-psyched-orange/90">
-                    Sign Up Now
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </Link>
-                
-                <div className="mt-6 text-center">
-                  <p className="text-psyched-darkBlue font-medium">
-                    The Future of School Psychology
-                  </p>
-                  <p className="text-gray-600">
-                    So you can focus on what matters the most
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CTASection 
+        title="Ready to Transform Your District's Psychology Services?"
+        description="Join PsychedHire! today to streamline your hiring process, reduce backlogs, and better support your students."
+        ctaLink="/register?role=district"
+        ctaText="Sign Up Now"
+        ctaBgColor="bg-psyched-orange"
+        ctaTextColor="text-white"
+        bgGradient="bg-gradient-to-br from-psyched-cream to-white"
+      />
       
       <Footer />
     </div>
