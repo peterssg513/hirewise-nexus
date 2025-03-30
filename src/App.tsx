@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -20,61 +20,59 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/update-password" element={<UpdatePassword />} />
-          <Route path="/psychologist-signup" element={<PsychologistSignup />} />
+    <AuthProvider>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
+        <Route path="/psychologist-signup" element={<PsychologistSignup />} />
 
-          {/* Admin Routes */}
-          <Route
-            path="/admin-dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-          </Route>
+        {/* Admin Routes */}
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+        </Route>
 
-          {/* District Routes */}
-          <Route
-            path="/district-dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["district"]}>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<DistrictDashboard />} />
-          </Route>
+        {/* District Routes */}
+        <Route
+          path="/district-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["district"]}>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<DistrictDashboard />} />
+        </Route>
 
-          {/* Psychologist Routes */}
-          <Route
-            path="/psychologist-dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["psychologist"]}>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<PsychologistDashboard />} />
-            <Route path="jobs" element={<JobListings />} />
-            <Route path="evaluations" element={<Evaluations />} />
-            <Route path="applications" element={<Applications />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+        {/* Psychologist Routes */}
+        <Route
+          path="/psychologist-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["psychologist"]}>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<PsychologistDashboard />} />
+          <Route path="jobs" element={<JobListings />} />
+          <Route path="evaluations" element={<Evaluations />} />
+          <Route path="applications" element={<Applications />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
 
-          {/* Default Route */}
-          <Route path="/" element={<Navigate to="/login" />} />
-        </Routes>
-      </AuthProvider>
-    </Router>
+        {/* Default Route */}
+        <Route path="/" element={<Navigate to="/login" />} />
+      </Routes>
+    </AuthProvider>
   );
 }
 
