@@ -7,8 +7,7 @@ import {
   AlertTitle
 } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, Save, SendHorizonal, Loader2, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { 
   saveEvaluationData,
   submitEvaluation
@@ -17,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { EvaluationTemplate } from '@/types/evaluation';
 import EvaluationHeader from './EvaluationHeader';
 import EvaluationTabs from './EvaluationTabs';
+import EvaluationFormActions from './EvaluationFormActions';
 
 interface EvaluationFormProps {
   evaluationId: string;
@@ -161,43 +161,13 @@ const EvaluationForm = ({ evaluationId, evaluationData }: EvaluationFormProps) =
         />
       </Card>
       
-      <div className="flex justify-between mt-6">
-        <Button
-          variant="outline"
-          onClick={() => navigate('/psychologist-dashboard/applications')}
-        >
-          Cancel
-        </Button>
-        
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="gap-2"
-            disabled={isSaving || isSubmitted}
-            onClick={handleSave}
-          >
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            Save
-          </Button>
-          
-          <Button
-            className="gap-2 bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-            disabled={isSubmitting || isSubmitted}
-            onClick={handleSubmit}
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <SendHorizonal className="h-4 w-4" />
-            )}
-            Submit Evaluation
-          </Button>
-        </div>
-      </div>
+      <EvaluationFormActions
+        isSubmitted={isSubmitted}
+        isSaving={isSaving}
+        isSubmitting={isSubmitting}
+        onSave={handleSave}
+        onSubmit={handleSubmit}
+      />
     </>
   );
 };

@@ -23,9 +23,9 @@ export const columnExists = async (tableName: string, columnName: string): Promi
         .from(tableName as any) 
         .select('*')
         .limit(1)
-        .single();
+        .maybeSingle();
         
-      if (tableError && tableError.code !== 'PGRST116') {
+      if (tableError) {
         console.error('Fallback query error:', tableError);
         return false;
       }

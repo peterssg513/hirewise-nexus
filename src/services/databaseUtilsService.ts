@@ -16,7 +16,8 @@ export const checkColumnExists = async (tableName: string, columnName: string): 
       const { data: tableData, error: tableError } = await supabase
         .from(tableName as any)
         .select('*')
-        .limit(1);
+        .limit(1)
+        .maybeSingle();
         
       if (tableError) {
         console.error('Fallback query error:', tableError);
@@ -24,7 +25,7 @@ export const checkColumnExists = async (tableName: string, columnName: string): 
       }
       
       // Check if the column exists in the returned data
-      return tableData && tableData.length > 0 && columnName in tableData[0];
+      return tableData ? columnName in tableData : false;
     }
     
     return data && data.length > 0;
