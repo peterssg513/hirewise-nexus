@@ -93,14 +93,24 @@ const Profile = () => {
           
           // Parse experience data
           if (data.experience) {
-            const expData = safeJsonParse(data.experience);
-            setExperiences(expData.map(mapExperienceProperties));
+            const expData = typeof data.experience === 'string' 
+              ? safeJsonParse(data.experience)
+              : data.experience;
+              
+            setExperiences(Array.isArray(expData) 
+              ? expData.map(mapExperienceProperties)
+              : []);
           }
           
           // Parse education data
           if (data.education) {
-            const eduData = safeJsonParse(data.education);
-            setEducations(eduData.map(mapEducationProperties));
+            const eduData = typeof data.education === 'string' 
+              ? safeJsonParse(data.education)
+              : data.education;
+              
+            setEducations(Array.isArray(eduData) 
+              ? eduData.map(mapEducationProperties)
+              : []);
           }
           
           // Parse certification data
@@ -185,6 +195,9 @@ const Profile = () => {
       </div>
     );
   }
+
+  console.log("Rendering profile with data:", profile);
+  console.log("Profile picture URL:", profile.profile_picture_url);
 
   return (
     <div className="container mx-auto py-8 px-4">

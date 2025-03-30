@@ -32,6 +32,9 @@ const ProfileHeader = ({ profileData, onEditProfile }: ProfileHeaderProps) => {
     visible: { opacity: 1, y: 0 }
   };
 
+  console.log("ProfileHeader - Profile Picture URL:", profileData.profile_picture_url);
+  console.log("ProfileHeader - Profile Data:", profileData);
+
   return (
     <motion.div 
       className="w-full md:w-1/3 bg-white rounded-lg shadow-sm p-6 border border-gray-100"
@@ -43,7 +46,11 @@ const ProfileHeader = ({ profileData, onEditProfile }: ProfileHeaderProps) => {
         <motion.div variants={itemVariants}>
           <Avatar className="h-32 w-32 mb-4 ring-4 ring-psyched-cream shadow-md">
             {profileData.profile_picture_url ? (
-              <AvatarImage src={profileData.profile_picture_url} alt={profileData.profiles?.name || 'User'} />
+              <AvatarImage 
+                src={profileData.profile_picture_url} 
+                alt={profileData.profiles?.name || 'User'} 
+                className="object-cover"
+              />
             ) : (
               <AvatarFallback className="text-2xl bg-psyched-lightBlue text-white">
                 {profileData.profiles?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
