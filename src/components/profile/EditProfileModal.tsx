@@ -179,6 +179,7 @@ const EditProfileModal = ({
     }
   };
 
+  // Render the title based on section and itemId
   const renderTitle = () => {
     switch (section) {
       case 'basic':
@@ -194,9 +195,11 @@ const EditProfileModal = ({
     }
   };
 
+  // Render the form based on section
   const renderForm = () => {
     switch (section) {
-      case 'basic':
+      case 'basic': {
+        const typedData = formData as BasicFormData;
         return (
           <>
             <div className="grid gap-4">
@@ -205,7 +208,7 @@ const EditProfileModal = ({
                 <Input
                   id="name"
                   name="name"
-                  value={formData.name}
+                  value={typedData.name}
                   onChange={handleInputChange}
                   placeholder="Your full name"
                 />
@@ -217,7 +220,7 @@ const EditProfileModal = ({
                   id="email"
                   name="email"
                   type="email"
-                  value={formData.email}
+                  value={typedData.email}
                   onChange={handleInputChange}
                   placeholder="Your email address"
                 />
@@ -228,7 +231,7 @@ const EditProfileModal = ({
                 <Input
                   id="phone_number"
                   name="phone_number"
-                  value={formData.phone_number}
+                  value={typedData.phone_number}
                   onChange={handleInputChange}
                   placeholder="Your phone number"
                 />
@@ -240,7 +243,7 @@ const EditProfileModal = ({
                   <Input
                     id="city"
                     name="city"
-                    value={formData.city}
+                    value={typedData.city}
                     onChange={handleInputChange}
                     placeholder="City"
                   />
@@ -251,7 +254,7 @@ const EditProfileModal = ({
                   <Input
                     id="state"
                     name="state"
-                    value={formData.state}
+                    value={typedData.state}
                     onChange={handleInputChange}
                     placeholder="State"
                   />
@@ -263,7 +266,7 @@ const EditProfileModal = ({
                 <Input
                   id="zip_code"
                   name="zip_code"
-                  value={formData.zip_code}
+                  value={typedData.zip_code}
                   onChange={handleInputChange}
                   placeholder="Zip code"
                 />
@@ -274,7 +277,7 @@ const EditProfileModal = ({
                 <Textarea
                   id="bio"
                   name="bio"
-                  value={formData.bio}
+                  value={typedData.bio}
                   onChange={handleInputChange}
                   placeholder="Tell us about yourself"
                   rows={5}
@@ -283,8 +286,10 @@ const EditProfileModal = ({
             </div>
           </>
         );
+      }
       
-      case 'experience':
+      case 'experience': {
+        const typedData = formData as ExperienceFormData;
         return (
           <>
             <div className="grid gap-4">
@@ -293,7 +298,7 @@ const EditProfileModal = ({
                 <Input
                   id="position"
                   name="position"
-                  value={formData.position}
+                  value={typedData.position}
                   onChange={handleInputChange}
                   placeholder="Job title"
                   required
@@ -305,7 +310,7 @@ const EditProfileModal = ({
                 <Input
                   id="organization"
                   name="organization"
-                  value={formData.organization}
+                  value={typedData.organization}
                   onChange={handleInputChange}
                   placeholder="Company or organization name"
                   required
@@ -319,7 +324,7 @@ const EditProfileModal = ({
                     id="startDate"
                     name="startDate"
                     type="date"
-                    value={formData.startDate}
+                    value={typedData.startDate}
                     onChange={handleInputChange}
                     required
                   />
@@ -331,9 +336,9 @@ const EditProfileModal = ({
                     id="endDate"
                     name="endDate"
                     type="date"
-                    value={formData.endDate}
+                    value={typedData.endDate}
                     onChange={handleInputChange}
-                    disabled={formData.current}
+                    disabled={typedData.current}
                   />
                 </div>
               </div>
@@ -341,7 +346,7 @@ const EditProfileModal = ({
               <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="current" 
-                  checked={formData.current} 
+                  checked={typedData.current} 
                   onCheckedChange={handleCheckboxChange}
                 />
                 <Label htmlFor="current">I currently work here</Label>
@@ -352,7 +357,7 @@ const EditProfileModal = ({
                 <Textarea
                   id="description"
                   name="description"
-                  value={formData.description}
+                  value={typedData.description}
                   onChange={handleInputChange}
                   placeholder="Describe your responsibilities and accomplishments"
                   rows={3}
@@ -361,8 +366,10 @@ const EditProfileModal = ({
             </div>
           </>
         );
+      }
       
-      case 'education':
+      case 'education': {
+        const typedData = formData as EducationFormData;
         return (
           <>
             <div className="grid gap-4">
@@ -371,7 +378,7 @@ const EditProfileModal = ({
                 <Input
                   id="institution"
                   name="institution"
-                  value={formData.institution}
+                  value={typedData.institution}
                   onChange={handleInputChange}
                   placeholder="School or university name"
                   required
@@ -383,7 +390,7 @@ const EditProfileModal = ({
                 <Input
                   id="degree"
                   name="degree"
-                  value={formData.degree}
+                  value={typedData.degree}
                   onChange={handleInputChange}
                   placeholder="e.g., Bachelor's, Master's, Ph.D."
                   required
@@ -395,7 +402,7 @@ const EditProfileModal = ({
                 <Input
                   id="field"
                   name="field"
-                  value={formData.field}
+                  value={typedData.field}
                   onChange={handleInputChange}
                   placeholder="e.g., Psychology, Education"
                 />
@@ -408,7 +415,7 @@ const EditProfileModal = ({
                     id="startDate"
                     name="startDate"
                     type="date"
-                    value={formData.startDate}
+                    value={typedData.startDate}
                     onChange={handleInputChange}
                     required
                   />
@@ -420,7 +427,7 @@ const EditProfileModal = ({
                     id="endDate"
                     name="endDate"
                     type="date"
-                    value={formData.endDate}
+                    value={typedData.endDate}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -428,8 +435,10 @@ const EditProfileModal = ({
             </div>
           </>
         );
+      }
       
-      case 'certification':
+      case 'certification': {
+        const typedData = formData as CertificationFormData;
         return (
           <>
             <div className="grid gap-4">
@@ -438,7 +447,7 @@ const EditProfileModal = ({
                 <Input
                   id="name"
                   name="name"
-                  value={formData.name}
+                  value={typedData.name}
                   onChange={handleInputChange}
                   placeholder="Name of certification or license"
                   required
@@ -450,7 +459,7 @@ const EditProfileModal = ({
                 <Input
                   id="issuingAuthority"
                   name="issuingAuthority"
-                  value={formData.issuingAuthority}
+                  value={typedData.issuingAuthority}
                   onChange={handleInputChange}
                   placeholder="Organization that issued the certification"
                   required
@@ -464,7 +473,7 @@ const EditProfileModal = ({
                     id="startYear"
                     name="startYear"
                     type="date"
-                    value={formData.startYear}
+                    value={typedData.startYear}
                     onChange={handleInputChange}
                     required
                   />
@@ -476,7 +485,7 @@ const EditProfileModal = ({
                     id="expirationDate"
                     name="expirationDate"
                     type="date"
-                    value={formData.expirationDate}
+                    value={typedData.expirationDate}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -487,7 +496,7 @@ const EditProfileModal = ({
                 <Input
                   id="documentUrl"
                   name="documentUrl"
-                  value={formData.documentUrl}
+                  value={typedData.documentUrl}
                   onChange={handleInputChange}
                   placeholder="License number or URL to the document"
                 />
@@ -498,7 +507,7 @@ const EditProfileModal = ({
                 <Textarea
                   id="description"
                   name="description"
-                  value={formData.description}
+                  value={typedData.description}
                   onChange={handleInputChange}
                   placeholder="Provide additional details about this certification"
                   rows={3}
@@ -507,6 +516,7 @@ const EditProfileModal = ({
             </div>
           </>
         );
+      }
       
       default:
         return null;
@@ -543,341 +553,6 @@ const EditProfileModal = ({
       </DialogContent>
     </Dialog>
   );
-
-  // Helper functions
-  function renderTitle() {
-    switch (section) {
-      case 'basic':
-        return 'Edit Contact Information';
-      case 'experience':
-        return itemId ? 'Edit Experience' : 'Add Experience';
-      case 'education':
-        return itemId ? 'Edit Education' : 'Add Education';
-      case 'certification':
-        return itemId ? 'Edit Certification' : 'Add Certification';
-      default:
-        return 'Edit Profile';
-    }
-  }
-
-  function renderForm() {
-    switch (section) {
-      case 'basic':
-        return (
-          <>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={(formData as BasicFormData).name}
-                  onChange={handleInputChange}
-                  placeholder="Your full name"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={(formData as BasicFormData).email}
-                  onChange={handleInputChange}
-                  placeholder="Your email address"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="phone_number">Phone Number</Label>
-                <Input
-                  id="phone_number"
-                  name="phone_number"
-                  value={(formData as BasicFormData).phone_number}
-                  onChange={handleInputChange}
-                  placeholder="Your phone number"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    name="city"
-                    value={(formData as BasicFormData).city}
-                    onChange={handleInputChange}
-                    placeholder="City"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    name="state"
-                    value={(formData as BasicFormData).state}
-                    onChange={handleInputChange}
-                    placeholder="State"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="zip_code">Zip Code</Label>
-                <Input
-                  id="zip_code"
-                  name="zip_code"
-                  value={(formData as BasicFormData).zip_code}
-                  onChange={handleInputChange}
-                  placeholder="Zip code"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="bio">About Me</Label>
-                <Textarea
-                  id="bio"
-                  name="bio"
-                  value={(formData as BasicFormData).bio}
-                  onChange={handleInputChange}
-                  placeholder="Tell us about yourself"
-                  rows={5}
-                />
-              </div>
-            </div>
-          </>
-        );
-      
-      case 'experience':
-        return (
-          <>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="position">Position</Label>
-                <Input
-                  id="position"
-                  name="position"
-                  value={(formData as ExperienceFormData).position}
-                  onChange={handleInputChange}
-                  placeholder="Job title"
-                  required
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="organization">Organization</Label>
-                <Input
-                  id="organization"
-                  name="organization"
-                  value={(formData as ExperienceFormData).organization}
-                  onChange={handleInputChange}
-                  placeholder="Company or organization name"
-                  required
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <Input
-                    id="startDate"
-                    name="startDate"
-                    type="date"
-                    value={(formData as ExperienceFormData).startDate}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="endDate">End Date</Label>
-                  <Input
-                    id="endDate"
-                    name="endDate"
-                    type="date"
-                    value={(formData as ExperienceFormData).endDate}
-                    onChange={handleInputChange}
-                    disabled={(formData as ExperienceFormData).current}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="current" 
-                  checked={(formData as ExperienceFormData).current} 
-                  onCheckedChange={handleCheckboxChange}
-                />
-                <Label htmlFor="current">I currently work here</Label>
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={(formData as ExperienceFormData).description}
-                  onChange={handleInputChange}
-                  placeholder="Describe your responsibilities and accomplishments"
-                  rows={3}
-                />
-              </div>
-            </div>
-          </>
-        );
-      
-      case 'education':
-        return (
-          <>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="institution">Institution</Label>
-                <Input
-                  id="institution"
-                  name="institution"
-                  value={(formData as EducationFormData).institution}
-                  onChange={handleInputChange}
-                  placeholder="School or university name"
-                  required
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="degree">Degree</Label>
-                <Input
-                  id="degree"
-                  name="degree"
-                  value={(formData as EducationFormData).degree}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Bachelor's, Master's, Ph.D."
-                  required
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="field">Field of Study</Label>
-                <Input
-                  id="field"
-                  name="field"
-                  value={(formData as EducationFormData).field}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Psychology, Education"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <Input
-                    id="startDate"
-                    name="startDate"
-                    type="date"
-                    value={(formData as EducationFormData).startDate}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="endDate">End Date</Label>
-                  <Input
-                    id="endDate"
-                    name="endDate"
-                    type="date"
-                    value={(formData as EducationFormData).endDate}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            </div>
-          </>
-        );
-      
-      case 'certification':
-        return (
-          <>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Certification Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={(formData as CertificationFormData).name}
-                  onChange={handleInputChange}
-                  placeholder="Name of certification or license"
-                  required
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="issuingAuthority">Issuing Authority</Label>
-                <Input
-                  id="issuingAuthority"
-                  name="issuingAuthority"
-                  value={(formData as CertificationFormData).issuingAuthority}
-                  onChange={handleInputChange}
-                  placeholder="Organization that issued the certification"
-                  required
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="startYear">Issue Date</Label>
-                  <Input
-                    id="startYear"
-                    name="startYear"
-                    type="date"
-                    value={(formData as CertificationFormData).startYear}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="expirationDate">Expiration Date</Label>
-                  <Input
-                    id="expirationDate"
-                    name="expirationDate"
-                    type="date"
-                    value={(formData as CertificationFormData).expirationDate}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="documentUrl">License Number or URL</Label>
-                <Input
-                  id="documentUrl"
-                  name="documentUrl"
-                  value={(formData as CertificationFormData).documentUrl}
-                  onChange={handleInputChange}
-                  placeholder="License number or URL to the document"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={(formData as CertificationFormData).description}
-                  onChange={handleInputChange}
-                  placeholder="Provide additional details about this certification"
-                  rows={3}
-                />
-              </div>
-            </div>
-          </>
-        );
-      
-      default:
-        return null;
-    }
-  }
 };
 
 export default EditProfileModal;
