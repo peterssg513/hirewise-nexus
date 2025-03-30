@@ -1,18 +1,19 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import UpdateProfilePage from './pages/UpdateProfilePage';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import DistrictDashboard from './pages/district/DistrictDashboard';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import UpdatePassword from './pages/UpdatePassword';
+import PsychologistSignup from './pages/PsychologistSignup';
+import AdminDashboard from './pages/AdminDashboard';
+import DistrictDashboard from './pages/DistrictDashboard';
 import PsychologistDashboard from './pages/psychologist/PsychologistDashboard';
 import JobListings from './pages/psychologist/JobListings';
 import Evaluations from './pages/psychologist/Evaluations';
 import Applications from './pages/psychologist/Applications';
 import Profile from './pages/psychologist/Profile';
-import PsychologistSignup from './pages/PsychologistSignup';
 import DashboardLayout from './layouts/DashboardLayout';
 import Settings from './pages/psychologist/Settings';
 
@@ -38,10 +39,10 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/update-profile" element={<UpdateProfilePage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/update-password" element={<UpdatePassword />} />
           <Route path="/psychologist-signup" element={<PsychologistSignup />} />
 
           {/* Admin Routes */}

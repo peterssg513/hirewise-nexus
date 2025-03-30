@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Key, Shield, User, Lock, AlertCircle } from 'lucide-react';
+import { Mail, Key, Shield, User, Lock, AlertCircle, Settings as SettingsIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Settings = () => {
@@ -102,7 +102,7 @@ const Settings = () => {
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center mb-6">
-          <Settings className="h-6 w-6 mr-2 text-psyched-darkBlue" />
+          <SettingsIcon className="h-6 w-6 mr-2 text-psyched-darkBlue" />
           <h1 className="text-2xl font-bold text-psyched-darkBlue">Account Settings</h1>
         </div>
         
