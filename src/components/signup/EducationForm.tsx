@@ -56,7 +56,8 @@ const EducationForm: React.FC<EducationFormProps> = ({
   const onSubmit = (values: EducationFormValues) => {
     onAdd({
       id: initialData?.id || Date.now().toString(),
-      ...values,
+      schoolName: values.schoolName,
+      major: values.major,
     });
     form.reset();
   };

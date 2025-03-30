@@ -22,7 +22,7 @@ export interface Experience {
   placeOfEmployment: string;
   yearStarted: string;
   yearWorked: string;
-  description: string;
+  description?: string;
 }
 
 interface ExperienceFormProps {
@@ -70,7 +70,11 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({
   const onSubmit = (values: ExperienceFormValues) => {
     onAdd({
       id: initialData?.id || Date.now().toString(),
-      ...values,
+      jobTitle: values.jobTitle,
+      placeOfEmployment: values.placeOfEmployment,
+      yearStarted: values.yearStarted,
+      yearWorked: values.yearWorked,
+      description: values.description,
     });
     form.reset();
   };
@@ -129,7 +133,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({
                 <FormItem>
                   <FormLabel>Year Started</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" min="1900" max={new Date().getFullYear()} />
+                    <Input type="number" min="1900" max="2099" step="1" placeholder="YYYY" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -141,9 +145,9 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({
               name="yearWorked"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Year Ended</FormLabel>
+                  <FormLabel>Year Worked Until</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" min="1900" max={new Date().getFullYear()} />
+                    <Input type="number" min="1900" max="2099" step="1" placeholder="YYYY" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -158,10 +162,10 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Textarea 
-                    {...field} 
-                    className="min-h-[100px]"
-                    placeholder="Describe your responsibilities and achievements..."
+                  <Textarea
+                    placeholder="Describe your role and responsibilities"
+                    className="resize-none"
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />

@@ -17,9 +17,9 @@ const GetPsyched: React.FC<GetPsychedProps> = () => {
   const navigate = useNavigate();
   const [isCompleting, setIsCompleting] = useState(false);
   
-  // Trigger confetti effect on component mount
+  // Trigger confetti effect on component mount with reduced intensity
   useEffect(() => {
-    const duration = 3 * 1000;
+    const duration = 2 * 1000; // Reduced duration
     const animationEnd = Date.now() + duration;
     
     const randomInRange = (min: number, max: number) => {
@@ -31,27 +31,20 @@ const GetPsyched: React.FC<GetPsychedProps> = () => {
       
       if (timeLeft <= 0) return;
       
-      const particleCount = 50 * (timeLeft / duration);
+      // Reduced particle count
+      const particleCount = 30 * (timeLeft / duration);
       
-      // Random colors
+      // Less spread
       confetti({
         particleCount,
-        angle: randomInRange(55, 125),
-        spread: randomInRange(50, 70),
+        angle: randomInRange(60, 120),
+        spread: randomInRange(40, 50), // Reduced spread
         origin: { y: 0.6 },
-        colors: ['#FFC107', '#FF9800', '#FF5722', '#F44336', '#3F51B5'],
+        colors: ['#FFC107', '#FF9800', '#3F51B5'],
       });
       
-      // Random colors
-      confetti({
-        particleCount,
-        angle: randomInRange(55, 125),
-        spread: randomInRange(50, 70),
-        origin: { y: 0.6 },
-        colors: ['#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A'],
-      });
-      
-      requestAnimationFrame(runConfetti);
+      // Only run confetti once every 300ms instead of every frame
+      setTimeout(runConfetti, 300);
     };
     
     runConfetti();

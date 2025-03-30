@@ -7,7 +7,16 @@ export interface Certification {
   url: string;
   status: 'pending' | 'verified';
   uploadedAt: string;
+  startYear: string;
+  endYear: string;
 }
+
+export type CertificationDTO = {
+  url: string;
+  name: string;
+  startYear: string;
+  endYear: string;
+};
 
 /**
  * Uploads a certification file to Supabase storage
@@ -16,12 +25,12 @@ export const uploadCertificationFile = async (
   userId: string,
   file: File,
   certName: string
-): Promise<Certification> => {
+): Promise<string> => {
   const fileExt = file.name.split('.').pop();
   const timestamp = new Date().getTime();
   const filePath = `${userId}/certifications/${timestamp}_${certName.replace(/\s+/g, '-').toLowerCase()}.${fileExt}`;
   
-  const { error: uploadError, data } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from('psychologist_files')
     .upload(filePath, file);
     
@@ -31,13 +40,7 @@ export const uploadCertificationFile = async (
     .from('psychologist_files')
     .getPublicUrl(filePath);
     
-  return {
-    id: timestamp.toString(),
-    name: certName,
-    url: urlData.publicUrl,
-    status: 'pending',
-    uploadedAt: new Date().toISOString(),
-  };
+  return urlData.publicUrl;
 };
 
 /**
@@ -47,13 +50,19 @@ export const saveCertifications = async (
   userId: string, 
   certifications: Certification[]
 ): Promise<void> => {
-  // Store only the URLs as strings in the database
-  const certificationUrls = certifications.map(cert => cert.url);
+  // Convert certifications to DTOs with just the necessary information
+  const certificationDTOs = certifications.map(cert => ({
+    url: cert.url,
+    name: cert.name,
+    startYear: cert.startYear,
+    endYear: cert.endYear
+  }));
   
+  // Store the DTO objects as a JSON string in the database
   const { error } = await supabase
     .from('psychologists')
     .update({
-      certifications: certificationUrls,
+      certifications: JSON.stringify(certificationDTOs),
       signup_progress: 4,
     })
     .eq('user_id', userId);

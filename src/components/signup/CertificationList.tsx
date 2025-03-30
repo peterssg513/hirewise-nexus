@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { File } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { File, Trash } from 'lucide-react';
 import { Certification } from '@/services/certificationService';
 
 interface CertificationListProps {
@@ -12,64 +13,38 @@ const CertificationList: React.FC<CertificationListProps> = ({ certifications, o
   if (certifications.length === 0) {
     return null;
   }
-  
+
   return (
-    <div className="border rounded-md overflow-hidden">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Certification
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {certifications.map((cert) => (
-            <tr key={cert.id}>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center">
-                  <File className="h-5 w-5 text-gray-400 mr-2" />
-                  <div className="text-sm font-medium text-gray-900">{cert.name}</div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                  cert.status === 'verified' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {cert.status === 'verified' ? 'Verified' : 'Pending'}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <div className="flex space-x-2">
-                  <a 
-                    href={cert.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    View
-                  </a>
-                  <button
-                    onClick={() => onRemove(cert.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <ul className="space-y-2">
+      {certifications.map((cert) => (
+        <li key={cert.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-md border">
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              <File className="h-5 w-5 text-gray-400" />
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">{cert.name}</p>
+              <p className="text-sm text-gray-500">{cert.startYear} - {cert.endYear}</p>
+              <p className="text-xs text-gray-400">
+                Status: {cert.status === 'verified' ? (
+                  <span className="text-green-600">Verified</span>
+                ) : (
+                  <span className="text-yellow-600">Pending verification</span>
+                )}
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={() => onRemove(cert.id)}
+            variant="ghost"
+            size="sm"
+            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </li>
+      ))}
+    </ul>
   );
 };
 
