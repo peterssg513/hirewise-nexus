@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -124,10 +125,12 @@ const CertificationUpload: React.FC<CertificationUploadProps> = ({ onComplete })
     setIsSubmitting(true);
     
     try {
+      // Store the certifications as a stringified JSON object
+      // This way we properly preserve all certification details
       const { error } = await supabase
         .from('psychologists')
         .update({
-          certifications: certifications,
+          certifications: JSON.stringify(certifications),
           signup_progress: 4,
         })
         .eq('user_id', user.id);
