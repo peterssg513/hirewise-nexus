@@ -45,7 +45,7 @@ export const getEvaluationTemplate = async (templateId: string): Promise<Evaluat
 export const getEvaluationData = async (evaluationId: string) => {
   try {
     // Check if form_data column exists in evaluations table
-    const { data: columnInfo } = await supabase.rpc('get_column_info', {
+    const { data: columnInfo } = await supabase.rpc('get_column_info' as any, {
       table_name: 'evaluations',
       column_name: 'form_data'
     });
@@ -110,7 +110,7 @@ export const saveEvaluationFormData = async (evaluationId: string, formData: Eva
     if (fetchError) throw fetchError;
 
     // Check if form_data column exists in evaluations table
-    const { data: columnInfo } = await supabase.rpc('get_column_info', {
+    const { data: columnInfo } = await supabase.rpc('get_column_info' as any, {
       table_name: 'evaluations',
       column_name: 'form_data'
     });
@@ -128,7 +128,7 @@ export const saveEvaluationFormData = async (evaluationId: string, formData: Eva
       const { data, error } = await supabase
         .from('evaluations')
         .update({ 
-          form_data: ...(formData as object),
+          form_data: formData,
           status: 'in_progress',
           updated_at: new Date().toISOString()
         })
@@ -175,7 +175,7 @@ export const submitEvaluation = async (evaluationId: string, formData: Evaluatio
     }
 
     // Check if form_data column exists in evaluations table
-    const { data: columnInfo } = await supabase.rpc('get_column_info', {
+    const { data: columnInfo } = await supabase.rpc('get_column_info' as any, {
       table_name: 'evaluations',
       column_name: 'form_data'
     });
@@ -188,7 +188,7 @@ export const submitEvaluation = async (evaluationId: string, formData: Evaluatio
       const { data, error } = await supabase
         .from('evaluations')
         .update({ 
-          form_data: ...(formData as object),
+          form_data: formData,
           status: 'submitted',
           submitted_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -333,7 +333,7 @@ const getDefaultTemplate = (): EvaluationTemplate => {
 // Function to check if a column exists in a table
 export const checkColumnExists = async (tableName: string, columnName: string): Promise<boolean> => {
   try {
-    const { data, error } = await supabase.rpc('get_column_info', {
+    const { data, error } = await supabase.rpc('get_column_info' as any, {
       table_name: tableName,
       column_name: columnName
     });
