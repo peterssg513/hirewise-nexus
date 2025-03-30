@@ -33,16 +33,16 @@ export const getEvaluationData = async (evaluationId: string) => {
     // Get the default template
     const template = getDefaultTemplate();
 
-    // Make sure evaluation is properly typed and has all required properties
+    // Explicitly create a properly typed evaluation object
     const evaluationWithFormData: Evaluation = {
-      id: evaluation.id,
-      status: evaluation.status,
-      created_at: evaluation.created_at,
-      updated_at: evaluation.updated_at,
-      submitted_at: evaluation.submitted_at || null,
-      approved_at: evaluation.approved_at || null,
-      report_url: evaluation.report_url || null,
-      application_id: evaluation.application_id,
+      id: evaluation.id as string,
+      status: evaluation.status as string,
+      created_at: evaluation.created_at as string,
+      updated_at: evaluation.updated_at as string,
+      submitted_at: evaluation.submitted_at ? (evaluation.submitted_at as string) : null,
+      approved_at: evaluation.approved_at ? (evaluation.approved_at as string) : null,
+      report_url: evaluation.report_url ? (evaluation.report_url as string) : null,
+      application_id: evaluation.application_id as string,
       form_data: hasFormDataColumn && evaluation.form_data 
         ? (evaluation.form_data as EvaluationFormData) 
         : {}
