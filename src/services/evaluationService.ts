@@ -33,9 +33,10 @@ export const getEvaluationData = async (evaluationId: string) => {
     const template = getDefaultTemplate();
 
     // If form_data column doesn't exist, provide an empty object
-    const evaluationWithFormData = hasFormDataColumn 
-      ? evaluation 
-      : { ...evaluation, form_data: {} };
+    const evaluationWithFormData = {
+      ...evaluation,
+      form_data: hasFormDataColumn && evaluation.form_data ? evaluation.form_data : {}
+    };
 
     return {
       evaluation: evaluationWithFormData,
