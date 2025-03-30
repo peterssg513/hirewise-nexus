@@ -45,12 +45,6 @@ const PsychologistDashboard = () => {
     try {
       setIsLoading(true);
       
-      // Clear existing data to prevent showing stale data
-      setRecentApplications([]);
-      setUpcomingEvaluations([]);
-      
-      if (!user?.id) return;
-      
       // Fetch recent applications
       const { data: applicationsData, error: applicationsError } = await supabase
         .from('applications')
@@ -74,20 +68,18 @@ const PsychologistDashboard = () => {
         
       if (applicationsError) throw applicationsError;
       
-      if (applicationsData) {
-        // Transform applications data
-        const applications = applicationsData.map(app => ({
-          id: app.id,
-          job_title: app.jobs.title,
-          district_name: app.jobs.districts.name,
-          status: app.status,
-          created_at: app.created_at,
-          has_evaluation: app.evaluations && app.evaluations.length > 0,
-          evaluation_id: app.evaluations && app.evaluations.length > 0 ? app.evaluations[0].id : undefined
-        }));
-        
-        setRecentApplications(applications);
-      }
+      // Transform applications data
+      const applications = applicationsData.map(app => ({
+        id: app.id,
+        job_title: app.jobs.title,
+        district_name: app.jobs.districts.name,
+        status: app.status,
+        created_at: app.created_at,
+        has_evaluation: app.evaluations && app.evaluations.length > 0,
+        evaluation_id: app.evaluations && app.evaluations.length > 0 ? app.evaluations[0].id : undefined
+      }));
+      
+      setRecentApplications(applications);
       
       // Fetch upcoming evaluations (pending or in progress)
       const { data: evaluationsData, error: evaluationsError } = await supabase
@@ -113,13 +105,13 @@ const PsychologistDashboard = () => {
         
       if (evaluationsError) throw evaluationsError;
       
-      // Transform evaluations data - fixed the reserved keyword 'eval'
-      const evaluations = evaluationsData.map(item => ({
-        id: item.id,
-        status: item.status,
-        job_title: item.applications.jobs.title,
-        district_name: item.applications.jobs.districts.name,
-        created_at: item.created_at
+      // Transform evaluations data
+      const evaluations = evaluationsData.map(evaluation => ({
+        id: evaluation.id,
+        status: evaluation.status,
+        job_title: evaluation.applications.jobs.title,
+        district_name: evaluation.applications.jobs.districts.name,
+        created_at: evaluation.created_at
       }));
       
       setUpcomingEvaluations(evaluations);
@@ -138,7 +130,7 @@ const PsychologistDashboard = () => {
   const renderStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'approved':
-        return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Approved</Badge>;
+        return <Badge variant="success">Approved</Badge>;
       case 'rejected':
         return <Badge variant="destructive">Rejected</Badge>;
       default:
@@ -149,14 +141,14 @@ const PsychologistDashboard = () => {
   const renderEvaluationStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'submitted':
-        return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Submitted</Badge>;
+        return <Badge variant="success">Submitted</Badge>;
       case 'in_progress':
         return <Badge variant="secondary">In Progress</Badge>;
       default:
         return <Badge variant="outline">Assigned</Badge>;
     }
   };
-
+  
   return (
     <div className="space-y-6">
       {/* Welcome */}
@@ -358,6 +350,28 @@ const PsychologistDashboard = () => {
       </div>
     </div>
   );
+};
+
+const renderStatusBadge = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case 'approved':
+      return <Badge variant="success">Approved</Badge>;
+    case 'rejected':
+      return <Badge variant="destructive">Rejected</Badge>;
+    default:
+      return <Badge variant="outline" className="text-amber-600 border-amber-600">Pending</Badge>;
+  }
+};
+
+const renderEvaluationStatusBadge = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case 'submitted':
+      return <Badge variant="success">Submitted</Badge>;
+    case 'in_progress':
+      return <Badge variant="secondary">In Progress</Badge>;
+    default:
+      return <Badge variant="outline">Assigned</Badge>;
+  }
 };
 
 export default PsychologistDashboard;

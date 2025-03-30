@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,15 +77,35 @@ const Profile = () => {
 
         if (error) throw error;
 
-        // Parse JSON strings into objects
-        const parsedData = {
-          ...data,
-          experience: data.experience ? JSON.parse(data.experience) : [],
-          education: data.education ? JSON.parse(data.education) : [],
-          certifications: data.certification_details || []
+        // Parse JSON strings into objects if needed
+        const parsedExperience = data.experience ? 
+          (typeof data.experience === 'string' ? JSON.parse(data.experience) : data.experience) : [];
+        
+        const parsedEducation = data.education ? 
+          (typeof data.education === 'string' ? JSON.parse(data.education) : data.education) : [];
+
+        // Create a complete profile data object
+        const completeProfileData: ProfileData = {
+          name: profile?.name || '',
+          email: profile?.email || '',
+          profile_picture_url: data.profile_picture_url,
+          phone_number: data.phone_number,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zip_code: data.zip_code,
+          experience: parsedExperience,
+          education: parsedEducation,
+          certifications: Array.isArray(data.certification_details) ? data.certification_details : [],
+          specialties: data.specialties || [],
+          status: data.status,
+          work_types: data.work_types || [],
+          evaluation_types: data.evaluation_types || [],
+          open_to_relocation: data.open_to_relocation || false,
+          desired_locations: data.desired_locations || []
         };
 
-        setProfileData(parsedData);
+        setProfileData(completeProfileData);
       } catch (error: any) {
         console.error('Error fetching profile data:', error);
         toast({
@@ -100,7 +119,7 @@ const Profile = () => {
     };
 
     fetchProfileData();
-  }, [user, toast]);
+  }, [user, toast, profile]);
 
   if (isLoading) {
     return (

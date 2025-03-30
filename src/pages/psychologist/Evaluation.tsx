@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { 
   Save, 
   SendHorizonal, 
@@ -16,7 +16,8 @@ import {
   saveEvaluationData,
   submitEvaluation,
   EvaluationFormField,
-  EvaluationTemplate
+  EvaluationTemplate,
+  EvaluationFormData
 } from '@/services/evaluationService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,7 +47,7 @@ const Evaluation = () => {
   
   // Fetch evaluation data
   const { 
-    data: evaluation, 
+    data: evaluationData, 
     isLoading: isLoadingEvaluation,
     error: evaluationError 
   } = useQuery({
@@ -55,30 +56,19 @@ const Evaluation = () => {
     enabled: !!id,
   });
   
-  // Fetch evaluation template
-  const { 
-    data: template, 
-    isLoading: isLoadingTemplate,
-    error: templateError 
-  } = useQuery({
-    queryKey: ['evaluation-template', evaluation?.id],
-    queryFn: () => getEvaluationTemplate('standard'),
-    enabled: !!evaluation?.id,
-  });
-  
   // Initialize form data from evaluation data
   useEffect(() => {
-    if (evaluation && evaluation.data) {
-      setFormData(evaluation.data);
+    if (evaluationData?.evaluation?.form_data) {
+      setFormData(evaluationData.evaluation.form_data);
     }
-  }, [evaluation]);
+  }, [evaluationData]);
   
   // Set active tab to first section when template loads
   useEffect(() => {
-    if (template && template.sections.length > 0) {
-      setActiveTab(template.sections[0]);
+    if (evaluationData?.template?.sections?.length > 0) {
+      setActiveTab(evaluationData.template.sections[0]);
     }
-  }, [template]);
+  }, [evaluationData]);
   
   // Handle form field changes
   const handleFieldChange = (fieldId: string, value: any) => {
@@ -118,7 +108,7 @@ const Evaluation = () => {
     if (!id) return;
     
     // Basic validation
-    const requiredFields = template?.fields.filter(field => field.required) || [];
+    const requiredFields = evaluationData?.template?.fields.filter(field => field.required) || [];
     const missingFields = requiredFields.filter(field => !formData[field.id]);
     
     if (missingFields.length > 0) {
@@ -136,7 +126,7 @@ const Evaluation = () => {
     
     try {
       setIsSubmitting(true);
-      await submitEvaluation(id, formData);
+      await submitEvaluation(id, formData as EvaluationFormData);
       
       toast({
         title: "Evaluation submitted",
@@ -322,7 +312,7 @@ const Evaluation = () => {
   };
   
   // Show loading state
-  if (isLoadingEvaluation || isLoadingTemplate) {
+  if (isLoadingEvaluation) {
     return (
       <div className="flex justify-center items-center h-screen w-full">
         <div className="text-center">
@@ -334,14 +324,14 @@ const Evaluation = () => {
   }
   
   // Show error state
-  if (evaluationError || templateError) {
+  if (evaluationError) {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>
-            {(evaluationError as Error)?.message || (templateError as Error)?.message || "An error occurred loading the evaluation."}
+            {(evaluationError as Error)?.message || "An error occurred loading the evaluation."}
           </AlertDescription>
         </Alert>
         
@@ -357,7 +347,7 @@ const Evaluation = () => {
     );
   }
   
-  if (!template || !evaluation) {
+  if (!evaluationData?.template || !evaluationData?.evaluation) {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <Alert>
@@ -384,8 +374,8 @@ const Evaluation = () => {
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{template.name}</h1>
-          <p className="text-muted-foreground">{template.description}</p>
+          <h1 className="text-2xl font-bold">{evaluationData.template.name}</h1>
+          <p className="text-muted-foreground">{evaluationData.template.description}</p>
         </div>
         
         <div className="flex items-center gap-2">
@@ -400,7 +390,7 @@ const Evaluation = () => {
           <Button
             variant="outline"
             className="gap-2"
-            disabled={isSaving}
+            disabled={isSaving || evaluationData.evaluation.status === 'submitted'}
             onClick={handleSave}
           >
             {isSaving ? (
@@ -413,7 +403,7 @@ const Evaluation = () => {
           
           <Button
             className="gap-2 bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-            disabled={isSubmitting || evaluation.status === 'submitted'}
+            disabled={isSubmitting || evaluationData.evaluation.status === 'submitted'}
             onClick={handleSubmit}
           >
             {isSubmitting ? (
@@ -429,10 +419,10 @@ const Evaluation = () => {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Badge
-            variant={evaluation.status === 'submitted' ? 'default' : 'outline'}
-            className={evaluation.status === 'submitted' ? 'bg-green-100 text-green-800' : ''}
+            variant={evaluationData.evaluation.status === 'submitted' ? 'default' : 'outline'}
+            className={evaluationData.evaluation.status === 'submitted' ? 'bg-green-100 text-green-800' : ''}
           >
-            {evaluation.status === 'submitted' ? (
+            {evaluationData.evaluation.status === 'submitted' ? (
               <>
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Submitted
@@ -442,15 +432,15 @@ const Evaluation = () => {
             )}
           </Badge>
           
-          {evaluation.submitted_at && (
+          {evaluationData.evaluation.submitted_at && (
             <span className="text-sm text-muted-foreground">
-              Submitted on {new Date(evaluation.submitted_at).toLocaleDateString()}
+              Submitted on {new Date(evaluationData.evaluation.submitted_at).toLocaleDateString()}
             </span>
           )}
         </div>
       </div>
       
-      {evaluation.status === 'submitted' && (
+      {evaluationData.evaluation.status === 'submitted' && (
         <Alert className="mb-6">
           <CheckCircle className="h-4 w-4" />
           <AlertTitle>Evaluation Submitted</AlertTitle>
@@ -464,7 +454,7 @@ const Evaluation = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <ScrollArea className="w-full">
             <TabsList className="flex w-full justify-start p-0 h-auto mb-0 bg-transparent border-b rounded-none">
-              {template.sections.map((section) => (
+              {evaluationData.template.sections.map((section) => (
                 <TabsTrigger
                   key={section}
                   value={section}
@@ -477,10 +467,10 @@ const Evaluation = () => {
           </ScrollArea>
           
           <CardContent className="pt-6">
-            {template.sections.map((section) => (
+            {evaluationData.template.sections.map((section) => (
               <TabsContent key={section} value={section} className="m-0">
                 <div className="space-y-6">
-                  {template.fields
+                  {evaluationData.template.fields
                     .filter(field => field.section === section)
                     .map(field => renderField(field))}
                 </div>
@@ -502,7 +492,7 @@ const Evaluation = () => {
           <Button
             variant="outline"
             className="gap-2"
-            disabled={isSaving || evaluation.status === 'submitted'}
+            disabled={isSaving || evaluationData.evaluation.status === 'submitted'}
             onClick={handleSave}
           >
             {isSaving ? (
@@ -515,7 +505,7 @@ const Evaluation = () => {
           
           <Button
             className="gap-2 bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-            disabled={isSubmitting || evaluation.status === 'submitted'}
+            disabled={isSubmitting || evaluationData.evaluation.status === 'submitted'}
             onClick={handleSubmit}
           >
             {isSubmitting ? (
