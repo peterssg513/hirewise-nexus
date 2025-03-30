@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, FileText, Search, Award, ClipboardCheck, Sparkles, ArrowRight, Check, Star } from 'lucide-react';
+import { Calendar, FileText, Search, Award, ClipboardCheck, Sparkles, ArrowRight, Check, Star, Quote } from 'lucide-react';
 
 const PsychologistsLanding = () => {
   return (
@@ -444,7 +444,7 @@ const PsychologistsLanding = () => {
                     <p className="text-xs text-gray-500 text-center">8 years experience</p>
                   </div>
                   <div className="p-8 md:w-2/3">
-                    <QuoteIcon className="h-8 w-8 text-psyched-yellow mb-4" />
+                    <Quote className="h-8 w-8 text-psyched-yellow mb-4" />
                     <p className="italic text-gray-700 mb-6">
                       "PsychedHire! has transformed my career. I can find jobs that perfectly match my expertise and work schedule. The report-writing assistance saves me hours on each evaluation, allowing me to focus on what truly matters: helping students."
                     </p>
@@ -470,7 +470,7 @@ const PsychologistsLanding = () => {
                     <p className="text-xs text-gray-500 text-center">5 years experience</p>
                   </div>
                   <div className="p-8 md:w-2/3">
-                    <QuoteIcon className="h-8 w-8 text-psyched-yellow mb-4" />
+                    <Quote className="h-8 w-8 text-psyched-yellow mb-4" />
                     <p className="italic text-gray-700 mb-6">
                       "I love the flexibility PsychedHire! offers. I can take on evaluations that fit my schedule, and the platform makes it easy to manage documentation and reporting. It's revolutionized how I approach my practice as a school psychologist."
                     </p>

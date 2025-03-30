@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Search, Award, ClipboardCheck, TrendingDown, Sparkles, ArrowRight, Check, Star, School, FileText } from 'lucide-react';
+import { Clock, Search, Award, ClipboardCheck, TrendingDown, Sparkles, ArrowRight, Check, Star, School, FileText, Quote } from 'lucide-react';
 
 const DistrictsLanding = () => {
   return (
@@ -502,7 +502,7 @@ const DistrictsLanding = () => {
                     <p className="text-xs text-gray-500 text-center">Chicago Public Schools</p>
                   </div>
                   <div className="p-8 md:w-2/3">
-                    <QuoteIcon className="h-8 w-8 text-psyched-yellow mb-4" />
+                    <Quote className="h-8 w-8 text-psyched-yellow mb-4" />
                     <p className="italic text-gray-700 mb-6">
                       "PsychedHire! has been a game-changer for our district. We've reduced our hiring time significantly and found quality psychologists who match our specific needs. The platform is intuitive and has streamlined our entire process."
                     </p>
@@ -528,7 +528,7 @@ const DistrictsLanding = () => {
                     <p className="text-xs text-gray-500 text-center">Los Angeles Unified</p>
                   </div>
                   <div className="p-8 md:w-2/3">
-                    <QuoteIcon className="h-8 w-8 text-psyched-yellow mb-4" />
+                    <Quote className="h-8 w-8 text-psyched-yellow mb-4" />
                     <p className="italic text-gray-700 mb-6">
                       "The evaluation backlog that used to take months to address can now be cleared in weeks. PsychedHire! has transformed how we support our students' mental health needs and has given us access to top-quality professionals."
                     </p>

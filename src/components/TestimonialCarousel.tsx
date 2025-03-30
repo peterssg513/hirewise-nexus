@@ -8,7 +8,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
-import { QuoteIcon, Star } from 'lucide-react';
+import { Quote, Star } from 'lucide-react';
 
 interface Testimonial {
   id: number;
@@ -81,7 +81,7 @@ const TestimonialCarousel = () => {
                     <CardContent className="p-6">
                       <div className="flex flex-col h-full">
                         <div className="flex items-center justify-between mb-4">
-                          <QuoteIcon size={24} className="text-psyched-yellow" />
+                          <Quote size={24} className="text-psyched-yellow" />
                           <div className="flex">
                             {[...Array(5)].map((_, i) => (
                               <Star 
