@@ -45,7 +45,15 @@ export const getEvaluationTemplate = async (templateId: string): Promise<Evaluat
 // Get evaluation data
 export const getEvaluationData = async (evaluationId: string) => {
   try {
-    // Fetch the evaluation
+    // Check if form_data column exists in evaluations table
+    const { data: columnInfo } = await supabase.rpc('get_column_info', {
+      table_name: 'evaluations',
+      column_name: 'form_data'
+    });
+    
+    const hasFormDataColumn = columnInfo && columnInfo.length > 0;
+    
+    // Fetch the evaluation with appropriate columns
     const { data: evaluation, error: evaluationError } = await supabase
       .from('evaluations')
       .select(`
@@ -56,28 +64,8 @@ export const getEvaluationData = async (evaluationId: string) => {
         submitted_at,
         approved_at,
         report_url,
-        application_id,
-        form_data,
-        application:applications (
-          id,
-          status,
-          created_at,
-          updated_at,
-          psychologist_id,
-          job_id,
-          documents_urls,
-          jobs (
-            id,
-            title,
-            description,
-            district_id,
-            districts (
-              id,
-              name,
-              location
-            )
-          )
-        )
+        application_id
+        ${hasFormDataColumn ? ',form_data' : ''}
       `)
       .eq('id', evaluationId)
       .single();
@@ -87,8 +75,13 @@ export const getEvaluationData = async (evaluationId: string) => {
     // For this implementation, we'll use a static template
     const template = getDefaultTemplate();
 
+    // If form_data column doesn't exist, provide an empty object
+    const evaluationWithFormData = hasFormDataColumn 
+      ? evaluation 
+      : { ...evaluation, form_data: {} };
+
     return {
-      evaluation,
+      evaluation: evaluationWithFormData,
       template
     };
   } catch (error) {
@@ -111,30 +104,54 @@ export const saveEvaluationFormData = async (evaluationId: string, formData: Eva
     // First get the current evaluation to check its status
     const { data: currentEvaluation, error: fetchError } = await supabase
       .from('evaluations')
-      .select('status, form_data')
+      .select('status')
       .eq('id', evaluationId)
       .single();
 
     if (fetchError) throw fetchError;
 
+    // Check if form_data column exists in evaluations table
+    const { data: columnInfo } = await supabase.rpc('get_column_info', {
+      table_name: 'evaluations',
+      column_name: 'form_data'
+    });
+    
+    const hasFormDataColumn = columnInfo && columnInfo.length > 0;
+    
     // Only allow updates if the evaluation is not submitted
     if (currentEvaluation && (currentEvaluation.status === 'submitted' || currentEvaluation.status === 'approved')) {
       throw new Error('Cannot update a submitted or approved evaluation');
     }
 
-    // Update the evaluation with the new form data
-    const { data, error } = await supabase
-      .from('evaluations')
-      .update({ 
-        form_data: formData,
-        status: 'in_progress',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', evaluationId)
-      .select();
+    // Update strategy depends on whether form_data column exists
+    if (hasFormDataColumn) {
+      // Update the evaluation with the new form data
+      const { data, error } = await supabase
+        .from('evaluations')
+        .update({ 
+          form_data: formData,
+          status: 'in_progress',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', evaluationId)
+        .select();
 
-    if (error) throw error;
-    return data;
+      if (error) throw error;
+      return data;
+    } else {
+      // If form_data column doesn't exist, just update status
+      const { data, error } = await supabase
+        .from('evaluations')
+        .update({ 
+          status: 'in_progress',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', evaluationId)
+        .select();
+
+      if (error) throw error;
+      return data;
+    }
   } catch (error) {
     console.error('Error saving evaluation form data:', error);
     throw error;
@@ -158,20 +175,45 @@ export const submitEvaluation = async (evaluationId: string, formData: Evaluatio
       throw new Error('This evaluation has already been submitted or approved');
     }
 
-    // Update the evaluation to submitted status
-    const { data, error } = await supabase
-      .from('evaluations')
-      .update({ 
-        form_data: formData,
-        status: 'submitted',
-        submitted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', evaluationId)
-      .select();
+    // Check if form_data column exists in evaluations table
+    const { data: columnInfo } = await supabase.rpc('get_column_info', {
+      table_name: 'evaluations',
+      column_name: 'form_data'
+    });
+    
+    const hasFormDataColumn = columnInfo && columnInfo.length > 0;
+    
+    // Update strategy depends on whether form_data column exists
+    if (hasFormDataColumn) {
+      // Update the evaluation to submitted status with form data
+      const { data, error } = await supabase
+        .from('evaluations')
+        .update({ 
+          form_data: formData,
+          status: 'submitted',
+          submitted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', evaluationId)
+        .select();
 
-    if (error) throw error;
-    return data;
+      if (error) throw error;
+      return data;
+    } else {
+      // If form_data column doesn't exist, just update status
+      const { data, error } = await supabase
+        .from('evaluations')
+        .update({ 
+          status: 'submitted',
+          submitted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', evaluationId)
+        .select();
+
+      if (error) throw error;
+      return data;
+    }
   } catch (error) {
     console.error('Error submitting evaluation:', error);
     throw error;
@@ -287,4 +329,20 @@ const getDefaultTemplate = (): EvaluationTemplate => {
       }
     ]
   };
+};
+
+// Function to check if a column exists in a table
+export const checkColumnExists = async (tableName: string, columnName: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.rpc('get_column_info', {
+      table_name: tableName,
+      column_name: columnName
+    });
+    
+    if (error) throw error;
+    return data && data.length > 0;
+  } catch (error) {
+    console.error(`Error checking if column ${columnName} exists in ${tableName}:`, error);
+    return false;
+  }
 };

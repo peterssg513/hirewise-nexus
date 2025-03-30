@@ -130,9 +130,9 @@ const PsychologistDashboard = () => {
   const renderStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'approved':
-        return <Badge variant="success">Approved</Badge>;
+        return <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white">Approved</Badge>;
       case 'rejected':
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <Badge variant="default" className="bg-red-600 hover:bg-red-700 text-white">Rejected</Badge>;
       default:
         return <Badge variant="outline" className="text-amber-600 border-amber-600">Pending</Badge>;
     }
@@ -141,9 +141,9 @@ const PsychologistDashboard = () => {
   const renderEvaluationStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'submitted':
-        return <Badge variant="success">Submitted</Badge>;
+        return <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white">Submitted</Badge>;
       case 'in_progress':
-        return <Badge variant="secondary">In Progress</Badge>;
+        return <Badge variant="default" className="bg-yellow-600 hover:bg-yellow-700 text-white">In Progress</Badge>;
       default:
         return <Badge variant="outline">Assigned</Badge>;
     }
@@ -355,9 +355,9 @@ const PsychologistDashboard = () => {
 const renderStatusBadge = (status: string) => {
   switch (status?.toLowerCase()) {
     case 'approved':
-      return <Badge variant="success">Approved</Badge>;
+      return <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white">Approved</Badge>;
     case 'rejected':
-      return <Badge variant="destructive">Rejected</Badge>;
+      return <Badge variant="default" className="bg-red-600 hover:bg-red-700 text-white">Rejected</Badge>;
     default:
       return <Badge variant="outline" className="text-amber-600 border-amber-600">Pending</Badge>;
   }
@@ -366,9 +366,9 @@ const renderStatusBadge = (status: string) => {
 const renderEvaluationStatusBadge = (status: string) => {
   switch (status?.toLowerCase()) {
     case 'submitted':
-      return <Badge variant="success">Submitted</Badge>;
+      return <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white">Submitted</Badge>;
     case 'in_progress':
-      return <Badge variant="secondary">In Progress</Badge>;
+      return <Badge variant="default" className="bg-yellow-600 hover:bg-yellow-700 text-white">In Progress</Badge>;
     default:
       return <Badge variant="outline">Assigned</Badge>;
   }

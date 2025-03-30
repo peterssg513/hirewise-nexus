@@ -102,7 +102,7 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     setIsSubmitting(true);
     
     try {
-      // Update psychologist profile with corrected column name 'experience' instead of 'experience_details'
+      // Update psychologist profile with the correct column name 'experience' instead of 'experience_details'
       const { error } = await supabase
         .from('psychologists')
         .update({

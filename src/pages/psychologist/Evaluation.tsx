@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -17,7 +16,8 @@ import {
   submitEvaluation,
   EvaluationFormField,
   EvaluationTemplate,
-  EvaluationFormData
+  EvaluationFormData,
+  checkColumnExists
 } from '@/services/evaluationService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +45,6 @@ const Evaluation = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Fetch evaluation data
   const { 
     data: evaluationData, 
     isLoading: isLoadingEvaluation,
@@ -56,21 +55,18 @@ const Evaluation = () => {
     enabled: !!id,
   });
   
-  // Initialize form data from evaluation data
   useEffect(() => {
     if (evaluationData?.evaluation?.form_data) {
       setFormData(evaluationData.evaluation.form_data);
     }
   }, [evaluationData]);
   
-  // Set active tab to first section when template loads
   useEffect(() => {
     if (evaluationData?.template?.sections?.length > 0) {
       setActiveTab(evaluationData.template.sections[0]);
     }
   }, [evaluationData]);
   
-  // Handle form field changes
   const handleFieldChange = (fieldId: string, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -78,7 +74,6 @@ const Evaluation = () => {
     }));
   };
   
-  // Save evaluation data
   const handleSave = async () => {
     if (!id) return;
     
@@ -103,11 +98,9 @@ const Evaluation = () => {
     }
   };
   
-  // Submit evaluation
   const handleSubmit = async () => {
     if (!id) return;
     
-    // Basic validation
     const requiredFields = evaluationData?.template?.fields.filter(field => field.required) || [];
     const missingFields = requiredFields.filter(field => !formData[field.id]);
     
@@ -134,7 +127,6 @@ const Evaluation = () => {
         duration: 3000,
       });
       
-      // Navigate back to applications page
       navigate('/psychologist-dashboard/applications');
     } catch (error: any) {
       toast({
@@ -148,7 +140,6 @@ const Evaluation = () => {
     }
   };
   
-  // Render field based on type
   const renderField = (field: EvaluationFormField) => {
     const { id: fieldId, type, label, required, placeholder, options } = field;
     
@@ -212,7 +203,6 @@ const Evaluation = () => {
         );
       
       case 'multiselect':
-        // For simplicity, we'll render checkboxes for multiselect
         return (
           <div className="space-y-2" key={fieldId}>
             <Label>
@@ -311,7 +301,6 @@ const Evaluation = () => {
     }
   };
   
-  // Show loading state
   if (isLoadingEvaluation) {
     return (
       <div className="flex justify-center items-center h-screen w-full">
@@ -323,7 +312,6 @@ const Evaluation = () => {
     );
   }
   
-  // Show error state
   if (evaluationError) {
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -370,6 +358,9 @@ const Evaluation = () => {
     );
   }
   
+  const status = evaluationData.evaluation.status || 'assigned';
+  const submittedAt = evaluationData.evaluation.submitted_at || null;
+  
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
@@ -390,7 +381,7 @@ const Evaluation = () => {
           <Button
             variant="outline"
             className="gap-2"
-            disabled={isSaving || evaluationData.evaluation.status === 'submitted'}
+            disabled={isSaving || status === 'submitted'}
             onClick={handleSave}
           >
             {isSaving ? (
@@ -403,7 +394,7 @@ const Evaluation = () => {
           
           <Button
             className="gap-2 bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-            disabled={isSubmitting || evaluationData.evaluation.status === 'submitted'}
+            disabled={isSubmitting || status === 'submitted'}
             onClick={handleSubmit}
           >
             {isSubmitting ? (
@@ -419,10 +410,10 @@ const Evaluation = () => {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Badge
-            variant={evaluationData.evaluation.status === 'submitted' ? 'default' : 'outline'}
-            className={evaluationData.evaluation.status === 'submitted' ? 'bg-green-100 text-green-800' : ''}
+            variant={status === 'submitted' ? 'default' : 'outline'}
+            className={status === 'submitted' ? 'bg-green-100 text-green-800' : ''}
           >
-            {evaluationData.evaluation.status === 'submitted' ? (
+            {status === 'submitted' ? (
               <>
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Submitted
@@ -432,15 +423,15 @@ const Evaluation = () => {
             )}
           </Badge>
           
-          {evaluationData.evaluation.submitted_at && (
+          {submittedAt && (
             <span className="text-sm text-muted-foreground">
-              Submitted on {new Date(evaluationData.evaluation.submitted_at).toLocaleDateString()}
+              Submitted on {new Date(submittedAt).toLocaleDateString()}
             </span>
           )}
         </div>
       </div>
       
-      {evaluationData.evaluation.status === 'submitted' && (
+      {status === 'submitted' && (
         <Alert className="mb-6">
           <CheckCircle className="h-4 w-4" />
           <AlertTitle>Evaluation Submitted</AlertTitle>
@@ -492,7 +483,7 @@ const Evaluation = () => {
           <Button
             variant="outline"
             className="gap-2"
-            disabled={isSaving || evaluationData.evaluation.status === 'submitted'}
+            disabled={isSaving || status === 'submitted'}
             onClick={handleSave}
           >
             {isSaving ? (
@@ -505,7 +496,7 @@ const Evaluation = () => {
           
           <Button
             className="gap-2 bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-            disabled={isSubmitting || evaluationData.evaluation.status === 'submitted'}
+            disabled={isSubmitting || status === 'submitted'}
             onClick={handleSubmit}
           >
             {isSubmitting ? (

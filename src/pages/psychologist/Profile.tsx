@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,30 +11,30 @@ import { useNavigate } from 'react-router-dom';
 
 interface Experience {
   id: string;
-  position: string;
-  organization: string;
-  startDate: string;
-  endDate: string | null;
-  current: boolean;
-  description: string;
+  jobTitle: string;
+  placeOfEmployment: string;
+  yearStarted: string;
+  yearWorked: string;
+  description?: string;
 }
 
 interface Education {
   id: string;
-  institution: string;
+  schoolName: string;
+  major: string;
   degree: string;
-  field: string;
-  startDate: string;
-  endDate: string;
+  startYear: string;
+  endYear: string;
 }
 
 interface Certification {
   id: string;
   name: string;
-  issuer: string;
-  date: string;
-  expirationDate: string | null;
-  documentUrl: string;
+  url: string;
+  status: 'pending' | 'verified';
+  uploadedAt: string;
+  startYear: string;
+  endYear: string;
 }
 
 interface ProfileData {
@@ -84,6 +85,8 @@ const Profile = () => {
         const parsedEducation = data.education ? 
           (typeof data.education === 'string' ? JSON.parse(data.education) : data.education) : [];
 
+        const certificationDetails = data.certification_details || [];
+          
         // Create a complete profile data object
         const completeProfileData: ProfileData = {
           name: profile?.name || '',
@@ -96,7 +99,7 @@ const Profile = () => {
           zip_code: data.zip_code,
           experience: parsedExperience,
           education: parsedEducation,
-          certifications: Array.isArray(data.certification_details) ? data.certification_details : [],
+          certifications: certificationDetails as Certification[],
           specialties: data.specialties || [],
           status: data.status,
           work_types: data.work_types || [],
