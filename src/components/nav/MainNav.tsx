@@ -9,11 +9,11 @@ interface NavItem {
   isHighlighted?: boolean;
 }
 
-interface MainNavProps {
-  items: NavItem[];
+export interface MainNavProps {
+  items?: NavItem[];
 }
 
-export const MainNav: React.FC<MainNavProps> = ({ items }) => {
+export const MainNav: React.FC<MainNavProps> = ({ items = [] }) => {
   const location = useLocation();
 
   return (

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Profile } from '@/hooks/useAuthState';
 
-interface UserAccountNavProps {
+export interface UserAccountNavProps {
   profile: Profile | null;
   profilePicUrl: string | null;
   onLogout: () => void;

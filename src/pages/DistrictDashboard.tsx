@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { DistrictNavigation } from '@/components/district/DistrictNavigation';
+import DistrictNavigation from '@/components/district/DistrictNavigation'; // Fixed import
 import { JobsList } from '@/components/district/JobsList';
 import { SchoolsList } from '@/components/district/SchoolsList';
 import { StudentsList } from '@/components/district/StudentsList';

@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
+  isLoading: boolean; // Make sure this property exists
   login: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, role: Role) => Promise<void>;
   logout: () => Promise<void>;

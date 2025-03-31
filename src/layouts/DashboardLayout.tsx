@@ -11,12 +11,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { setup as setupDatabaseUtils } from '@/services/databaseUtilsService';
 
 const DashboardLayout = () => {
-  const { user, loading, profile } = useAuth();
+  const { user, isLoading, profile } = useAuth();
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isLoading && !user) {
       navigate('/login');
       return;
     }
@@ -29,10 +30,31 @@ const DashboardLayout = () => {
     setupDatabaseUtils().catch(error => {
       console.error('Error setting up database utils:', error);
     });
-  }, [user, loading, navigate, profile]);
+
+    // Fetch profile picture for psychologists
+    const fetchProfilePicture = async () => {
+      if (user?.id && profile?.role === 'psychologist') {
+        try {
+          const { data, error } = await supabase
+            .from('psychologists')
+            .select('profile_picture_url')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (!error && data?.profile_picture_url) {
+            setProfilePicUrl(data.profile_picture_url);
+          }
+        } catch (error) {
+          console.error('Failed to fetch profile picture:', error);
+        }
+      }
+    };
+    
+    fetchProfilePicture();
+  }, [user, isLoading, navigate, profile]);
 
   // If still loading, show loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col">
         <header className="sticky top-0 z-40 border-b bg-background">
@@ -53,14 +75,57 @@ const DashboardLayout = () => {
     );
   }
 
+  // Define navigation items based on the user role
+  const getNavItems = () => {
+    if (userRole === 'psychologist') {
+      return [
+        { label: 'Dashboard', href: '/psychologist-dashboard' },
+        { label: 'Jobs', href: '/psychologist-dashboard/jobs' },
+        { label: 'Applications', href: '/psychologist-dashboard/applications' },
+        { label: 'Evaluations', href: '/psychologist-dashboard/evaluations' },
+        { label: 'Profile', href: '/psychologist-dashboard/profile' }
+      ];
+    } else if (userRole === 'district') {
+      return [
+        { label: 'Dashboard', href: '/district-dashboard' },
+        { label: 'Jobs', href: '/district-dashboard/jobs' },
+        { label: 'Schools', href: '/district-dashboard/schools' },
+        { label: 'Students', href: '/district-dashboard/students' },
+        { label: 'Evaluations', href: '/district-dashboard/evaluations' }
+      ];
+    } else if (userRole === 'admin') {
+      return [
+        { label: 'Dashboard', href: '/admin-dashboard' },
+        { label: 'Districts', href: '/admin-dashboard/districts' },
+        { label: 'Psychologists', href: '/admin-dashboard/psychologists' },
+        { label: 'Jobs', href: '/admin-dashboard/jobs' },
+        { label: 'Evaluations', href: '/admin-dashboard/evaluations' }
+      ];
+    }
+    return [];
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
-          <MainNav />
+          <MainNav items={getNavItems()} />
           <div className="flex items-center gap-4">
             <NotificationsMenu />
-            <UserAccountNav />
+            <UserAccountNav 
+              profile={profile} 
+              profilePicUrl={profilePicUrl} 
+              onLogout={handleLogout} 
+            />
           </div>
         </div>
       </header>
