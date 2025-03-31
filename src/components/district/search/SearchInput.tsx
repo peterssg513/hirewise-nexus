@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Search, X } from 'lucide-react';
 
@@ -8,6 +8,7 @@ interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
   onSearch: () => void;
+  className?: string;
 }
 
 export const SearchInput: React.FC<SearchInputProps> = ({
@@ -15,9 +16,15 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   value,
   onChange,
   onSearch,
+  className = "",
 }) => {
+  const handleClear = () => {
+    onChange('');
+    onSearch(); // Trigger search with empty value to reset
+  };
+
   return (
-    <div className="relative flex-grow">
+    <div className={`relative ${className}`}>
       <Input
         placeholder={placeholder}
         value={value}
@@ -29,7 +36,9 @@ export const SearchInput: React.FC<SearchInputProps> = ({
       {value && (
         <button 
           className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-          onClick={() => onChange('')}
+          onClick={handleClear}
+          type="button"
+          aria-label="Clear search"
         >
           <X className="h-4 w-4" />
         </button>
