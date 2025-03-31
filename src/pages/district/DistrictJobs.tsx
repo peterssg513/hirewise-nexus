@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { JobsList } from '@/components/district/JobsList';
+import { JobsList } from '@/components/district/jobs/JobsList';
 
 const DistrictJobs = () => {
   const [districtId, setDistrictId] = useState<string | null>(null);

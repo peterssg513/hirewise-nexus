@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { School, fetchSchools, deleteSchool } from '@/services/schoolService';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, School as SchoolIcon } from 'lucide-react';
+import { Plus, School as SchoolIcon, Filter } from 'lucide-react';
 import { CreateSchoolDialog } from '../CreateSchoolDialog';
 import { EditSchoolDialog } from '../EditSchoolDialog';
 import { SearchFilterBar } from '../search/SearchFilterBar';
@@ -140,11 +139,15 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredSchools.length === 0 ? (
             <EmptyState
-              icon={SchoolIcon}
-              title="No schools"
-              description="Get started by adding a new school."
-              actionText="Add School"
-              onAction={() => setCreateDialogOpen(true)}
+              icon={<Filter className="h-10 w-10" />}
+              title="No schools found"
+              description="No schools match your criteria. Try adjusting your filters or create your first school."
+              action={
+                <Button onClick={() => setCreateDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add School
+                </Button>
+              }
             />
           ) : (
             filteredSchools.map((school) => (
