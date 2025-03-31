@@ -8,11 +8,41 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { saveBasicInfo, BasicInfo } from '@/services/districtSignupService';
 
 interface BasicInformationProps {
   onComplete: () => void;
 }
+
+// List of US states for dropdown
+const US_STATES = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
+  "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", 
+  "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", 
+  "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
+  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", 
+  "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", 
+  "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+  "District of Columbia"
+];
+
+// District size tiers
+const DISTRICT_SIZE_TIERS = [
+  { value: "500", label: "Very Small (< 500 students)" },
+  { value: "1000", label: "Small (500-1,000 students)" },
+  { value: "5000", label: "Medium (1,000-5,000 students)" },
+  { value: "10000", label: "Large (5,000-10,000 students)" },
+  { value: "25000", label: "Very Large (10,000-25,000 students)" },
+  { value: "50000", label: "Extra Large (25,000-50,000 students)" },
+  { value: "100000", label: "Mega (> 50,000 students)" }
+];
 
 const basicInfoSchema = z.object({
   districtName: z.string().min(2, {
@@ -39,8 +69,8 @@ const basicInfoSchema = z.object({
   website: z.string().url({
     message: "Please enter a valid URL.",
   }).optional().or(z.literal('')),
-  districtSize: z.coerce.number().positive({
-    message: "District size must be a positive number.",
+  districtSize: z.string({
+    required_error: "Please select a district size tier.",
   }),
 });
 
@@ -62,7 +92,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
       contactEmail: profile?.email || '',
       contactPhone: '',
       website: '',
-      districtSize: undefined,
+      districtSize: '',
     },
   });
 
@@ -89,7 +119,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
         contactEmail: values.contactEmail,
         contactPhone: values.contactPhone,
         website: values.website || '',
-        districtSize: values.districtSize,
+        districtSize: parseInt(values.districtSize), // Convert string to number
       };
       
       await saveBasicInfo(user.id, basicInfo);
@@ -117,16 +147,44 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="districtName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>District Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter district name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
-              name="districtName"
+              name="state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>District Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter district name" {...field} />
-                  </FormControl>
+                  <FormLabel>State</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a state" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="max-h-[200px]">
+                      {US_STATES.map((state) => (
+                        <SelectItem key={state} value={state}>
+                          {state}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -134,18 +192,46 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
 
             <FormField
               control={form.control}
-              name="state"
+              name="districtSize"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>State</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter state" {...field} />
-                  </FormControl>
+                  <FormLabel>District Size</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select district size" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {DISTRICT_SIZE_TIERS.map((tier) => (
+                        <SelectItem key={tier.value} value={tier.value}>
+                          {tier.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="website"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>District Website</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://www.example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
@@ -197,9 +283,9 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
               name="contactEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact Email</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter contact email" {...field} />
+                    <Input type="email" placeholder="name@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -211,39 +297,9 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
               name="contactPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact Phone</FormLabel>
+                  <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter contact phone number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>District Website</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://www.example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="districtSize"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>District Size (# of students)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Enter student count" {...field} />
+                    <Input placeholder="(555) 123-4567" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
