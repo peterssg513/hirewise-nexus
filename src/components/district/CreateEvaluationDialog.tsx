@@ -145,7 +145,7 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
                   <SelectValue placeholder="Select a student" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (Add details manually)</SelectItem>
+                  <SelectItem value="none">None (Add details manually)</SelectItem>
                   {students.map((student) => (
                     <SelectItem key={student.id} value={student.id}>
                       {student.name}

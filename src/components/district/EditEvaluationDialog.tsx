@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -84,7 +83,6 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
     }
   }, [open, evaluation.district_id]);
 
-  // And ensure the default value is properly handled
   useEffect(() => {
     if (evaluation) {
       reset({
@@ -107,7 +105,6 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
     try {
       setIsSubmitting(true);
       
-      // Convert age from string to number if present
       const evaluationData: Partial<EvaluationRequest> = {
         ...data,
         age: data.age ? parseInt(data.age, 10) : undefined
@@ -142,7 +139,7 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
           <div className="grid gap-2">
             <Label htmlFor="service_type">Service Type</Label>
             <Select 
-              defaultValue={evaluation.service_type} 
+              defaultValue={evaluation.service_type || 'none'} 
               onValueChange={(value) => setValue("service_type", value)}
             >
               <SelectTrigger>
@@ -184,13 +181,14 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
             <div className="grid gap-2">
               <Label htmlFor="school_id">School</Label>
               <Select 
-                defaultValue={evaluation.school_id || ''} 
+                defaultValue={evaluation.school_id || 'none'} 
                 onValueChange={(value) => setValue("school_id", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a school" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No school selected</SelectItem>
                   {schools.map((school) => (
                     <SelectItem key={school.id} value={school.id}>
                       {school.name}

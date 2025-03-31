@@ -231,6 +231,7 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
                 <SelectValue placeholder="Select a school" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">No school selected</SelectItem>
                 {schools.map((school) => (
                   <SelectItem key={school.id} value={school.id}>
                     {school.name}

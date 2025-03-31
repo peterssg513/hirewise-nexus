@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Job, updateJob } from '@/services/jobService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
@@ -89,7 +88,6 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
         school_id: job.school_id || '',
       });
       
-      // Load qualifications and documents from job data
       setQualifications(job.qualifications ? job.qualifications.map(text => ({ id: uuidv4(), text })) : []);
       setDocumentsRequired(job.documents_required || []);
     }
@@ -117,7 +115,6 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
     try {
       setIsSubmitting(true);
       
-      // Convert salary from string to number
       const jobData: Partial<Job> = {
         ...data,
         salary: data.salary ? parseFloat(data.salary) : undefined,
@@ -236,13 +233,14 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
           <div className="grid gap-2">
             <Label htmlFor="school_id">School</Label>
             <Select 
-              defaultValue={job.school_id || ''}
+              defaultValue={job.school_id || 'none'}
               onValueChange={handleSchoolChange}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a school" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">No school selected</SelectItem>
                 {schools.map((school) => (
                   <SelectItem key={school.id} value={school.id}>
                     {school.name}
