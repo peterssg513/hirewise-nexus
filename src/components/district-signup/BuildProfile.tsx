@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,53 +11,12 @@ import { District } from '@/types/district';
 import DistrictInfoSection from './DistrictInfoSection';
 import ContactInfoSection from './ContactInfoSection';
 import { Loader2 } from 'lucide-react';
+import { buildProfileSchema, BuildProfileFormValues } from './schemas/buildProfileSchema';
+import { DISTRICT_SIZE_TIERS } from './constants/districtSizeTiers';
 
 interface BuildProfileProps {
   onComplete: () => void;
 }
-
-// District size tiers
-const DISTRICT_SIZE_TIERS = [
-  { value: 1000, label: 'Less than 1,000 students' },
-  { value: 5000, label: '1,000 - 5,000 students' },
-  { value: 10000, label: '5,001 - 10,000 students' },
-  { value: 25000, label: '10,001 - 25,000 students' },
-  { value: 50000, label: '25,001 - 50,000 students' },
-  { value: 100000, label: '50,001 - 100,000 students' },
-  { value: 100001, label: 'More than 100,000 students' },
-];
-
-const buildProfileSchema = z.object({
-  name: z.string().min(2, {
-    message: "District name must be at least 2 characters.",
-  }),
-  state: z.string().min(2, {
-    message: "Please select a state.",
-  }),
-  district_size: z.coerce.number().min(1, {
-    message: "Please select a district size.",
-  }),
-  website: z.string().url({
-    message: "Please enter a valid website URL (include https://).",
-  }).or(z.string().length(0)),
-  first_name: z.string().min(2, {
-    message: "First name must be at least 2 characters.",
-  }),
-  last_name: z.string().min(2, {
-    message: "Last name must be at least 2 characters.",
-  }),
-  job_title: z.string().min(2, {
-    message: "Job title must be at least 2 characters.",
-  }),
-  contact_email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  contact_phone: z.string().min(10, {
-    message: "Please enter a valid phone number.",
-  }),
-});
-
-export type BuildProfileFormValues = z.infer<typeof buildProfileSchema>;
 
 const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
   const { toast } = useToast();
@@ -82,7 +40,6 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     },
   });
 
-  // Load existing district data for display
   useEffect(() => {
     const loadDistrictData = async () => {
       if (!user) return;

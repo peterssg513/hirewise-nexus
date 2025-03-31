@@ -3,7 +3,7 @@ import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
-import { BuildProfileFormValues } from './BuildProfile';
+import { BuildProfileFormValues } from './schemas/buildProfileSchema';
 
 interface ContactInfoSectionProps {
   form: UseFormReturn<BuildProfileFormValues>;

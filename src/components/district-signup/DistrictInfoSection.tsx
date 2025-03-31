@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { US_STATES } from '@/lib/constants';
 import { UseFormReturn } from 'react-hook-form';
-import { BuildProfileFormValues } from './BuildProfile';
+import { BuildProfileFormValues } from './schemas/buildProfileSchema';
 
 interface DistrictInfoSectionProps {
   form: UseFormReturn<BuildProfileFormValues>;
