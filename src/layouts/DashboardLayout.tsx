@@ -95,7 +95,7 @@ const DashboardLayout = () => {
         { label: 'Evaluations', href: '/district-dashboard/evaluations' }
       ];
     } else if (userRole === 'admin') {
-      // Updated structure for admin dashboard tabs
+      // Updated admin dashboard tabs with proper hash-based navigation
       return [
         { label: 'Dashboard', href: '/admin-dashboard' },
         { label: 'Districts', href: '/admin-dashboard', hash: 'districts' },

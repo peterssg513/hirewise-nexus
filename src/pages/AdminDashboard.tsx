@@ -9,6 +9,8 @@ import { toast } from '@/hooks/use-toast';
 // Import admin pages
 import AdminDistricts from '@/pages/admin/AdminDistricts';
 import AdminPsychologists from '@/pages/admin/AdminPsychologists';
+import AdminJobs from '@/pages/admin/AdminJobs';
+import AdminEvaluations from '@/pages/admin/AdminEvaluations';
 import { DashboardStats } from '@/components/admin/dashboard/DashboardStats';
 
 const AdminDashboard = () => {
@@ -180,17 +182,11 @@ const AdminDashboard = () => {
         </TabsContent>
         
         <TabsContent value="jobs" className="mt-6">
-          <div className="p-4 border rounded">
-            <h3 className="text-lg font-medium">Jobs Management</h3>
-            <p className="text-muted-foreground">This section is under development.</p>
-          </div>
+          <AdminJobs />
         </TabsContent>
         
         <TabsContent value="evaluations" className="mt-6">
-          <div className="p-4 border rounded">
-            <h3 className="text-lg font-medium">Evaluations Management</h3>
-            <p className="text-muted-foreground">This section is under development.</p>
-          </div>
+          <AdminEvaluations />
         </TabsContent>
       </Tabs>
     </div>
