@@ -48,8 +48,8 @@ export const formatEducation = (educationData: any): string => {
 };
 
 // Helper function to format experience display
-export const formatExperience = (experienceData: any): React.ReactNode[] => {
-  if (!experienceData) return [<span key="no-exp">Not specified</span>];
+export const formatExperience = (experienceData: any): Array<{ key: string; content: React.ReactNode }> => {
+  if (!experienceData) return [{ key: 'no-exp', content: 'Not specified' }];
   
   try {
     let experiences = experienceData;
@@ -67,21 +67,22 @@ export const formatExperience = (experienceData: any): React.ReactNode[] => {
         const startDate = exp.startDate || '';
         const endDate = exp.current ? 'Present' : (exp.endDate || '');
         
-        return (
-          <div key={index} className="mb-2 last:mb-0">
-            <p className="font-medium">{organization}{position ? ` - ${position}` : ''}</p>
-            {(startDate || endDate) && (
-              <p className="text-xs">{startDate} to {endDate}</p>
-            )}
-            {exp.description && <p className="mt-1 text-sm">{exp.description}</p>}
-          </div>
-        );
+        return {
+          key: `exp-${index}`,
+          content: {
+            organization,
+            position,
+            startDate,
+            endDate,
+            description: exp.description || ''
+          }
+        };
       });
     }
     
-    return [<span key="no-exp">Not specified</span>];
+    return [{ key: 'no-exp', content: 'Not specified' }];
   } catch (err) {
     console.error('Error formatting experience:', err, experienceData);
-    return [<span key="error-exp">Not specified</span>];
+    return [{ key: 'error-exp', content: 'Not specified' }];
   }
 };

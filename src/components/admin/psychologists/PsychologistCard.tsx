@@ -17,6 +17,8 @@ const PsychologistCard: React.FC<PsychologistCardProps> = ({
   onApprove, 
   onReject 
 }) => {
+  const experiences = formatExperience(psych.experience);
+
   return (
     <Card key={psych.id} className="mb-4">
       <CardHeader className="pb-2">
@@ -74,11 +76,27 @@ const PsychologistCard: React.FC<PsychologistCardProps> = ({
           </div>
         </div>
         
-        {psych.experience && (
+        {experiences.length > 0 && experiences[0].content !== 'Not specified' && (
           <div className="mt-4">
             <p className="text-sm font-medium">Experience Details</p>
             <div className="text-sm text-muted-foreground mt-1 border rounded-md p-3 bg-gray-50">
-              {formatExperience(psych.experience)}
+              {experiences.map(({ key, content }) => {
+                if (typeof content === 'string') {
+                  return <div key={key}>{content}</div>;
+                }
+                
+                return (
+                  <div key={key} className="mb-2 last:mb-0">
+                    <p className="font-medium">
+                      {content.organization}{content.position ? ` - ${content.position}` : ''}
+                    </p>
+                    {(content.startDate || content.endDate) && (
+                      <p className="text-xs">{content.startDate} to {content.endDate}</p>
+                    )}
+                    {content.description && <p className="mt-1 text-sm">{content.description}</p>}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
