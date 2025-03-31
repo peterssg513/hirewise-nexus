@@ -28,6 +28,9 @@ import AdminDistricts from './pages/admin/AdminDistricts';
 import AdminPsychologists from './pages/admin/AdminPsychologists';
 import AdminJobs from './pages/admin/AdminJobs';
 import AdminEvaluations from './pages/admin/AdminEvaluations';
+import AdminSchools from './pages/admin/AdminSchools';
+import AdminStudents from './pages/admin/AdminStudents';
+import Approvals from './pages/admin/Approvals';
 
 // Use a non-guessable path for admin authentication
 const ADMIN_AUTH_PATH = 'admin-secret-auth-84721';
@@ -61,9 +64,12 @@ function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="create-admin" element={<AdminCreate />} />
+          <Route path="approvals" element={<Approvals />} />
           <Route path="districts" element={<AdminDistricts />} />
           <Route path="psychologists" element={<AdminPsychologists />} />
           <Route path="jobs" element={<AdminJobs />} />
+          <Route path="schools" element={<AdminSchools />} />
+          <Route path="students" element={<AdminStudents />} />
           <Route path="evaluations" element={<AdminEvaluations />} />
         </Route>
 

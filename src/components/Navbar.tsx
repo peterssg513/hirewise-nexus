@@ -60,8 +60,11 @@ const Navbar = () => {
           <div className="flex space-x-6">
             <MainNav items={[
               { label: 'Dashboard', href: '/admin-dashboard' },
+              { label: 'Approvals', href: '/admin-dashboard/approvals' },
               { label: 'Districts', href: '/admin-dashboard/districts' },
               { label: 'Psychologists', href: '/admin-dashboard/psychologists' },
+              { label: 'Schools', href: '/admin-dashboard/schools' },
+              { label: 'Students', href: '/admin-dashboard/students' },
               { label: 'Jobs', href: '/admin-dashboard/jobs' },
               { label: 'Evaluations', href: '/admin-dashboard/evaluations' }
             ]} />
