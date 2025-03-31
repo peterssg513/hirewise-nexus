@@ -5,12 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { District } from '@/types/district';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
-import { Loader2, Edit, Clock, CheckCircle, School, MapPin, Users, Phone, Mail } from 'lucide-react';
+import { Loader2, Edit, Clock, CheckCircle, School, MapPin, Users, Phone, Mail, Plus, Briefcase, FileText, User } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SchoolsList } from '@/components/district/SchoolsList';
+import { JobsList } from '@/components/district/JobsList';
+import { StudentsList } from '@/components/district/StudentsList';
+import { EvaluationsList } from '@/components/district/EvaluationsList';
 
 const DistrictDashboard = () => {
   const { profile, user } = useAuth();
   const [district, setDistrict] = useState<District | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     const loadDistrictProfile = async () => {
@@ -134,40 +140,139 @@ const DistrictDashboard = () => {
         </Card>
       )}
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Job Postings</CardTitle>
-            <CardDescription>Manage your job postings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Active Postings</p>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="bg-white mb-4">
+          <TabsTrigger value="overview" className="text-sm">Overview</TabsTrigger>
+          <TabsTrigger value="jobs" className="text-sm">Jobs</TabsTrigger>
+          <TabsTrigger value="schools" className="text-sm">Schools</TabsTrigger>
+          <TabsTrigger value="students" className="text-sm">Students</TabsTrigger>
+          <TabsTrigger value="evaluations" className="text-sm">Evaluations</TabsTrigger>
+        </TabsList>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Applications</CardTitle>
-            <CardDescription>Review incoming applications</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Pending Review</p>
-          </CardContent>
-        </Card>
+        <TabsContent value="overview">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="hover:shadow-md transition-shadow border border-gray-100">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">Job Postings</CardTitle>
+                    <CardDescription>Manage positions</CardDescription>
+                  </div>
+                  <Briefcase className="h-5 w-5 text-psyched-darkBlue" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">0</div>
+                <p className="text-xs text-muted-foreground">Active Postings</p>
+              </CardContent>
+              <div className="px-4 pb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full border-psyched-darkBlue text-psyched-darkBlue hover:bg-psyched-darkBlue/10"
+                  onClick={() => setActiveTab('jobs')}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Create Job
+                </Button>
+              </div>
+            </Card>
+            
+            <Card className="hover:shadow-md transition-shadow border border-gray-100">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">Schools</CardTitle>
+                    <CardDescription>Manage locations</CardDescription>
+                  </div>
+                  <School className="h-5 w-5 text-psyched-darkBlue" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">0</div>
+                <p className="text-xs text-muted-foreground">Registered Schools</p>
+              </CardContent>
+              <div className="px-4 pb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full border-psyched-darkBlue text-psyched-darkBlue hover:bg-psyched-darkBlue/10"
+                  onClick={() => setActiveTab('schools')}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Add School
+                </Button>
+              </div>
+            </Card>
+            
+            <Card className="hover:shadow-md transition-shadow border border-gray-100">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">Evaluations</CardTitle>
+                    <CardDescription>Request assessments</CardDescription>
+                  </div>
+                  <FileText className="h-5 w-5 text-psyched-darkBlue" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">0</div>
+                <p className="text-xs text-muted-foreground">Pending Evaluations</p>
+              </CardContent>
+              <div className="px-4 pb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full border-psyched-darkBlue text-psyched-darkBlue hover:bg-psyched-darkBlue/10"
+                  onClick={() => setActiveTab('evaluations')}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Request Evaluation
+                </Button>
+              </div>
+            </Card>
+            
+            <Card className="hover:shadow-md transition-shadow border border-gray-100">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">Students</CardTitle>
+                    <CardDescription>Manage student records</CardDescription>
+                  </div>
+                  <User className="h-5 w-5 text-psyched-darkBlue" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">0</div>
+                <p className="text-xs text-muted-foreground">Registered Students</p>
+              </CardContent>
+              <div className="px-4 pb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full border-psyched-darkBlue text-psyched-darkBlue hover:bg-psyched-darkBlue/10"
+                  onClick={() => setActiveTab('students')}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Add Student
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </TabsContent>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Evaluation Reports</CardTitle>
-            <CardDescription>Access submitted evaluation reports</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Available Reports</p>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="jobs">
+          {district && <JobsList districtId={district.id} />}
+        </TabsContent>
+        
+        <TabsContent value="schools">
+          {district && <SchoolsList districtId={district.id} />}
+        </TabsContent>
+        
+        <TabsContent value="students">
+          {district && <StudentsList districtId={district.id} />}
+        </TabsContent>
+        
+        <TabsContent value="evaluations">
+          {district && <EvaluationsList districtId={district.id} />}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

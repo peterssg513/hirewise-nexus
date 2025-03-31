@@ -163,6 +163,92 @@ export type Database = {
         }
         Relationships: []
       }
+      evaluation_requests: {
+        Row: {
+          age: number | null
+          created_at: string
+          date_of_birth: string | null
+          district_id: string | null
+          general_education_teacher: string | null
+          grade: string | null
+          id: string
+          legal_name: string | null
+          other_relevant_info: string | null
+          parents: string | null
+          school_id: string | null
+          service_type: string | null
+          special_education_teachers: string | null
+          status: string | null
+          student_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          district_id?: string | null
+          general_education_teacher?: string | null
+          grade?: string | null
+          id?: string
+          legal_name?: string | null
+          other_relevant_info?: string | null
+          parents?: string | null
+          school_id?: string | null
+          service_type?: string | null
+          special_education_teachers?: string | null
+          status?: string | null
+          student_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          district_id?: string | null
+          general_education_teacher?: string | null
+          grade?: string | null
+          id?: string
+          legal_name?: string | null
+          other_relevant_info?: string | null
+          parents?: string | null
+          school_id?: string | null
+          service_type?: string | null
+          special_education_teachers?: string | null
+          status?: string | null
+          student_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_requests_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "active_jobs_with_district"
+            referencedColumns: ["district_id"]
+          },
+          {
+            foreignKeyName: "evaluation_requests_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluation_requests_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluation_requests_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evaluations: {
         Row: {
           application_id: string
@@ -209,39 +295,63 @@ export type Database = {
       }
       jobs: {
         Row: {
+          benefits: string[] | null
+          city: string | null
+          country: string | null
           created_at: string
           description: string
           district_id: string
           documents_required: string[] | null
           id: string
+          job_type: string | null
           location: string | null
+          qualifications: string[] | null
+          salary: number | null
+          school_id: string | null
           skills_required: string[] | null
+          state: string | null
           status: string | null
           timeframe: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          benefits?: string[] | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           description: string
           district_id: string
           documents_required?: string[] | null
           id?: string
+          job_type?: string | null
           location?: string | null
+          qualifications?: string[] | null
+          salary?: number | null
+          school_id?: string | null
           skills_required?: string[] | null
+          state?: string | null
           status?: string | null
           timeframe?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          benefits?: string[] | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           description?: string
           district_id?: string
           documents_required?: string[] | null
           id?: string
+          job_type?: string | null
           location?: string | null
+          qualifications?: string[] | null
+          salary?: number | null
+          school_id?: string | null
           skills_required?: string[] | null
+          state?: string | null
           status?: string | null
           timeframe?: string | null
           title?: string
@@ -260,6 +370,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
             referencedColumns: ["id"]
           },
         ]
@@ -401,6 +518,136 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
+      }
+      schools: {
+        Row: {
+          city: string | null
+          created_at: string
+          district_id: string
+          enrollment_size: number | null
+          id: string
+          name: string
+          state: string | null
+          street: string | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          district_id: string
+          enrollment_size?: number | null
+          id?: string
+          name: string
+          state?: string | null
+          street?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          district_id?: string
+          enrollment_size?: number | null
+          id?: string
+          name?: string
+          state?: string | null
+          street?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schools_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "active_jobs_with_district"
+            referencedColumns: ["district_id"]
+          },
+          {
+            foreignKeyName: "schools_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          created_at: string
+          current_teacher: string | null
+          district_id: string | null
+          first_name: string
+          grade: string | null
+          id: string
+          last_name: string
+          parent_guardian1_email: string | null
+          parent_guardian1_name: string | null
+          parent_guardian1_phone: string | null
+          parent_guardian2_email: string | null
+          parent_guardian2_name: string | null
+          parent_guardian2_phone: string | null
+          school_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_teacher?: string | null
+          district_id?: string | null
+          first_name: string
+          grade?: string | null
+          id?: string
+          last_name: string
+          parent_guardian1_email?: string | null
+          parent_guardian1_name?: string | null
+          parent_guardian1_phone?: string | null
+          parent_guardian2_email?: string | null
+          parent_guardian2_name?: string | null
+          parent_guardian2_phone?: string | null
+          school_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_teacher?: string | null
+          district_id?: string | null
+          first_name?: string
+          grade?: string | null
+          id?: string
+          last_name?: string
+          parent_guardian1_email?: string | null
+          parent_guardian1_name?: string | null
+          parent_guardian1_phone?: string | null
+          parent_guardian2_email?: string | null
+          parent_guardian2_name?: string | null
+          parent_guardian2_phone?: string | null
+          school_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "active_jobs_with_district"
+            referencedColumns: ["district_id"]
+          },
+          {
+            foreignKeyName: "students_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
