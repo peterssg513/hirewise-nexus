@@ -1,15 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
-import { EvaluationRequest, fetchEvaluationRequests, SERVICE_TYPES } from '@/services/evaluationRequestService';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  EvaluationRequest, 
+  fetchEvaluationRequests, 
+  deleteEvaluationRequest 
+} from '@/services/evaluationManagementService';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Edit, Plus, FileText, Clock, Calendar, School, User, Trash } from 'lucide-react';
+import { 
+  FileText, Calendar, School, User, Book, Users, Edit, Plus, Trash, 
+  CheckCircle, Clock, AlertCircle, File, Eye 
+} from 'lucide-react';
 import { CreateEvaluationDialog } from './CreateEvaluationDialog';
 import { EditEvaluationDialog } from './EditEvaluationDialog';
-import { fetchSchoolById } from '@/services/schoolService';
-import { fetchStudentById } from '@/services/studentService';
-import { Badge } from '@/components/ui/badge';
 import { SearchFilterBar } from './SearchFilterBar';
 import {
   AlertDialog,
@@ -21,6 +24,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
 interface EvaluationsListProps {
   districtId: string;
@@ -32,10 +37,9 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
   const [loading, setLoading] = useState<boolean>(true);
   const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
   const [editingEvaluation, setEditingEvaluation] = useState<EvaluationRequest | null>(null);
-  const [schoolNames, setSchoolNames] = useState<{ [key: string]: string }>({});
-  const [studentNames, setStudentNames] = useState<{ [key: string]: string }>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
   const [evaluationToDelete, setEvaluationToDelete] = useState<EvaluationRequest | null>(null);
+  const [selectedEvaluation, setSelectedEvaluation] = useState<EvaluationRequest | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -51,40 +55,11 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
       setLoading(true);
       const evaluationsData = await fetchEvaluationRequests(districtId);
       setEvaluations(evaluationsData);
-      
-      // Load school names
-      const schoolIds = Array.from(new Set(evaluationsData.filter(e => e.school_id).map(e => e.school_id)));
-      const schoolNamesMap: { [key: string]: string } = {};
-      
-      await Promise.all(schoolIds.map(async (schoolId) => {
-        if (!schoolId) return;
-        const school = await fetchSchoolById(schoolId);
-        if (school) {
-          schoolNamesMap[schoolId] = school.name;
-        }
-      }));
-      
-      setSchoolNames(schoolNamesMap);
-      
-      // Load student names
-      const studentIds = Array.from(new Set(evaluationsData.filter(e => e.student_id).map(e => e.student_id)));
-      const studentNamesMap: { [key: string]: string } = {};
-      
-      await Promise.all(studentIds.map(async (studentId) => {
-        if (!studentId) return;
-        const student = await fetchStudentById(studentId);
-        if (student) {
-          studentNamesMap[studentId] = `${student.first_name} ${student.last_name}`;
-        }
-      }));
-      
-      setStudentNames(studentNamesMap);
-      
     } catch (error) {
       console.error('Failed to load evaluations:', error);
       toast({
         title: 'Error loading evaluations',
-        description: 'Failed to load evaluation requests. Please try again later.',
+        description: 'Failed to load evaluations. Please try again later.',
         variant: 'destructive',
       });
     } finally {
@@ -93,12 +68,11 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
   };
 
   const handleEvaluationCreated = (newEvaluation: EvaluationRequest) => {
-    setEvaluations(prev => [...prev, newEvaluation]);
+    setEvaluations(prev => [newEvaluation, ...prev]);
     toast({
-      title: 'Evaluation created',
-      description: 'The evaluation request has been created successfully.',
+      title: 'Evaluation request created',
+      description: `Evaluation request for ${newEvaluation.legal_name || 'student'} has been created successfully.`,
     });
-    loadEvaluations(); // Reload to get updated data with names
   };
 
   const handleEvaluationUpdated = (updatedEvaluation: EvaluationRequest) => {
@@ -106,10 +80,9 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
       evaluation.id === updatedEvaluation.id ? updatedEvaluation : evaluation
     ));
     toast({
-      title: 'Evaluation updated',
-      description: 'The evaluation request has been updated successfully.',
+      title: 'Evaluation request updated',
+      description: `Evaluation request for ${updatedEvaluation.legal_name || 'student'} has been updated successfully.`,
     });
-    loadEvaluations(); // Reload to get updated data with names
   };
 
   const confirmDeleteEvaluation = (evaluation: EvaluationRequest) => {
@@ -121,21 +94,17 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
     if (!evaluationToDelete) return;
     
     try {
-      // Assuming there's a deleteEvaluationRequest function in your service
-      // await deleteEvaluationRequest(evaluationToDelete.id);
-      
-      // Since the deletion function isn't visible in the provided code, we'll just update the UI
-      setEvaluations(prev => prev.filter(e => e.id !== evaluationToDelete.id));
-      
+      await deleteEvaluationRequest(evaluationToDelete.id);
+      setEvaluations(prev => prev.filter(evaluation => evaluation.id !== evaluationToDelete.id));
       toast({
-        title: 'Evaluation deleted',
-        description: 'The evaluation request has been deleted successfully.',
+        title: 'Evaluation request deleted',
+        description: `Evaluation request for ${evaluationToDelete.legal_name || 'student'} has been deleted successfully.`,
       });
     } catch (error) {
       console.error('Failed to delete evaluation:', error);
       toast({
         title: 'Error deleting evaluation',
-        description: 'Failed to delete evaluation request. Please try again later.',
+        description: 'Failed to delete evaluation. Please try again later.',
         variant: 'destructive',
       });
     } finally {
@@ -151,20 +120,12 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
     }
     
     const lowerCaseSearch = searchTerm.toLowerCase();
-    const filtered = evaluations.filter(evaluation => {
-      const studentName = evaluation.student_id && studentNames[evaluation.student_id]
-        ? studentNames[evaluation.student_id].toLowerCase()
-        : (evaluation.legal_name ? evaluation.legal_name.toLowerCase() : '');
-        
-      const schoolName = evaluation.school_id && schoolNames[evaluation.school_id]
-        ? schoolNames[evaluation.school_id].toLowerCase()
-        : '';
-        
-      return studentName.includes(lowerCaseSearch) ||
-        schoolName.includes(lowerCaseSearch) ||
-        (evaluation.service_type && evaluation.service_type.toLowerCase().includes(lowerCaseSearch)) ||
-        (evaluation.grade && evaluation.grade.toLowerCase().includes(lowerCaseSearch));
-    });
+    const filtered = evaluations.filter(evaluation => 
+      (evaluation.legal_name && evaluation.legal_name.toLowerCase().includes(lowerCaseSearch)) || 
+      (evaluation.grade && evaluation.grade.toLowerCase().includes(lowerCaseSearch)) || 
+      (evaluation.general_education_teacher && evaluation.general_education_teacher.toLowerCase().includes(lowerCaseSearch)) ||
+      (evaluation.service_type && evaluation.service_type.toLowerCase().includes(lowerCaseSearch))
+    );
     
     setFilteredEvaluations(filtered);
   };
@@ -176,7 +137,7 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
     }
     
     const filtered = evaluations.filter(evaluation => 
-      evaluation.status === filterValue || evaluation.service_type === filterValue
+      evaluation.status === filterValue
     );
     
     setFilteredEvaluations(filtered);
@@ -186,38 +147,54 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
     switch (status) {
       case 'pending':
         return (
-          <Badge variant="outline" className="bg-amber-50 text-amber-700 hover:bg-amber-50 border-amber-200">
-            <Clock className="h-3.5 w-3.5 mr-1" />
+          <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">
+            <Clock className="mr-1 h-3 w-3" />
             Pending
           </Badge>
         );
-      case 'assigned':
+      case 'approved':
         return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50 border-blue-200">
-            <User className="h-3.5 w-3.5 mr-1" />
-            Assigned
+          <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+            <CheckCircle className="mr-1 h-3 w-3" />
+            Approved
+          </Badge>
+        );
+      case 'in_progress':
+        return (
+          <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+            <File className="mr-1 h-3 w-3" />
+            In Progress
           </Badge>
         );
       case 'completed':
         return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50 border-green-200">
-            <Clock className="h-3.5 w-3.5 mr-1" />
+          <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-200">
+            <CheckCircle className="mr-1 h-3 w-3" />
             Completed
+          </Badge>
+        );
+      case 'rejected':
+        return (
+          <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">
+            <AlertCircle className="mr-1 h-3 w-3" />
+            Rejected
           </Badge>
         );
       default:
         return (
-          <Badge variant="outline">{status}</Badge>
+          <Badge variant="outline">
+            {status}
+          </Badge>
         );
     }
   };
 
-  // Create filter options for service types and status
   const filterOptions = [
     { value: "pending", label: "Pending" },
-    { value: "assigned", label: "Assigned" },
+    { value: "approved", label: "Approved" },
+    { value: "in_progress", label: "In Progress" },
     { value: "completed", label: "Completed" },
-    ...SERVICE_TYPES.map(type => ({ value: type, label: type }))
+    { value: "rejected", label: "Rejected" }
   ];
 
   return (
@@ -228,12 +205,12 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
           onClick={() => setCreateDialogOpen(true)}
           className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
         >
-          <Plus className="mr-2 h-4 w-4" /> Create Evaluation
+          <Plus className="mr-2 h-4 w-4" /> Request Evaluation
         </Button>
       </div>
 
       <SearchFilterBar 
-        placeholder="Search evaluations by student, school, service type..."
+        placeholder="Search evaluations by student name, grade, teacher..."
         filterOptions={filterOptions}
         onSearch={handleSearch}
         onFilter={handleFilter}
@@ -249,13 +226,13 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
             <div className="col-span-full text-center py-8">
               <FileText className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-semibold text-gray-900">No evaluation requests</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by creating a new evaluation request.</p>
+              <p className="mt-1 text-sm text-gray-500">Get started by requesting a new evaluation.</p>
               <div className="mt-6">
                 <Button
                   onClick={() => setCreateDialogOpen(true)}
                   className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
                 >
-                  <Plus className="mr-2 h-4 w-4" /> Create Evaluation
+                  <Plus className="mr-2 h-4 w-4" /> Request Evaluation
                 </Button>
               </div>
             </div>
@@ -264,42 +241,65 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
               <Card key={evaluation.id} className="overflow-hidden">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
-                    <CardTitle className="text-base">
-                      {evaluation.student_id && studentNames[evaluation.student_id] 
-                        ? studentNames[evaluation.student_id] 
-                        : evaluation.legal_name || 'Unnamed Student'}
+                    <CardTitle className="text-lg">
+                      {evaluation.legal_name || 'Unnamed Student'}
                     </CardTitle>
                     {getStatusBadge(evaluation.status)}
                   </div>
+                  <CardDescription>
+                    {evaluation.service_type && (
+                      <div className="flex items-center text-sm">
+                        <FileText className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                        {evaluation.service_type}
+                      </div>
+                    )}
+                    
+                    {evaluation.created_at && (
+                      <div className="flex items-center text-sm mt-1">
+                        <Calendar className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                        Requested: {format(new Date(evaluation.created_at), 'MMM d, yyyy')}
+                      </div>
+                    )}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2 pb-2">
-                  {evaluation.service_type && (
-                    <div className="text-sm">
-                      <span className="font-medium">Service Type:</span> {evaluation.service_type}
-                    </div>
-                  )}
-                  
+                <CardContent className="space-y-2">
                   {evaluation.grade && (
-                    <div className="text-sm">
-                      <span className="font-medium">Grade:</span> {evaluation.grade}
+                    <div className="flex items-center text-sm">
+                      <Book className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>Grade: {evaluation.grade}</span>
                     </div>
                   )}
                   
-                  {evaluation.school_id && schoolNames[evaluation.school_id] && (
+                  {evaluation.schools && (
                     <div className="flex items-center text-sm">
                       <School className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>{schoolNames[evaluation.school_id]}</span>
+                      <span>{(evaluation.schools as any).name}</span>
                     </div>
                   )}
                   
-                  {evaluation.created_at && (
-                    <div className="flex items-center text-xs text-gray-500 mt-2">
-                      <Calendar className="h-3.5 w-3.5 mr-1" />
-                      <span>Created: {new Date(evaluation.created_at).toLocaleDateString()}</span>
+                  {evaluation.general_education_teacher && (
+                    <div className="flex items-center text-sm">
+                      <User className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>Teacher: {evaluation.general_education_teacher}</span>
+                    </div>
+                  )}
+                  
+                  {evaluation.students && (
+                    <div className="flex items-center text-sm">
+                      <Users className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>Student: {(evaluation.students as any).first_name} {(evaluation.students as any).last_name}</span>
                     </div>
                   )}
                 </CardContent>
                 <CardFooter className="flex justify-end space-x-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-psyched-darkBlue hover:text-psyched-darkBlue hover:bg-psyched-darkBlue/10"
+                    onClick={() => setSelectedEvaluation(evaluation)}
+                  >
+                    <Eye className="h-3.5 w-3.5 mr-1" /> Details
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -343,7 +343,8 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this evaluation request. This action cannot be undone.
+              This will permanently delete the evaluation request for{' '}
+              <span className="font-semibold">{evaluationToDelete?.legal_name || 'this student'}</span>. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

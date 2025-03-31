@@ -50,7 +50,7 @@ const DashboardLayout = () => {
     return (
       <div className="flex min-h-screen flex-col">
         <Navbar />
-        <main className="container flex-1 py-6">
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 flex-1 py-6">
           <div className="h-[200px] rounded-md border border-dashed flex items-center justify-center text-muted-foreground">
             Loading...
           </div>
@@ -60,9 +60,9 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-psyched-cream">
       <Navbar />
-      <main className="container flex-1 py-6">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 flex-1 py-6">
         <Outlet />
       </main>
     </div>
