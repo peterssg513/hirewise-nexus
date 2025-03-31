@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +13,6 @@ import { TabsContent } from '@/components/ui/tabs';
 import { TabsWithSearch } from '@/components/admin/TabsWithSearch';
 import { Separator } from '@/components/ui/separator';
 
-// Helper function to safely parse JSON strings
 const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any[] => {
   if (!jsonString) return defaultValue;
   try {
@@ -26,19 +24,16 @@ const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any
   }
 };
 
-// Helper function to format education display
 const formatEducation = (educationData: any): React.ReactNode[] => {
   if (!educationData) return [<span key="no-edu">Not specified</span>];
   
   try {
     let education = educationData;
     
-    // If it's a string, try to parse it as JSON
     if (typeof educationData === 'string') {
       education = safeJsonParse(educationData);
     }
     
-    // If education is an array, format it
     if (Array.isArray(education) && education.length > 0) {
       return education.map((edu, index) => {
         const institution = edu.institution || edu.schoolName || '';
@@ -66,19 +61,16 @@ const formatEducation = (educationData: any): React.ReactNode[] => {
   }
 };
 
-// Helper function to format experience display
 const formatExperience = (experienceData: any): React.ReactNode[] => {
   if (!experienceData) return [<span key="no-exp">Not specified</span>];
   
   try {
     let experiences = experienceData;
     
-    // If it's a string, try to parse it as JSON
     if (typeof experienceData === 'string') {
       experiences = safeJsonParse(experienceData);
     }
     
-    // If experiences is an array, format it
     if (Array.isArray(experiences) && experiences.length > 0) {
       return experiences.map((exp, index) => {
         const organization = exp.organization || exp.company || '';
@@ -105,27 +97,20 @@ const formatExperience = (experienceData: any): React.ReactNode[] => {
   }
 };
 
-// Format certifications display
 const formatCertifications = (certificationsData: any): React.ReactNode[] => {
   if (!certificationsData) return [<span key="no-cert">Not specified</span>];
   
   try {
     let certifications = certificationsData;
     
-    // If it's a string or array of URLs, convert to basic object format
     if (typeof certificationsData === 'string') {
       certifications = safeJsonParse(certificationsData);
     } else if (Array.isArray(certificationsData) && certificationsData.length > 0 && typeof certificationsData[0] === 'string') {
-      // If it's just an array of URLs, convert to objects
       certifications = certificationsData.map(url => ({ name: 'Certification', url }));
     }
     
-    // If certification_details exists and is more detailed, use that instead
-    
-    // If certifications is an array, format it
     if (Array.isArray(certifications) && certifications.length > 0) {
       return certifications.map((cert, index) => {
-        // Handle both simple string entries and detailed objects
         if (typeof cert === 'string') {
           return (
             <div key={index} className="mb-2 last:mb-0">
@@ -163,19 +148,16 @@ const formatCertifications = (certificationsData: any): React.ReactNode[] => {
   }
 };
 
-// Format certification details display (more comprehensive format)
 const formatCertificationDetails = (certificationDetails: any): React.ReactNode[] => {
   if (!certificationDetails) return [<span key="no-cert-details">Not specified</span>];
   
   try {
     let details = certificationDetails;
     
-    // If it's a string, try to parse it as JSON
     if (typeof certificationDetails === 'string') {
       details = safeJsonParse(certificationDetails);
     }
     
-    // If details is an array, format it (this is the more detailed format)
     if (Array.isArray(details) && details.length > 0) {
       return details.map((cert, index) => {
         const name = cert.name || 'Certification';
@@ -221,19 +203,16 @@ const AdminPsychologists = () => {
   const [activeTab, setActiveTab] = useState('pending');
   const [filterBy, setFilterBy] = useState('');
   
-  // Rejection dialog state
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [psychologistToReject, setPsychologistToReject] = useState({ id: '', name: '' });
   
-  // Detailed view state
   const [detailViewOpen, setDetailViewOpen] = useState(false);
   const [selectedPsychologist, setSelectedPsychologist] = useState(null);
   
   useEffect(() => {
     fetchPsychologists();
     
-    // Set up realtime subscription for updates
     const channel = supabase
       .channel('admin-psychologists-changes')
       .on('postgres_changes', 
@@ -254,7 +233,6 @@ const AdminPsychologists = () => {
   }, []);
   
   useEffect(() => {
-    // Set filtered psychologists based on active tab
     switch (activeTab) {
       case 'pending':
         setFilteredPsychologists(pendingPsychologists);
@@ -274,30 +252,36 @@ const AdminPsychologists = () => {
     try {
       setLoading(true);
       
-      // First, fetch all psychologists with extended profile data
       const { data: psychologists, error: psychError } = await supabase
         .from('psychologists')
-        .select(`
-          *,
-          profiles:user_id (
-            name, 
-            email, 
-            id
-          )
-        `);
+        .select('*');
         
       if (psychError) throw psychError;
       
-      console.log("Fetched psychologists data:", psychologists);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email');
+        
+      if (profilesError) throw profilesError;
       
-      // Split psychologists by status
-      const pending = psychologists.filter(p => p.status === 'pending') || [];
-      const approved = psychologists.filter(p => p.status === 'approved') || [];
-      const rejected = psychologists.filter(p => p.status === 'rejected') || [];
+      const psychologistsWithProfiles = psychologists.map(psych => {
+        const userProfile = profiles.find(p => p.id === psych.user_id);
+        return {
+          ...psych,
+          profiles: userProfile || null
+        };
+      });
+      
+      console.log("Fetched psychologists data:", psychologistsWithProfiles);
+      
+      const pending = psychologistsWithProfiles.filter(p => p.status === 'pending') || [];
+      const approved = psychologistsWithProfiles.filter(p => p.status === 'approved') || [];
+      const rejected = psychologistsWithProfiles.filter(p => p.status === 'rejected') || [];
       
       setPendingPsychologists(pending);
       setApprovedPsychologists(approved);
       setRejectedPsychologists(rejected);
+      
       setFilteredPsychologists(pending);
     } catch (error) {
       console.error('Error fetching psychologists:', error);
@@ -316,14 +300,12 @@ const AdminPsychologists = () => {
       
       if (result.error) throw result.error;
       
-      // Get psychologist user_id for notification
       const { data: psychData } = await supabase
         .from('psychologists')
         .select('user_id, profiles:user_id(name)')
         .eq('id', id)
         .single();
         
-      // Create notification for the user
       if (psychData?.user_id) {
         await supabase.from('notifications').insert({
           user_id: psychData.user_id,
@@ -338,10 +320,14 @@ const AdminPsychologists = () => {
         description: `Psychologist approved successfully`
       });
       
-      // Update local state to reflect the approval
-      setPendingPsychologists(pendingPsychologists.filter(p => p.id !== id));
+      setPendingPsychologists(prevPending => prevPending.filter(p => p.id !== id));
       
-      // Log this approval action
+      const psychToMove = pendingPsychologists.find(p => p.id === id);
+      if (psychToMove) {
+        const updatedPsych = { ...psychToMove, status: 'approved' };
+        setApprovedPsychologists(prevApproved => [...prevApproved, updatedPsych]);
+      }
+      
       await supabase.from('analytics_events').insert({
         event_type: 'psychologist_approved',
         user_id: profile?.id,
@@ -352,7 +338,6 @@ const AdminPsychologists = () => {
         }
       });
       
-      // Refresh data
       fetchPsychologists();
       
     } catch (error) {
@@ -375,20 +360,19 @@ const AdminPsychologists = () => {
       const result = await supabase
         .from('psychologists')
         .update({ 
-          status: 'rejected'
+          status: 'rejected',
+          rejection_reason: rejectionReason
         })
         .eq('id', psychologistToReject.id);
       
       if (result.error) throw result.error;
       
-      // Get psychologist user_id for notification
       const { data: psychData } = await supabase
         .from('psychologists')
-        .select('user_id')
+        .select('user_id, *')
         .eq('id', psychologistToReject.id)
         .single();
         
-      // Create notification for the user
       if (psychData?.user_id) {
         await supabase.from('notifications').insert({
           user_id: psychData.user_id,
@@ -403,10 +387,14 @@ const AdminPsychologists = () => {
         description: `Psychologist has been rejected`
       });
       
-      // Update local state to reflect the rejection
-      setPendingPsychologists(pendingPsychologists.filter(p => p.id !== psychologistToReject.id));
+      setPendingPsychologists(prevPending => prevPending.filter(p => p.id !== psychologistToReject.id));
       
-      // Log this rejection action
+      const psychToMove = pendingPsychologists.find(p => p.id === psychologistToReject.id);
+      if (psychToMove) {
+        const updatedPsych = { ...psychToMove, status: 'rejected', rejection_reason: rejectionReason };
+        setRejectedPsychologists(prevRejected => [...prevRejected, updatedPsych]);
+      }
+      
       await supabase.from('analytics_events').insert({
         event_type: 'psychologist_rejected',
         user_id: profile?.id,
@@ -418,7 +406,6 @@ const AdminPsychologists = () => {
         }
       });
       
-      // Refresh data
       fetchPsychologists();
       
     } catch (error) {
@@ -439,7 +426,6 @@ const AdminPsychologists = () => {
   
   const handleSearch = (searchTerm: string) => {
     if (!searchTerm.trim()) {
-      // Reset to the current tab's full data
       switch (activeTab) {
         case 'pending':
           setFilteredPsychologists(pendingPsychologists);
@@ -454,7 +440,6 @@ const AdminPsychologists = () => {
       return;
     }
     
-    // Get the current tab's data
     let dataToFilter;
     switch (activeTab) {
       case 'pending':
@@ -470,7 +455,6 @@ const AdminPsychologists = () => {
         dataToFilter = pendingPsychologists;
     }
     
-    // Filter based on search term
     const search = searchTerm.toLowerCase();
     const filtered = dataToFilter.filter(psych => 
       psych.profiles?.name?.toLowerCase().includes(search) ||
@@ -486,7 +470,6 @@ const AdminPsychologists = () => {
   const handleFilterChange = (value: string) => {
     setFilterBy(value);
     
-    // Get the current tab's data
     let dataToFilter;
     switch (activeTab) {
       case 'pending':
@@ -502,15 +485,12 @@ const AdminPsychologists = () => {
         dataToFilter = pendingPsychologists;
     }
     
-    // Apply filter based on selected value
     if (value === 'all' || !value) {
       setFilteredPsychologists(dataToFilter);
     } else if (value === 'state') {
-      // Group by state, we can improve this later
       const filtered = dataToFilter.filter(p => p.state);
       setFilteredPsychologists(filtered);
     } else if (value === 'specialties') {
-      // Has specialties defined
       const filtered = dataToFilter.filter(p => p.specialties && p.specialties.length > 0);
       setFilteredPsychologists(filtered);
     }
@@ -573,7 +553,6 @@ const AdminPsychologists = () => {
         </TabsContent>
       </TabsWithSearch>
       
-      {/* Rejection Dialog */}
       <AlertDialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -603,7 +582,6 @@ const AdminPsychologists = () => {
         </AlertDialogContent>
       </AlertDialog>
       
-      {/* Detailed View Dialog */}
       <AlertDialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
         <AlertDialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           {selectedPsychologist && (
@@ -632,7 +610,6 @@ const AdminPsychologists = () => {
               </AlertDialogHeader>
               
               <div className="py-4 space-y-6">
-                {/* Basic Info Section */}
                 <div>
                   <h3 className="text-lg font-medium mb-2">Contact Information</h3>
                   <div className="grid md:grid-cols-2 gap-3">
@@ -662,7 +639,6 @@ const AdminPsychologists = () => {
                 
                 <Separator />
                 
-                {/* Specialties & Experience */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <h3 className="text-lg font-medium mb-2 flex items-center">
@@ -701,7 +677,6 @@ const AdminPsychologists = () => {
                 
                 <Separator />
                 
-                {/* Education Section */}
                 <div>
                   <h3 className="text-lg font-medium mb-2 flex items-center">
                     <GraduationCap className="h-4 w-4 mr-2 text-green-500" />
@@ -712,7 +687,6 @@ const AdminPsychologists = () => {
                   </div>
                 </div>
                 
-                {/* Experience Section */}
                 <div>
                   <h3 className="text-lg font-medium mb-2 flex items-center">
                     <Briefcase className="h-4 w-4 mr-2 text-indigo-500" />
@@ -723,7 +697,6 @@ const AdminPsychologists = () => {
                   </div>
                 </div>
                 
-                {/* Certifications Section */}
                 <div>
                   <h3 className="text-lg font-medium mb-2 flex items-center">
                     <Award className="h-4 w-4 mr-2 text-amber-500" />
@@ -738,7 +711,6 @@ const AdminPsychologists = () => {
                 
                 <Separator />
                 
-                {/* Preferences Section */}
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <h4 className="font-medium mb-1">Desired Locations</h4>
