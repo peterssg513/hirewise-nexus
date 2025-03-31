@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -147,7 +146,7 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
                 <SelectContent>
                   <SelectItem value="none">None (Add details manually)</SelectItem>
                   {students.map((student) => (
-                    <SelectItem key={student.id} value={student.id}>
+                    <SelectItem key={student.id} value={student.id || "unknown-student"}>
                       {student.name}
                     </SelectItem>
                   ))}
@@ -163,7 +162,7 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   {SERVICE_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
+                    <SelectItem key={type} value={type || "unknown-service"}>
                       {type}
                     </SelectItem>
                   ))}

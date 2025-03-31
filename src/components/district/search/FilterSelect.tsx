@@ -31,7 +31,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
         <SelectContent>
           <SelectItem value="all">All</SelectItem>
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem key={option.value} value={option.value || "default"}>
               {option.label}
             </SelectItem>
           ))}

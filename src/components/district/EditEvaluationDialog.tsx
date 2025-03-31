@@ -139,7 +139,7 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
           <div className="grid gap-2">
             <Label htmlFor="service_type">Service Type</Label>
             <Select 
-              defaultValue={evaluation.service_type || 'none'} 
+              defaultValue={evaluation.service_type || "none"} 
               onValueChange={(value) => setValue("service_type", value)}
             >
               <SelectTrigger>
@@ -147,7 +147,7 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
               </SelectTrigger>
               <SelectContent>
                 {SERVICE_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
+                  <SelectItem key={type} value={type || "unknown-service"}>
                     {type}
                   </SelectItem>
                 ))}
@@ -181,7 +181,7 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
             <div className="grid gap-2">
               <Label htmlFor="school_id">School</Label>
               <Select 
-                defaultValue={evaluation.school_id || 'none'} 
+                defaultValue={evaluation.school_id || "none"} 
                 onValueChange={(value) => setValue("school_id", value)}
               >
                 <SelectTrigger>
@@ -190,7 +190,7 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
                 <SelectContent>
                   <SelectItem value="none">No school selected</SelectItem>
                   {schools.map((school) => (
-                    <SelectItem key={school.id} value={school.id}>
+                    <SelectItem key={school.id} value={school.id || "unknown-school"}>
                       {school.name}
                     </SelectItem>
                   ))}

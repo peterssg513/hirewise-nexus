@@ -15,7 +15,6 @@ interface SearchFilterBarProps {
   filterOptions?: FilterOption[];
   onSearch: (searchTerm: string) => void;
   onFilter?: (filterValue: string) => void;
-  className?: string;
 }
 
 export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
@@ -23,51 +22,42 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   filterOptions = [],
   onSearch,
   onFilter,
-  className = "",
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterValue, setFilterValue] = useState("all");
 
   const handleSearch = () => {
     onSearch(searchTerm);
   };
 
   const handleFilterChange = (value: string) => {
-    setFilter(value);
+    setFilterValue(value);
     if (onFilter) {
       onFilter(value);
     }
   };
 
-  const clearSearch = () => {
-    setSearchTerm('');
-    onSearch('');
-  };
-
   return (
-    <div className={`flex flex-col sm:flex-row gap-2 mb-4 ${className}`}>
-      <SearchInput
-        placeholder={placeholder}
-        value={searchTerm}
-        onChange={setSearchTerm}
-        onSearch={handleSearch}
-      />
-
-      {filterOptions.length > 0 && (
+    <div className="flex items-center gap-4 w-full">
+      <div className="flex-1">
+        <SearchInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          onSearch={handleSearch}
+          placeholder={placeholder}
+        />
+      </div>
+      
+      {filterOptions.length > 0 && onFilter && (
         <FilterSelect
-          value={filter}
+          value={filterValue}
           onChange={handleFilterChange}
-          options={filterOptions}
+          options={filterOptions.map(option => ({
+            value: option.value || "default-value",
+            label: option.label
+          }))}
         />
       )}
-
-      <Button 
-        onClick={handleSearch}
-        size="sm"
-        className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90 whitespace-nowrap"
-      >
-        <Search className="h-4 w-4 mr-2" /> Search
-      </Button>
     </div>
   );
 };
