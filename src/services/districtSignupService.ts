@@ -54,6 +54,17 @@ export const saveBasicInfo = async (userId: string, data: BasicInfo): Promise<vo
       
     if (profileError) throw profileError;
     
+    // Check if the districts table has the state column
+    const { data: columnCheck, error: columnError } = await supabase
+      .from('districts')
+      .select('state')
+      .limit(1);
+      
+    if (columnError) {
+      console.error('Column check error:', columnError);
+      // Continue anyway as we've just added the column
+    }
+    
     // Update district details
     const { error: districtError } = await supabase
       .from('districts')
@@ -71,7 +82,10 @@ export const saveBasicInfo = async (userId: string, data: BasicInfo): Promise<vo
       })
       .eq('user_id', validUserId);
       
-    if (districtError) throw districtError;
+    if (districtError) {
+      console.error('District update error:', districtError);
+      throw districtError;
+    }
   } catch (error) {
     handleApiError(error, 'Failed to save basic information');
   }

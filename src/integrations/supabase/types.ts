@@ -107,6 +107,7 @@ export type Database = {
           signup_progress:
             | Database["public"]["Enums"]["district_signup_status"]
             | null
+          state: string | null
           status: string | null
           updated_at: string
           user_id: string
@@ -130,6 +131,7 @@ export type Database = {
           signup_progress?:
             | Database["public"]["Enums"]["district_signup_status"]
             | null
+          state?: string | null
           status?: string | null
           updated_at?: string
           user_id: string
@@ -153,6 +155,7 @@ export type Database = {
           signup_progress?:
             | Database["public"]["Enums"]["district_signup_status"]
             | null
+          state?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string
