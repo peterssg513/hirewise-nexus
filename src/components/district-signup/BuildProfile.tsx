@@ -8,21 +8,54 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { saveProfileData } from '@/services/districtSignupService';
 import { supabase } from '@/integrations/supabase/client';
 import { District } from '@/types/district';
+import { US_STATES } from '@/lib/constants';
 
 interface BuildProfileProps {
   onComplete: () => void;
 }
 
+// District size tiers
+const DISTRICT_SIZE_TIERS = [
+  { value: 1000, label: 'Less than 1,000 students' },
+  { value: 5000, label: '1,000 - 5,000 students' },
+  { value: 10000, label: '5,001 - 10,000 students' },
+  { value: 25000, label: '10,001 - 25,000 students' },
+  { value: 50000, label: '25,001 - 50,000 students' },
+  { value: 100000, label: '50,001 - 100,000 students' },
+  { value: 100001, label: 'More than 100,000 students' },
+];
+
 const buildProfileSchema = z.object({
-  description: z.string().min(20, {
-    message: "Description must be at least 20 characters.",
+  name: z.string().min(2, {
+    message: "District name must be at least 2 characters.",
   }),
-  location: z.string().min(2, {
-    message: "Location must be at least 2 characters.",
+  state: z.string().min(2, {
+    message: "Please select a state.",
+  }),
+  district_size: z.coerce.number().min(1, {
+    message: "Please select a district size.",
+  }),
+  website: z.string().url({
+    message: "Please enter a valid website URL (include https://).",
+  }).or(z.string().length(0)),
+  first_name: z.string().min(2, {
+    message: "First name must be at least 2 characters.",
+  }),
+  last_name: z.string().min(2, {
+    message: "Last name must be at least 2 characters.",
+  }),
+  job_title: z.string().min(2, {
+    message: "Job title must be at least 2 characters.",
+  }),
+  contact_email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  contact_phone: z.string().min(10, {
+    message: "Please enter a valid phone number.",
   }),
 });
 
@@ -38,8 +71,15 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
   const form = useForm<BuildProfileFormValues>({
     resolver: zodResolver(buildProfileSchema),
     defaultValues: {
-      description: '',
-      location: '',
+      name: '',
+      state: '',
+      district_size: undefined,
+      website: '',
+      first_name: '',
+      last_name: '',
+      job_title: '',
+      contact_email: '',
+      contact_phone: '',
     },
   });
 
@@ -59,6 +99,19 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
         if (error) throw error;
         
         setDistrictData(data);
+        
+        // Populate form with existing data
+        form.reset({
+          name: data.name || '',
+          state: data.state || '',
+          district_size: data.district_size || undefined,
+          website: data.website || '',
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
+          job_title: data.job_title || '',
+          contact_email: data.contact_email || '',
+          contact_phone: data.contact_phone || '',
+        });
       } catch (error) {
         console.error('Error loading district data:', error);
         toast({
@@ -72,7 +125,7 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     };
     
     loadDistrictData();
-  }, [user, toast]);
+  }, [user, toast, form]);
 
   const onSubmit = async (values: BuildProfileFormValues) => {
     if (!user) {
@@ -87,10 +140,24 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     setIsSubmitting(true);
     
     try {
-      await saveProfileData(user.id, {
-        description: values.description,
-        location: values.location,
-      });
+      // Update the district record with all the form values
+      const { error } = await supabase
+        .from('districts')
+        .update({
+          name: values.name,
+          state: values.state,
+          district_size: values.district_size,
+          website: values.website,
+          first_name: values.first_name,
+          last_name: values.last_name,
+          job_title: values.job_title,
+          contact_email: values.contact_email,
+          contact_phone: values.contact_phone,
+          signup_progress: 'profile',
+        })
+        .eq('user_id', user.id);
+        
+      if (error) throw error;
       
       toast({
         title: 'Profile updated',
@@ -121,96 +188,173 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-psyched-darkBlue mb-6">District Profile</h2>
       
-      {/* Display Basic Information */}
-      <div className="mb-8 p-4 bg-gray-50 rounded-md">
-        <h3 className="text-lg font-semibold mb-4">District Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-          <div>
-            <p className="text-sm text-gray-500">District Name</p>
-            <p className="font-medium">{districtData?.name || 'Not provided'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">State</p>
-            <p className="font-medium">{districtData?.state || 'Not provided'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">District Size</p>
-            <p className="font-medium">{districtData?.district_size ? `${districtData.district_size} students` : 'Not provided'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Website</p>
-            <p className="font-medium">
-              {districtData?.website ? (
-                <a href={districtData.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                  {districtData.website}
-                </a>
-              ) : 'Not provided'}
-            </p>
-          </div>
-        </div>
-
-        <h3 className="text-lg font-semibold mt-6 mb-4">Contact Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-          <div>
-            <p className="text-sm text-gray-500">Contact Name</p>
-            <p className="font-medium">
-              {districtData?.first_name && districtData?.last_name 
-                ? `${districtData.first_name} ${districtData.last_name}` 
-                : 'Not provided'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Job Title</p>
-            <p className="font-medium">{districtData?.job_title || 'Not provided'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Email</p>
-            <p className="font-medium">{districtData?.contact_email || 'Not provided'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Phone</p>
-            <p className="font-medium">{districtData?.contact_phone || 'Not provided'}</p>
-          </div>
-        </div>
-      </div>
-      
-      {/* Additional Profile Fields */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>District Location</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="E.g., Downtown area, Northeast region, etc." 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">District Information</h3>
+            
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>District Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter district name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select state" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {US_STATES.map((state) => (
+                          <SelectItem key={state.value} value={state.value}>
+                            {state.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="district_size"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>District Size</FormLabel>
+                    <Select 
+                      onValueChange={(value) => field.onChange(parseInt(value))} 
+                      defaultValue={field.value?.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select district size" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {DISTRICT_SIZE_TIERS.map((tier) => (
+                          <SelectItem key={tier.value} value={tier.value.toString()}>
+                            {tier.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="website"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>District Website</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://www.yourdistrict.edu" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>District Description</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Provide a description of your district, including mission, vision, and special programs..." 
-                    className="min-h-[150px]"
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Contact Information</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="first_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="First name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="last_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Last name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="job_title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Job Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Superintendent, HR Director" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="contact_email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="you@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="contact_phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="(555) 555-5555" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           
           <Button 
             type="submit" 
