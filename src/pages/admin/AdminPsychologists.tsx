@@ -112,36 +112,51 @@ const AdminPsychologists = () => {
       try {
         setLoading(true);
         
-        // First, get all pending psychologists with profile data in a single query
-        const { data: pendingPsychologistsData, error } = await supabase
+        // First, get all pending psychologists
+        const { data: psychologistsData, error: psychError } = await supabase
           .from('psychologists')
-          .select(`
-            *,
-            profiles:user_id(
-              id, 
-              name, 
-              email
-            )
-          `)
+          .select('*')
           .eq('status', 'pending');
           
-        if (error) throw error;
+        if (psychError) throw psychError;
         
-        // Transform the data for easier use in the UI
-        const transformedData = pendingPsychologistsData.map(psych => {
-          return {
-            ...psych,
-            // Ensure profile data is properly structured
-            profiles: {
-              name: psych.profiles?.name || 'Unnamed Psychologist',
-              email: psych.profiles?.email || 'No email provided',
-              id: psych.profiles?.id
+        // Then, for each psychologist, get their profile information
+        const enhancedData = await Promise.all(
+          psychologistsData.map(async (psych) => {
+            // Get profile data for this psychologist
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', psych.user_id)
+              .single();
+              
+            if (profileError) {
+              console.error('Error fetching profile for psychologist:', profileError);
+              // Return psychologist with empty profile
+              return {
+                ...psych,
+                profile: {
+                  name: 'Unnamed Psychologist',
+                  email: 'No email provided',
+                  id: psych.user_id
+                }
+              };
             }
-          };
-        });
+            
+            // Return psychologist with profile data
+            return {
+              ...psych,
+              profile: {
+                name: profileData.name || 'Unnamed Psychologist',
+                email: profileData.email || 'No email provided',
+                id: profileData.id
+              }
+            };
+          })
+        );
         
-        console.log('Transformed psychologist data:', transformedData);
-        setPendingPsychologists(transformedData || []);
+        console.log('Enhanced psychologist data:', enhancedData);
+        setPendingPsychologists(enhancedData || []);
       } catch (error) {
         console.error('Error fetching pending psychologists:', error);
         toast({
@@ -185,7 +200,7 @@ const AdminPsychologists = () => {
       // Get psychologist user_id for notification
       const { data: psychData } = await supabase
         .from('psychologists')
-        .select('user_id, profiles:user_id(name)')
+        .select('user_id')
         .eq('id', id)
         .single();
         
@@ -319,10 +334,10 @@ const AdminPsychologists = () => {
           <Card key={psych.id} className="mb-4">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
-                <CardTitle>{psych.profiles?.name || 'Unnamed Psychologist'}</CardTitle>
+                <CardTitle>{psych.profile?.name || 'Unnamed Psychologist'}</CardTitle>
                 <Badge className="bg-yellow-500">Pending</Badge>
               </div>
-              <CardDescription>{psych.profiles?.email || 'No email provided'}</CardDescription>
+              <CardDescription>{psych.profile?.email || 'No email provided'}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
@@ -399,13 +414,13 @@ const AdminPsychologists = () => {
                 <Button 
                   variant="outline" 
                   className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                  onClick={() => openRejectionDialog(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
+                  onClick={() => openRejectionDialog(psych.id, psych.profile?.name || 'Unnamed Psychologist')}
                 >
                   <X className="mr-1 h-4 w-4" />
                   Reject
                 </Button>
                 <Button 
-                  onClick={() => approvePsychologist(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
+                  onClick={() => approvePsychologist(psych.id, psych.profile?.name || 'Unnamed Psychologist')}
                 >
                   <Check className="mr-1 h-4 w-4" />
                   Approve Psychologist
