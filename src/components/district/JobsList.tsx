@@ -200,12 +200,8 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
           title="No job listings found"
           description="No job listings match your criteria. Try adjusting your filters or create your first job."
           icon={<Filter className="h-10 w-10 text-muted-foreground" />}
-          action={
-            <Button onClick={() => setShowCreateJobDialog(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Job
-            </Button>
-          }
+          actionLabel="Create Job"
+          onAction={() => setShowCreateJobDialog(true)}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

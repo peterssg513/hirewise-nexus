@@ -8,6 +8,8 @@ interface EmptyStateProps {
   description: string;
   actionLabel?: string;
   onAction?: () => void;
+  // Legacy support for action prop
+  action?: React.ReactNode;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -16,6 +18,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   description,
   actionLabel,
   onAction,
+  action,
 }) => {
   return (
     <div className="col-span-full text-center py-8">
@@ -27,6 +30,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           <Button onClick={onAction}>{actionLabel}</Button>
         </div>
       )}
+      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 };

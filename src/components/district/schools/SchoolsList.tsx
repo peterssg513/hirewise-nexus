@@ -142,12 +142,8 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
               icon={<Filter className="h-10 w-10" />}
               title="No schools found"
               description="No schools match your criteria. Try adjusting your filters or create your first school."
-              action={
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add School
-                </Button>
-              }
+              actionLabel="Add School"
+              onAction={() => setCreateDialogOpen(true)}
             />
           ) : (
             filteredSchools.map((school) => (

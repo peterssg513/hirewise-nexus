@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -29,7 +28,6 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
-  // Load jobs data
   useEffect(() => {
     const loadJobs = async () => {
       try {
@@ -54,13 +52,11 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
     }
   }, [districtId, toast]);
 
-  // Apply filters whenever filter states change
   useEffect(() => {
     if (!jobs.length) return;
 
     let result = [...jobs];
 
-    // Apply search term filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
@@ -72,17 +68,14 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
       );
     }
 
-    // Apply status filter
     if (statusFilter && statusFilter !== 'all') {
       result = result.filter(job => job.status === statusFilter);
     }
 
-    // Apply location filter
     if (locationFilter && locationFilter !== 'all') {
       result = result.filter(job => job.work_location === locationFilter);
     }
 
-    // Apply job type filter
     if (jobTypeFilter && jobTypeFilter !== 'all') {
       result = result.filter(job => job.work_type === jobTypeFilter);
     }
@@ -126,7 +119,6 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
     }
   };
 
-  // Render loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -137,7 +129,6 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
 
   return (
     <div className="space-y-6">
-      {/* Header with create button */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Job Listings</h2>
         <Button onClick={() => setCreateJobDialogOpen(true)}>
@@ -145,7 +136,6 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
         </Button>
       </div>
 
-      {/* Filters */}
       <JobsFilter
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -157,17 +147,13 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
         setJobTypeFilter={setJobTypeFilter}
       />
 
-      {/* Jobs grid */}
       {filteredJobs.length === 0 ? (
         <EmptyState
           icon={<Filter className="h-10 w-10 text-muted-foreground" />}
           title="No jobs found"
           description="No jobs match your search criteria. Try adjusting your filters or create a new job."
-          action={
-            <Button onClick={() => setCreateJobDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Create New Job
-            </Button>
-          }
+          actionLabel="Create New Job"
+          onAction={() => setCreateJobDialogOpen(true)}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -182,7 +168,6 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
         </div>
       )}
 
-      {/* Dialogs */}
       <CreateJobDialog
         open={createJobDialogOpen}
         onOpenChange={setCreateJobDialogOpen}

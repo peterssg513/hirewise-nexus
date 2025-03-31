@@ -1,10 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/EmptyState';
 import { GraduationCap, Plus } from 'lucide-react';
@@ -47,6 +45,13 @@ const DistrictStudents = () => {
     loadDistrictData();
   }, [user, toast]);
   
+  const handleAddStudent = () => {
+    toast({
+      title: "Coming Soon",
+      description: "Student management functionality is coming soon.",
+    });
+  };
+  
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -66,7 +71,7 @@ const DistrictStudents = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">District Students</h1>
-        <Button>
+        <Button onClick={handleAddStudent}>
           <Plus className="mr-2 h-4 w-4" /> Add Student
         </Button>
       </div>
@@ -75,11 +80,8 @@ const DistrictStudents = () => {
         icon={<GraduationCap className="h-10 w-10 text-muted-foreground" />}
         title="No students yet"
         description="Student management is coming soon."
-        action={
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Add Student
-          </Button>
-        }
+        actionLabel="Add Student"
+        onAction={handleAddStudent}
       />
     </div>
   );
