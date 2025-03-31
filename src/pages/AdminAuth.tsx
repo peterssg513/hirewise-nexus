@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,32 @@ const AdminAuthPage = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasAdmins, setHasAdmins] = useState(true); // Default to true for security
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  useEffect(() => {
+    const checkForExistingAdmins = async () => {
+      try {
+        // Check if any admin users exist in the system
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin')
+          .limit(1);
+
+        if (error) throw error;
+        
+        setHasAdmins(data && data.length > 0);
+      } catch (err) {
+        console.error('Error checking for existing admins:', err);
+        // For security, if we can't determine, assume admins exist
+        setHasAdmins(true);
+      }
+    };
+
+    checkForExistingAdmins();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,10 +161,23 @@ const AdminAuthPage = () => {
               </div>
             </form>
           </CardContent>
-          <CardFooter className="flex flex-col">
+          <CardFooter className="flex flex-col gap-2">
             <p className="px-8 text-center text-sm text-muted-foreground">
               This area is restricted to authorized administrators only.
             </p>
+            
+            {!hasAdmins && (
+              <div className="w-full pt-2 border-t">
+                <p className="text-center text-sm mb-2">No admin accounts found.</p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate(`/admin-secret-auth-84721/setup`)}
+                >
+                  Create First Admin Account
+                </Button>
+              </div>
+            )}
           </CardFooter>
         </Card>
       </div>
