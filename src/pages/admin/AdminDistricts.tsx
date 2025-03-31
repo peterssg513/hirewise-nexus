@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,7 +42,7 @@ const AdminDistricts = () => {
         setLoading(true);
         console.log('Fetching pending districts...');
         
-        // First fetch districts with pending status
+        // Fetch all pending districts
         const { data: pendingDistrictsData, error } = await supabase
           .from('districts')
           .select('*')
@@ -56,27 +55,32 @@ const AdminDistricts = () => {
         
         console.log('Pending districts data:', pendingDistrictsData);
         
-        // If there are pending districts, fetch the associated user profiles separately
+        // If there are pending districts, fetch the associated user profiles
         const districtsWithProfiles: DistrictWithProfile[] = [];
         
         if (pendingDistrictsData && pendingDistrictsData.length > 0) {
           for (const district of pendingDistrictsData) {
-            // Fetch profile data for the district's user_id
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('name, email')
-              .eq('id', district.user_id)
-              .single();
-              
-            if (profileError) {
+            try {
+              // Fetch profile data for the district's user_id
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('name, email')
+                .eq('id', district.user_id)
+                .single();
+                
+              districtsWithProfiles.push({
+                ...district,
+                profile_name: profileData?.name || null,
+                profile_email: profileData?.email || district.contact_email
+              });
+            } catch (profileError) {
               console.error(`Error fetching profile for user_id ${district.user_id}:`, profileError);
+              districtsWithProfiles.push({
+                ...district,
+                profile_name: null,
+                profile_email: district.contact_email
+              });
             }
-            
-            districtsWithProfiles.push({
-              ...district,
-              profile_name: profileData?.name || null,
-              profile_email: profileData?.email || district.contact_email
-            });
           }
         }
         
@@ -102,8 +106,7 @@ const AdminDistricts = () => {
         { 
           event: '*', 
           schema: 'public', 
-          table: 'districts',
-          filter: 'status=eq.pending'
+          table: 'districts'
         }, 
         (payload) => {
           console.log('Districts table changed:', payload);

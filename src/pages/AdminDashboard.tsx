@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +30,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('districts');
   
-  // Rejection dialog state
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [entityToReject, setEntityToReject] = useState({ type: '', id: '', name: '' });
@@ -41,7 +39,6 @@ const AdminDashboard = () => {
       try {
         setLoading(true);
         
-        // Get counts from all relevant tables
         const { count: userCount } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
@@ -115,12 +112,48 @@ const AdminDashboard = () => {
     
     fetchStats();
     
-    // Set up realtime subscription for updates
     const channel = supabase
       .channel('admin-dashboard-changes')
-      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
-        fetchStats();
-      })
+      .on('postgres_changes', 
+        { event: 'UPDATE', schema: 'public', table: 'districts' }, 
+        () => fetchStats()
+      )
+      .on('postgres_changes', 
+        { event: 'UPDATE', schema: 'public', table: 'psychologists' }, 
+        () => fetchStats()
+      )
+      .on('postgres_changes', 
+        { event: 'UPDATE', schema: 'public', table: 'jobs' }, 
+        () => fetchStats()
+      )
+      .on('postgres_changes', 
+        { event: 'UPDATE', schema: 'public', table: 'evaluation_requests' }, 
+        () => fetchStats()
+      )
+      .on('postgres_changes', 
+        { event: 'UPDATE', schema: 'public', table: 'evaluations' }, 
+        () => fetchStats()
+      )
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'districts' }, 
+        () => fetchStats()
+      )
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'psychologists' }, 
+        () => fetchStats()
+      )
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'jobs' }, 
+        () => fetchStats()
+      )
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'evaluation_requests' }, 
+        () => fetchStats()
+      )
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'evaluations' }, 
+        () => fetchStats()
+      )
       .subscribe();
       
     return () => {
@@ -138,7 +171,6 @@ const AdminDashboard = () => {
         case 'district':
           result = await supabase.rpc('approve_district', { district_id: id });
           
-          // Get district user_id for notification
           const { data: districtData } = await supabase
             .from('districts')
             .select('user_id, name')
@@ -152,7 +184,6 @@ const AdminDashboard = () => {
         case 'psychologist':
           result = await supabase.rpc('approve_psychologist', { psychologist_id: id });
           
-          // Get psychologist user_id for notification
           const { data: psychData } = await supabase
             .from('psychologists')
             .select('user_id, profiles:user_id(name)')
@@ -166,7 +197,6 @@ const AdminDashboard = () => {
         case 'job':
           result = await supabase.rpc('approve_job', { job_id: id });
           
-          // Get job details for notification
           const { data: jobData } = await supabase
             .from('jobs')
             .select('title, district_id, districts!inner(user_id)')
@@ -178,16 +208,14 @@ const AdminDashboard = () => {
           break;
           
         case 'evaluation':
-          // Update the evaluation status from pending to active
           result = await supabase
             .from('evaluation_requests')
             .update({ status: 'active' })
             .eq('id', id);
           
-          // Get evaluation district user_id for notification
           const { data: evalData } = await supabase
             .from('evaluation_requests')
-            .select('legal_name, district_id, districts!inner(user_id, name)')
+            .select('legal_name, district_id, districts!inner(user_id)')
             .eq('id', id)
             .single();
             
@@ -201,7 +229,6 @@ const AdminDashboard = () => {
       
       if (result.error) throw result.error;
       
-      // Create notification for the user
       if (recipientId && notificationMessage) {
         await supabase.from('notifications').insert({
           user_id: recipientId,
@@ -216,7 +243,6 @@ const AdminDashboard = () => {
         description: `${type.charAt(0).toUpperCase() + type.slice(1)} approved successfully`
       });
       
-      // Update local state to reflect the approval
       if (type === 'district') {
         setPendingDistricts(pendingDistricts.filter(d => d.id !== id));
       } else if (type === 'psychologist') {
@@ -227,7 +253,6 @@ const AdminDashboard = () => {
         setPendingEvaluations(pendingEvaluations.filter(e => e.id !== id));
       }
       
-      // Log this approval action
       await supabase.from('analytics_events').insert({
         event_type: `${type}_approved`,
         user_id: profile?.id,
@@ -261,7 +286,6 @@ const AdminDashboard = () => {
       let recipientId;
       let notificationMessage = '';
       
-      // For simplicity, rejection just changes status to 'rejected'
       switch(type) {
         case 'district':
           result = await supabase
@@ -271,7 +295,6 @@ const AdminDashboard = () => {
             })
             .eq('id', id);
           
-          // Get district user_id for notification
           const { data: districtData } = await supabase
             .from('districts')
             .select('user_id, name')
@@ -290,7 +313,6 @@ const AdminDashboard = () => {
             })
             .eq('id', id);
           
-          // Get psychologist user_id for notification
           const { data: psychData } = await supabase
             .from('psychologists')
             .select('user_id')
@@ -309,7 +331,6 @@ const AdminDashboard = () => {
             })
             .eq('id', id);
           
-          // Get job details for notification
           const { data: jobData } = await supabase
             .from('jobs')
             .select('title, district_id, districts!inner(user_id)')
@@ -328,7 +349,6 @@ const AdminDashboard = () => {
             })
             .eq('id', id);
           
-          // Get evaluation district user_id for notification
           const { data: evalData } = await supabase
             .from('evaluation_requests')
             .select('legal_name, district_id, districts!inner(user_id)')
@@ -345,7 +365,6 @@ const AdminDashboard = () => {
       
       if (result.error) throw result.error;
       
-      // Create notification for the user
       if (recipientId && notificationMessage) {
         await supabase.from('notifications').insert({
           user_id: recipientId,
@@ -360,7 +379,6 @@ const AdminDashboard = () => {
         description: `${type.charAt(0).toUpperCase() + type.slice(1)} has been rejected`
       });
       
-      // Update local state to reflect the rejection
       if (type === 'district') {
         setPendingDistricts(pendingDistricts.filter(d => d.id !== id));
       } else if (type === 'psychologist') {
@@ -371,7 +389,6 @@ const AdminDashboard = () => {
         setPendingEvaluations(pendingEvaluations.filter(e => e.id !== id));
       }
       
-      // Log this rejection action
       await supabase.from('analytics_events').insert({
         event_type: `${type}_rejected`,
         user_id: profile?.id,
@@ -925,7 +942,6 @@ const AdminDashboard = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Rejection Dialog */}
       <AlertDialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -13,13 +13,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { markAllNotificationsAsRead, markNotificationAsRead, Notification } from '@/services/notificationService';
+import { markAllNotificationsAsRead, markNotificationAsRead, Notification, fetchUserNotifications } from '@/services/notificationService';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const NotificationsMenu = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -29,19 +30,12 @@ const NotificationsMenu = () => {
     
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-      
-      if (error) throw error;
-      console.log('Fetched notifications:', data);
-      setNotifications(data || []);
+      const notifs = await fetchUserNotifications();
+      console.log('Fetched notifications:', notifs);
+      setNotifications(notifs || []);
     } catch (error) {
       console.error('Error fetching notifications:', error);
-      useToast().toast({
+      toast({
         title: 'Failed to load notifications',
         variant: 'destructive'
       });
@@ -51,28 +45,30 @@ const NotificationsMenu = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
-    
-    // Subscribe to changes in notifications
-    const channel = supabase
-      .channel('notifications-changes')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'notifications',
-          filter: `user_id=eq.${user?.id}`
-        }, 
-        (payload) => {
-          console.log('Notification change detected:', payload);
-          fetchNotifications();
-        }
-      )
-      .subscribe();
+    if (user) {
+      fetchNotifications();
       
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      // Subscribe to changes in notifications
+      const channel = supabase
+        .channel('notifications-changes')
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`
+          }, 
+          (payload) => {
+            console.log('Notification change detected:', payload);
+            fetchNotifications();
+          }
+        )
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user]);
 
   const handleMarkAsRead = async (notificationId: string) => {
@@ -113,7 +109,7 @@ const NotificationsMenu = () => {
     
     if (profile?.role === 'admin') {
       // Admin navigation rules
-      if (type.includes('district_approval') || type.includes('district_approved') || type.includes('district_rejected')) {
+      if (type.includes('district')) {
         navigate('/admin-dashboard/districts');
       } else if (type.includes('psychologist')) {
         navigate('/admin-dashboard/psychologists');
