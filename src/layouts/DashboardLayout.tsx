@@ -97,9 +97,7 @@ const DashboardLayout = () => {
       return [
         { label: 'Dashboard', href: '/admin-dashboard' },
         { label: 'Districts', href: '/admin-dashboard/districts' },
-        { label: 'Approved Districts', href: '/admin-dashboard/approved-districts' },
         { label: 'Psychologists', href: '/admin-dashboard/psychologists' },
-        { label: 'Approved Psychologists', href: '/admin-dashboard/approved-psychologists' },
         { label: 'Jobs', href: '/admin-dashboard/jobs' },
         { label: 'Evaluations', href: '/admin-dashboard/evaluations' }
       ];
