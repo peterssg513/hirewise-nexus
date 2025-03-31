@@ -51,10 +51,9 @@ export const fetchAverageSalaryByState = async (state: string): Promise<number |
     }
 
     // Using the from() method with a table that actually exists in your database
-    // Make sure 'state_salaries' is a valid table in your Supabase instance
     const { data, error } = await supabase
-      .from('state_salary_data') // Use the actual table name that exists in your database
-      .select('average_salary')
+      .from('state_salaries') // Using the actual table name that exists in your database
+      .select('salary_amount')
       .eq('state', state)
       .order('year', { ascending: false })
       .limit(1)
@@ -65,7 +64,7 @@ export const fetchAverageSalaryByState = async (state: string): Promise<number |
       return null;
     }
 
-    return data?.average_salary || null;
+    return data?.salary_amount || null;
   } catch (error) {
     console.error('Exception fetching state salary:', error);
     return null;

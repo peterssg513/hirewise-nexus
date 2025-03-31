@@ -4,7 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { StudentsList } from '@/components/district/students/StudentsList';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/common/EmptyState';
+import { GraduationCap, Plus } from 'lucide-react';
 
 const DistrictStudents = () => {
   const [districtId, setDistrictId] = useState<string | null>(null);
@@ -63,9 +66,21 @@ const DistrictStudents = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">District Students</h1>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" /> Add Student
+        </Button>
       </div>
       
-      <StudentsList districtId={districtId} />
+      <EmptyState
+        icon={<GraduationCap className="h-10 w-10 text-muted-foreground" />}
+        title="No students yet"
+        description="Start by adding students to your district."
+        action={
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Add Student
+          </Button>
+        }
+      />
     </div>
   );
 };

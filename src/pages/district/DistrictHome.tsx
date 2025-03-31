@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
@@ -86,7 +85,7 @@ const DistrictHome = () => {
     loadData();
   }, [user, toast]);
   
-  const handleProfileUpdate = (updatedDistrict: District) => {
+  const handleProfileUpdated = (updatedDistrict: District) => {
     setDistrict(updatedDistrict);
     toast({
       title: "Profile Updated",
@@ -147,7 +146,7 @@ const DistrictHome = () => {
           <CardContent>
             <DistrictProfile 
               district={district} 
-              onProfileUpdate={handleProfileUpdate} 
+              onProfileUpdated={handleProfileUpdated} 
             />
           </CardContent>
         </Card>

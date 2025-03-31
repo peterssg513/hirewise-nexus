@@ -9,9 +9,8 @@ import { fetchSchools } from '@/services/schoolService';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import DistrictNavigation from '@/components/district/DistrictNavigation';
-import { StudentsList } from '@/components/district/students/StudentsList';
 import { SchoolsList } from '@/components/district/schools/SchoolsList';
-import { JobsList } from '@/components/district/JobsList';
+import { JobsList } from '@/components/district/jobs/JobsList';
 import { EvaluationsList } from '@/components/district/EvaluationsList';
 import { DistrictProfile } from '@/components/district/DistrictProfile';
 import { DistrictOverview } from '@/components/district/DistrictOverview';
@@ -100,11 +99,10 @@ const DistrictDashboard = () => {
       <DistrictNavigation />
       
       <Tabs defaultValue="dashboard" onValueChange={handleTabChange}>
-        <TabsList className="grid grid-cols-6 w-full">
+        <TabsList className="grid grid-cols-5 w-full">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="jobs">Jobs</TabsTrigger>
           <TabsTrigger value="schools">Schools</TabsTrigger>
-          <TabsTrigger value="students">Students</TabsTrigger>
           <TabsTrigger value="evaluations">Evaluations</TabsTrigger>
           <TabsTrigger value="profile">District Profile</TabsTrigger>
         </TabsList>
@@ -119,10 +117,6 @@ const DistrictDashboard = () => {
         
         <TabsContent value="schools">
           <SchoolsList districtId={district.id} />
-        </TabsContent>
-        
-        <TabsContent value="students">
-          <StudentsList districtId={district.id} />
         </TabsContent>
         
         <TabsContent value="evaluations">
