@@ -6,12 +6,12 @@ import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { District } from '@/types/district';
-import { US_STATES } from '@/lib/constants';
+import DistrictInfoSection from './DistrictInfoSection';
+import ContactInfoSection from './ContactInfoSection';
+import { Loader2 } from 'lucide-react';
 
 interface BuildProfileProps {
   onComplete: () => void;
@@ -58,7 +58,7 @@ const buildProfileSchema = z.object({
   }),
 });
 
-type BuildProfileFormValues = z.infer<typeof buildProfileSchema>;
+export type BuildProfileFormValues = z.infer<typeof buildProfileSchema>;
 
 const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
   const { toast } = useToast();
@@ -146,7 +146,7 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
         .from('districts')
         .update({
           name: values.name,
-          state: values.state, // Make sure this matches the state field in District type
+          state: values.state,
           district_size: values.district_size,
           website: values.website,
           first_name: values.first_name,
@@ -195,171 +195,8 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">District Information</h3>
-            
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>District Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter district name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select state" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {US_STATES.map((state) => (
-                          <SelectItem key={state.value} value={state.value}>
-                            {state.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="district_size"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>District Size</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(parseInt(value))} 
-                      defaultValue={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select district size" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {DISTRICT_SIZE_TIERS.map((tier) => (
-                          <SelectItem key={tier.value} value={tier.value.toString()}>
-                            {tier.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>District Website</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://www.yourdistrict.edu" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Contact Information</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="first_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="First name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="last_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Last name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="job_title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Job Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Superintendent, HR Director" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="contact_email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="you@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="contact_phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="(555) 555-5555" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <DistrictInfoSection form={form} districtSizeTiers={DISTRICT_SIZE_TIERS} />
+          <ContactInfoSection form={form} />
           
           <Button 
             type="submit" 
@@ -368,7 +205,7 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
           >
             {isSubmitting ? (
               <span className="flex items-center">
-                <span className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></span>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </span>
             ) : "Continue to Schedule Meeting"}
