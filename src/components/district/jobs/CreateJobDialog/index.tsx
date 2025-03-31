@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Job } from '@/services/jobService';
+import { STATES } from '@/services/stateSalaryService';
 import { CreateJobForm } from './CreateJobForm';
 
 interface CreateJobDialogProps {
@@ -11,30 +12,26 @@ interface CreateJobDialogProps {
   onJobCreated: (job: Job) => void;
 }
 
-export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
-  open,
-  onOpenChange,
-  districtId,
-  onJobCreated,
+export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({ 
+  open, 
+  onOpenChange, 
+  districtId, 
+  onJobCreated 
 }) => {
-  const handleJobCreated = (job: Job) => {
-    onJobCreated(job);
-    onOpenChange(false);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Job</DialogTitle>
+          <DialogTitle>Create Job</DialogTitle>
           <DialogDescription>
-            Fill out the form below to create a new job posting.
+            Fill in the details for the new job posting.
           </DialogDescription>
         </DialogHeader>
         
-        <CreateJobForm
-          districtId={districtId}
-          onJobCreated={handleJobCreated}
+        <CreateJobForm 
+          districtId={districtId} 
+          onJobCreated={onJobCreated}
+          onOpenChange={onOpenChange}
         />
       </DialogContent>
     </Dialog>

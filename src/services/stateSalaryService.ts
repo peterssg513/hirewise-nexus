@@ -2,20 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const STATES = [
-  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California',
-  'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia',
-  'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
-  'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland',
-  'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri',
-  'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey',
-  'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio',
-  'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina',
-  'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
-  'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming',
-  'District of Columbia'
-];
-
-export const STATE_CODES = [
   { code: 'AL', name: 'Alabama' },
   { code: 'AK', name: 'Alaska' },
   { code: 'AZ', name: 'Arizona' },
@@ -69,6 +55,9 @@ export const STATE_CODES = [
   { code: 'DC', name: 'District of Columbia' }
 ];
 
+// Define a list of state names for backward compatibility
+export const STATE_NAMES = STATES.map(state => state.name);
+
 export const WORK_TYPES = [
   'Full-time',
   'Part-time',
@@ -99,7 +88,8 @@ interface StateSalary {
 export const fetchAverageSalaryByState = async (state: string): Promise<number | null> => {
   try {
     // Check for valid state name
-    if (!STATES.includes(state)) {
+    const stateNames = STATES.map(s => s.name);
+    if (!stateNames.includes(state)) {
       console.error(`Invalid state: ${state}`);
       return null;
     }
