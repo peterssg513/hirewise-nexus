@@ -314,6 +314,8 @@ export type Database = {
           timeframe: string | null
           title: string
           updated_at: string
+          work_location: string | null
+          work_type: string | null
         }
         Insert: {
           benefits?: string[] | null
@@ -335,6 +337,8 @@ export type Database = {
           timeframe?: string | null
           title: string
           updated_at?: string
+          work_location?: string | null
+          work_type?: string | null
         }
         Update: {
           benefits?: string[] | null
@@ -356,6 +360,8 @@ export type Database = {
           timeframe?: string | null
           title?: string
           updated_at?: string
+          work_location?: string | null
+          work_type?: string | null
         }
         Relationships: [
           {
@@ -572,6 +578,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      state_salaries: {
+        Row: {
+          created_at: string
+          id: string
+          salary_amount: number
+          state_code: string
+          state_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          salary_amount: number
+          state_code: string
+          state_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          salary_amount?: number
+          state_code?: string
+          state_name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       students: {
         Row: {

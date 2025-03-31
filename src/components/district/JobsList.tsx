@@ -1,26 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
-import { Job, fetchJobs, deleteJob, JOB_STATUSES } from '@/services/jobService';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Plus, Search, Filter, Eye, Pencil, Trash } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/common/EmptyState';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { fetchJobs, Job, deleteJob } from '@/services/jobService';
 import { useToast } from '@/hooks/use-toast';
-import { MapPin, Building, Calendar, DollarSign, Edit, Plus, Trash, AlertTriangle, FileText, Eye, CheckCircle, Clock, Briefcase, Users } from 'lucide-react';
 import { CreateJobDialog } from './CreateJobDialog';
-import { EditJobDialog } from './EditJobDialog';
-import { JobDetailsDialog } from './JobDetailsDialog';
-import { fetchSchoolById } from '@/services/schoolService';
-import { SearchFilterBar } from './SearchFilterBar';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
+import { SearchFilterBar } from './search/SearchFilterBar';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WORK_LOCATIONS, WORK_TYPES } from '@/services/stateSalaryService';
+import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
 
 interface JobsListProps {
   districtId: string;
@@ -28,316 +21,346 @@ interface JobsListProps {
 
 export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
-  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCreateJobDialog, setShowCreateJobDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [locationFilter, setLocationFilter] = useState<string | null>(null);
+  const [jobTypeFilter, setJobTypeFilter] = useState<string | null>(null);
+  const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
-  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
+  const [showJobDetails, setShowJobDetails] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    loadJobs();
-  }, [districtId]);
-
-  useEffect(() => {
-    setFilteredJobs(jobs);
-  }, [jobs]);
 
   const loadJobs = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       const jobsData = await fetchJobs(districtId);
       setJobs(jobsData);
     } catch (error) {
       console.error('Failed to load jobs:', error);
       toast({
-        title: 'Error loading jobs',
-        description: 'Failed to load jobs. Please try again later.',
+        title: 'Error',
+        description: 'Failed to load job listings.',
         variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleJobCreated = (newJob: Job) => {
-    setJobs(prev => [...prev, newJob]);
-    toast({
-      title: 'Job created',
-      description: `${newJob.title} has been created and is pending admin approval.`,
-    });
-  };
+  useEffect(() => {
+    loadJobs();
+  }, [districtId]);
 
-  const handleJobUpdated = (updatedJob: Job) => {
-    setJobs(prev => prev.map(job => 
-      job.id === updatedJob.id ? updatedJob : job
-    ));
+  const handleCreateJob = (job: Job) => {
+    setJobs(prevJobs => [job, ...prevJobs]);
     toast({
-      title: 'Job updated',
-      description: `${updatedJob.title} has been updated successfully.`,
+      title: 'Job Created',
+      description: 'Your job posting has been created and is pending approval.',
     });
-  };
-
-  const confirmDeleteJob = (job: Job) => {
-    setJobToDelete(job);
-    setDeleteDialogOpen(true);
   };
 
   const handleDeleteJob = async () => {
-    if (!jobToDelete) return;
+    if (!deleteJobId) return;
     
     try {
-      await deleteJob(jobToDelete.id);
-      setJobs(prev => prev.filter(job => job.id !== jobToDelete.id));
+      await deleteJob(deleteJobId);
+      setJobs(prevJobs => prevJobs.filter(job => job.id !== deleteJobId));
       toast({
-        title: 'Job deleted',
-        description: `${jobToDelete.title} has been deleted successfully.`,
+        title: 'Job Deleted',
+        description: 'The job posting has been successfully deleted.',
       });
     } catch (error) {
       console.error('Failed to delete job:', error);
       toast({
-        title: 'Error deleting job',
-        description: 'Failed to delete job. Please try again later.',
+        title: 'Error',
+        description: 'Failed to delete job posting.',
         variant: 'destructive',
       });
     } finally {
-      setDeleteDialogOpen(false);
-      setJobToDelete(null);
+      setDeleteJobId(null);
     }
   };
 
-  const handleSearch = (searchTerm: string) => {
-    if (!searchTerm.trim()) {
-      setFilteredJobs(jobs);
-      return;
-    }
-    
-    const lowerCaseSearch = searchTerm.toLowerCase();
-    const filtered = jobs.filter(job => 
-      job.title.toLowerCase().includes(lowerCaseSearch) || 
-      job.description.toLowerCase().includes(lowerCaseSearch) ||
-      (job.location && job.location.toLowerCase().includes(lowerCaseSearch)) ||
-      (job.city && job.city.toLowerCase().includes(lowerCaseSearch)) ||
-      (job.state && job.state.toLowerCase().includes(lowerCaseSearch)) ||
-      (job.work_location && job.work_location.toLowerCase().includes(lowerCaseSearch)) ||
-      (job.work_type && job.work_type.toLowerCase().includes(lowerCaseSearch))
-    );
-    
-    setFilteredJobs(filtered);
+  const handleViewJobDetails = (job: Job) => {
+    setSelectedJob(job);
+    setShowJobDetails(true);
   };
 
-  const handleFilter = (filterValue: string) => {
-    if (!filterValue) {
-      setFilteredJobs(jobs);
-      return;
-    }
-    
-    const filtered = jobs.filter(job => 
-      job.status === filterValue || job.work_type === filterValue || job.work_location === filterValue
-    );
-    
-    setFilteredJobs(filtered);
-  };
+  const filteredJobs = jobs
+    .filter(job => !searchTerm || 
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.description.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter(job => !statusFilter || job.status === statusFilter)
+    .filter(job => !locationFilter || job.work_location === locationFilter)
+    .filter(job => !jobTypeFilter || job.work_type === jobTypeFilter);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'active':
-        return (
-          <div className="flex items-center text-green-600 bg-green-50 px-2 py-0.5 rounded-full text-xs">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Active
-          </div>
-        );
       case 'pending':
-        return (
-          <div className="flex items-center text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full text-xs">
-            <Clock className="h-3 w-3 mr-1" />
-            Pending Approval
-          </div>
-        );
+        return 'bg-yellow-100 text-yellow-800';
+      case 'active':
+        return 'bg-green-100 text-green-800';
       case 'offered':
-        return (
-          <div className="flex items-center text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full text-xs">
-            <Users className="h-3 w-3 mr-1" />
-            Offered
-          </div>
-        );
+        return 'bg-blue-100 text-blue-800';
       case 'accepted':
-        return (
-          <div className="flex items-center text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full text-xs">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Accepted
-          </div>
-        );
+        return 'bg-purple-100 text-purple-800';
       default:
-        return (
-          <div className="flex items-center text-gray-600 bg-gray-50 px-2 py-0.5 rounded-full text-xs">
-            {status}
-          </div>
-        );
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const filterOptions = [
-    { value: "pending", label: "Pending Approval" },
-    { value: "active", label: "Active Jobs" },
-    { value: "offered", label: "Offered Jobs" },
-    { value: "accepted", label: "Accepted Jobs" },
-    ...WORK_TYPES.map(type => ({ value: type, label: type }))
-  ];
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending Approval';
+      case 'active':
+        return 'Open';
+      case 'offered':
+        return 'Offered';
+      case 'accepted':
+        return 'Accepted';
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-4">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Job Listings</h2>
-        <Button 
-          onClick={() => setCreateDialogOpen(true)}
-          className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-        >
-          <Plus className="mr-2 h-4 w-4" /> Create Job
+        <Button onClick={() => setShowCreateJobDialog(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Job
         </Button>
       </div>
-
-      <SearchFilterBar 
-        placeholder="Search jobs by title, description, location..."
-        filterOptions={filterOptions}
-        onSearch={handleSearch}
-        onFilter={handleFilter}
-      />
-
-      {loading ? (
-        <div className="flex justify-center items-center h-40">
-          <div className="animate-spin h-8 w-8 border-4 border-psyched-darkBlue border-t-transparent rounded-full"></div>
+      
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search jobs..."
+            className="pl-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
+        
+        <div className="flex flex-wrap gap-2">
+          <Select value={statusFilter || ''} onValueChange={(value) => setStatusFilter(value || null)}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="pending">Pending Approval</SelectItem>
+              <SelectItem value="active">Open</SelectItem>
+              <SelectItem value="offered">Offered</SelectItem>
+              <SelectItem value="accepted">Accepted</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={locationFilter || ''} onValueChange={(value) => setLocationFilter(value || null)}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Work Location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Locations</SelectItem>
+              {WORK_LOCATIONS.map(location => (
+                <SelectItem key={location} value={location}>{location}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select value={jobTypeFilter || ''} onValueChange={(value) => setJobTypeFilter(value || null)}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Work Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Types</SelectItem>
+              {WORK_TYPES.map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      {filteredJobs.length === 0 ? (
+        <EmptyState
+          title="No job listings found"
+          description="No job listings match your criteria. Try adjusting your filters or create your first job."
+          icon={<Filter className="h-10 w-10 text-muted-foreground" />}
+          action={
+            <Button onClick={() => setShowCreateJobDialog(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Job
+            </Button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredJobs.length === 0 ? (
-            <div className="col-span-full text-center py-8">
-              <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">No job listings</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by creating a new job listing.</p>
-              <div className="mt-6">
-                <Button
-                  onClick={() => setCreateDialogOpen(true)}
-                  className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Create Job
-                </Button>
-              </div>
-            </div>
-          ) : (
-            filteredJobs.map((job) => (
-              <Card key={job.id} className="overflow-hidden">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg cursor-pointer hover:text-psyched-darkBlue" onClick={() => setSelectedJob(job)}>
-                      {job.title}
-                    </CardTitle>
-                    {getStatusBadge(job.status)}
+          {filteredJobs.map((job) => (
+            <Card key={job.id} className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold truncate" title={job.title}>{job.title}</h3>
+                    <Badge variant="outline" className={getStatusBadgeColor(job.status)}>
+                      {getStatusLabel(job.status)}
+                    </Badge>
                   </div>
-                  <CardDescription>
-                    {job.city && job.state && (
-                      <div className="flex items-center text-sm">
-                        <MapPin className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                        {`${job.city}, ${job.state}`}
-                      </div>
-                    )}
-
-                    {job.work_location && (
-                      <div className="flex items-center text-sm mt-1">
-                        <Building className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                        {job.work_location}
-                      </div>
-                    )}
-                    
-                    {job.work_type && (
-                      <div className="flex items-center text-sm mt-1">
-                        <Briefcase className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                        {job.work_type}
-                      </div>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 line-clamp-3">
+                  <p className="text-sm text-muted-foreground line-clamp-2" title={job.description}>
                     {job.description}
                   </p>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-psyched-darkBlue hover:text-psyched-darkBlue hover:bg-psyched-darkBlue/10"
-                    onClick={() => setSelectedJob(job)}
+                  <div className="mt-3 space-y-1">
+                    {job.city && job.state && (
+                      <div className="text-xs text-muted-foreground">
+                        Location: {job.city}, {job.state}
+                      </div>
+                    )}
+                    {job.work_location && (
+                      <div className="text-xs text-muted-foreground">
+                        Work Location: {job.work_location}
+                      </div>
+                    )}
+                    {job.work_type && (
+                      <div className="text-xs text-muted-foreground">
+                        Work Type: {job.work_type}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex border-t">
+                  <Button
+                    variant="ghost"
+                    className="flex-1 rounded-none py-2 h-auto"
+                    onClick={() => handleViewJobDetails(job)}
                   >
-                    <Eye className="h-3.5 w-3.5 mr-1" /> View
+                    <Eye className="mr-2 h-4 w-4" />
+                    View
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setEditingJob(job)}
+                  <div className="border-l h-10" />
+                  <Button
+                    variant="ghost"
+                    className="flex-1 rounded-none py-2 h-auto text-destructive hover:text-destructive"
+                    onClick={() => setDeleteJobId(job.id)}
                   >
-                    <Edit className="h-3.5 w-3.5 mr-1" /> Edit
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => confirmDeleteJob(job)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash className="h-3.5 w-3.5 mr-1" /> Delete
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
-          )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
-
+      
       <CreateJobDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+        open={showCreateJobDialog}
+        onOpenChange={setShowCreateJobDialog}
         districtId={districtId}
-        onJobCreated={handleJobCreated}
+        onJobCreated={handleCreateJob}
       />
 
-      {editingJob && (
-        <EditJobDialog
-          open={!!editingJob}
-          onOpenChange={(isOpen) => !isOpen && setEditingJob(null)}
-          job={editingJob}
-          onJobUpdated={handleJobUpdated}
-        />
-      )}
-
+      <ConfirmDeleteDialog
+        open={!!deleteJobId}
+        onOpenChange={() => setDeleteJobId(null)}
+        title="Delete Job"
+        description="Are you sure you want to delete this job posting? This action cannot be undone."
+        onConfirm={handleDeleteJob}
+      />
+      
       {selectedJob && (
-        <JobDetailsDialog
-          open={!!selectedJob}
-          onOpenChange={(isOpen) => !isOpen && setSelectedJob(null)}
-          job={selectedJob}
-          onJobUpdated={handleJobUpdated}
-        />
+        <Dialog open={showJobDetails} onOpenChange={setShowJobDetails}>
+          <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{selectedJob.title}</DialogTitle>
+              <div className="mt-1">
+                <Badge variant="outline" className={getStatusBadgeColor(selectedJob.status)}>
+                  {getStatusLabel(selectedJob.status)}
+                </Badge>
+              </div>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Description</h4>
+                <p className="text-sm">{selectedJob.description}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                {selectedJob.city && selectedJob.state && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Location</h4>
+                    <p className="text-sm">{selectedJob.city}, {selectedJob.state}</p>
+                  </div>
+                )}
+                
+                {selectedJob.work_location && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Work Location</h4>
+                    <p className="text-sm">{selectedJob.work_location}</p>
+                  </div>
+                )}
+                
+                {selectedJob.work_type && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Work Type</h4>
+                    <p className="text-sm">{selectedJob.work_type}</p>
+                  </div>
+                )}
+                
+                {selectedJob.salary && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Salary</h4>
+                    <p className="text-sm">${selectedJob.salary.toLocaleString()}</p>
+                  </div>
+                )}
+              </div>
+              
+              {selectedJob.qualifications && selectedJob.qualifications.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Qualifications</h4>
+                  <ul className="list-disc list-inside text-sm">
+                    {selectedJob.qualifications.map((qualification, index) => (
+                      <li key={index}>{qualification}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {selectedJob.benefits && selectedJob.benefits.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Benefits</h4>
+                  <ul className="list-disc list-inside text-sm">
+                    {selectedJob.benefits.map((benefit, index) => (
+                      <li key={index}>{benefit}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowJobDetails(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the job listing{' '}
-              <span className="font-semibold">{jobToDelete?.title}</span>. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteJob} className="bg-red-600 hover:bg-red-700">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    </div>
   );
 };

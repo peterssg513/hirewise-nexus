@@ -1,32 +1,38 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
 import { fetchJobs } from '@/services/jobService';
 import { fetchSchools } from '@/services/schoolService';
 import { fetchEvaluationRequests } from '@/services/evaluationRequestService';
 import { useToast } from '@/hooks/use-toast';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { DistrictOverview } from '@/components/district/DistrictOverview';
 import { DistrictProfile } from '@/components/district/DistrictProfile';
-import { District } from '@/types/district';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { District } from '@/types/district';
 
 const DistrictHome = () => {
   const [district, setDistrict] = useState<District | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [jobsCount, setJobsCount] = useState({ active: 0, pending: 0, offered: 0, accepted: 0, total: 0 });
+  const [jobsCount, setJobsCount] = useState({
+    active: 0,
+    pending: 0,
+    offered: 0,
+    accepted: 0,
+    total: 0
+  });
   const [schoolsCount, setSchoolsCount] = useState(0);
   const [evaluationsCount, setEvaluationsCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const loadData = async () => {
       if (!user) return;
       
       try {
@@ -36,25 +42,26 @@ const DistrictHome = () => {
         if (districtProfile) {
           setDistrict(districtProfile);
           
-          // Get jobs count
+          // Load jobs count
           const jobs = await fetchJobs(districtProfile.id);
-          const activeCount = jobs.filter(job => job.status === 'active').length;
-          const pendingCount = jobs.filter(job => job.status === 'pending').length;
-          const offeredCount = jobs.filter(job => job.status === 'offered').length;
-          const acceptedCount = jobs.filter(job => job.status === 'accepted').length;
+          const activeJobs = jobs.filter(job => job.status === 'active').length;
+          const pendingJobs = jobs.filter(job => job.status === 'pending').length;
+          const offeredJobs = jobs.filter(job => job.status === 'offered').length;
+          const acceptedJobs = jobs.filter(job => job.status === 'accepted').length;
+          
           setJobsCount({
-            active: activeCount,
-            pending: pendingCount,
-            offered: offeredCount,
-            accepted: acceptedCount,
+            active: activeJobs,
+            pending: pendingJobs,
+            offered: offeredJobs,
+            accepted: acceptedJobs,
             total: jobs.length
           });
           
-          // Get schools count
+          // Load schools count
           const schools = await fetchSchools(districtProfile.id);
           setSchoolsCount(schools.length);
           
-          // Get evaluations count
+          // Load evaluations count
           const evaluations = await fetchEvaluationRequests(districtProfile.id);
           setEvaluationsCount(evaluations.length);
         } else {
@@ -67,8 +74,8 @@ const DistrictHome = () => {
       } catch (error) {
         console.error('Error fetching district data:', error);
         toast({
-          title: "Error loading dashboard data",
-          description: "Failed to load dashboard information. Please try again later.",
+          title: "Error loading district data",
+          description: "Failed to load district information. Please try again later.",
           variant: "destructive",
         });
       } finally {
@@ -76,11 +83,15 @@ const DistrictHome = () => {
       }
     };
     
-    loadDashboardData();
+    loadData();
   }, [user, toast]);
   
-  const handleProfileUpdated = (updatedDistrict: District) => {
+  const handleProfileUpdate = (updatedDistrict: District) => {
     setDistrict(updatedDistrict);
+    toast({
+      title: "Profile Updated",
+      description: "Your district profile has been updated successfully.",
+    });
   };
   
   if (loading) {
@@ -99,63 +110,44 @@ const DistrictHome = () => {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Welcome, {district.name}</h1>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Welcome back, {district.first_name || district.name}
+          </p>
+        </div>
+        <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+          <Button 
+            onClick={() => navigate('/district-dashboard/jobs')}
+            className="flex items-center"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Job
+          </Button>
+        </div>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="md:col-span-1">
-          <DistrictOverview 
-            district={district} 
-            jobsCount={jobsCount} 
-            schoolsCount={schoolsCount}
-            evaluationsCount={evaluationsCount}
-          />
-          
-          <div className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Access frequently used actions</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-2">
-                <Button 
-                  className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-                  onClick={() => navigate('/district-dashboard/jobs')}
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Post New Job
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate('/district-dashboard/evaluations')}
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Request Evaluation
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate('/district-dashboard/schools')}
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Add School
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate('/district-dashboard/students')}
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Add Student
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-        
-        <div className="md:col-span-1">
-          <DistrictProfile 
-            district={district} 
-            onProfileUpdated={handleProfileUpdated}
-            embedded={true}
-          />
-        </div>
+      <DistrictOverview 
+        district={district}
+        jobsCount={jobsCount}
+        schoolsCount={schoolsCount}
+        evaluationsCount={evaluationsCount}
+      />
+      
+      <div className="grid gap-8 grid-cols-1">
+        <Card>
+          <CardHeader>
+            <CardTitle>District Profile</CardTitle>
+            <CardDescription>
+              Manage your district information and contact details
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DistrictProfile district={district} onUpdate={handleProfileUpdate} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
