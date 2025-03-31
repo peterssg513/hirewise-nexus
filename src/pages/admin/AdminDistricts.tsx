@@ -10,9 +10,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
+interface DistrictWithProfile {
+  id: string;
+  name: string;
+  contact_email: string;
+  status: string;
+  location?: string;
+  contact_phone?: string;
+  state?: string;
+  district_size?: number;
+  website?: string;
+  job_title?: string;
+  description?: string;
+  user_id: string;
+  profile_name?: string;
+  profile_email?: string;
+}
+
 const AdminDistricts = () => {
   const { profile } = useAuth();
-  const [pendingDistricts, setPendingDistricts] = useState([]);
+  const [pendingDistricts, setPendingDistricts] = useState<DistrictWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Rejection dialog state
@@ -26,9 +43,10 @@ const AdminDistricts = () => {
         setLoading(true);
         console.log('Fetching pending districts...');
         
+        // First fetch districts with pending status
         const { data: pendingDistrictsData, error } = await supabase
           .from('districts')
-          .select('*, profiles(name, email)')
+          .select('*')
           .eq('status', 'pending');
           
         if (error) {
@@ -37,7 +55,33 @@ const AdminDistricts = () => {
         }
         
         console.log('Pending districts data:', pendingDistrictsData);
-        setPendingDistricts(pendingDistrictsData || []);
+        
+        // If there are pending districts, fetch the associated user profiles separately
+        const districtsWithProfiles: DistrictWithProfile[] = [];
+        
+        if (pendingDistrictsData && pendingDistrictsData.length > 0) {
+          for (const district of pendingDistrictsData) {
+            // Fetch profile data for the district's user_id
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('name, email')
+              .eq('id', district.user_id)
+              .single();
+              
+            if (profileError) {
+              console.error(`Error fetching profile for user_id ${district.user_id}:`, profileError);
+            }
+            
+            districtsWithProfiles.push({
+              ...district,
+              profile_name: profileData?.name || null,
+              profile_email: profileData?.email || district.contact_email
+            });
+          }
+        }
+        
+        console.log('Districts with profiles:', districtsWithProfiles);
+        setPendingDistricts(districtsWithProfiles);
       } catch (error) {
         console.error('Error fetching pending districts:', error);
         toast({
@@ -73,7 +117,7 @@ const AdminDistricts = () => {
     };
   }, []);
   
-  const approveDistrict = async (id, name) => {
+  const approveDistrict = async (id: string, name: string) => {
     try {
       const result = await supabase.rpc('approve_district', { district_id: id });
       
@@ -124,7 +168,7 @@ const AdminDistricts = () => {
     }
   };
 
-  const openRejectionDialog = (id, name) => {
+  const openRejectionDialog = (id: string, name: string) => {
     setDistrictToReject({ id, name });
     setRejectionReason('');
     setRejectionDialogOpen(true);
@@ -219,7 +263,7 @@ const AdminDistricts = () => {
                 <CardTitle>{district.name}</CardTitle>
                 <Badge className="bg-yellow-500">Pending</Badge>
               </div>
-              <CardDescription>{district.profiles?.email}</CardDescription>
+              <CardDescription>{district.profile_email || district.contact_email}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">

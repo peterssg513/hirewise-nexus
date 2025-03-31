@@ -15,7 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { markAllNotificationsAsRead, markNotificationAsRead, Notification } from '@/services/notificationService';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const NotificationsMenu = () => {
   const { user, profile } = useAuth();
@@ -41,7 +41,7 @@ const NotificationsMenu = () => {
       setNotifications(data || []);
     } catch (error) {
       console.error('Error fetching notifications:', error);
-      toast({
+      useToast().toast({
         title: 'Failed to load notifications',
         variant: 'destructive'
       });
@@ -113,7 +113,7 @@ const NotificationsMenu = () => {
     
     if (profile?.role === 'admin') {
       // Admin navigation rules
-      if (type.includes('district')) {
+      if (type.includes('district_approval') || type.includes('district_approved') || type.includes('district_rejected')) {
         navigate('/admin-dashboard/districts');
       } else if (type.includes('psychologist')) {
         navigate('/admin-dashboard/psychologists');

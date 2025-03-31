@@ -23,9 +23,8 @@ export const enableRealtime = async () => {
   try {
     console.log('Enabling realtime features...');
     
-    // Direct SQL to enable realtime would be done server-side
-    // For client-side, we just ensure the channels are properly set up
-    // This is now handled in individual components
+    // Make sure we have a subscription to the needed tables
+    // For realtime, we use channels in the components directly
     
     return { success: true };
   } catch (error) {
