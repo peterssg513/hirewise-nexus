@@ -14,7 +14,11 @@ const DashboardLayout = () => {
     }
   }, [user, isLoading, navigate]);
 
-  return <SidebarLayout />;
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <SidebarLayout />
+    </div>
+  );
 };
 
 export default DashboardLayout;

@@ -38,7 +38,7 @@ const Navbar = () => {
 
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm' : 'bg-white'} border-b border-gray-200`}>
-      <div className="psyched-container py-4">
+      <div className="psyched-container py-4 px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-8">
             <NavLogo />

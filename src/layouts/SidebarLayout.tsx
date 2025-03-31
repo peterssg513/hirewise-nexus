@@ -88,15 +88,15 @@ const SidebarLayout = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
-        <Sidebar>
-          <SidebarHeader className="p-4">
+      <div className="flex min-h-screen w-full bg-gray-50">
+        <Sidebar className="border-r border-gray-200">
+          <SidebarHeader className="p-4 border-b border-gray-200">
             <NavLogo />
           </SidebarHeader>
           <SidebarContent>
             {renderNavContent()}
           </SidebarContent>
-          <SidebarFooter className="border-t p-4">
+          <SidebarFooter className="border-t border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <UserAccountNav profile={profile} profilePicUrl={profilePicUrl} onLogout={logout} />
               <NotificationsMenu />
@@ -104,8 +104,8 @@ const SidebarLayout = () => {
           </SidebarFooter>
           <SidebarRail />
         </Sidebar>
-        <SidebarInset>
-          <div className="container py-6">
+        <SidebarInset className="flex-1">
+          <div className="container py-6 max-w-7xl">
             <Outlet />
           </div>
         </SidebarInset>
