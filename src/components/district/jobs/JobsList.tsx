@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Plus, Filter } from 'lucide-react';
-import { EmptyState } from '@/components/common/EmptyState';
-import { fetchJobs, Job, deleteJob } from '@/services/jobService';
-import { useToast } from '@/hooks/use-toast';
-import { CreateJobDialog } from './CreateJobDialog';
+import { Button } from '@/components/ui/button';
+import { JobCard } from '@/components/district/jobs/JobCard';
+import { JobsFilter } from '@/components/district/jobs/JobsFilter';
+import { CreateJobDialog } from '@/components/district/jobs/CreateJobDialog';
+import { JobDetailsDialog } from '@/components/district/jobs/JobDetailsDialog';
 import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
-import { JobCard } from './JobCard';
-import { JobDetailsDialog } from './JobDetailsDialog';
-import { JobsFilter } from './JobsFilter';
+import { EmptyState } from '@/components/common/EmptyState';
+import { useToast } from '@/hooks/use-toast';
+import { Job, fetchJobs, deleteJob } from '@/services/jobService';
 
 interface JobsListProps {
   districtId: string;
@@ -17,85 +17,119 @@ interface JobsListProps {
 
 export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showCreateJobDialog, setShowCreateJobDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [locationFilter, setLocationFilter] = useState<string | null>(null);
   const [jobTypeFilter, setJobTypeFilter] = useState<string | null>(null);
-  const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [showJobDetails, setShowJobDetails] = useState(false);
+  const [createJobDialogOpen, setCreateJobDialogOpen] = useState(false);
+  const [jobToView, setJobToView] = useState<Job | null>(null);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
-  const loadJobs = async () => {
-    try {
-      setIsLoading(true);
-      const jobsData = await fetchJobs(districtId);
-      setJobs(jobsData);
-    } catch (error) {
-      console.error('Failed to load jobs:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load job listings.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Load jobs data
   useEffect(() => {
-    loadJobs();
-  }, [districtId]);
+    const loadJobs = async () => {
+      try {
+        setIsLoading(true);
+        const jobsData = await fetchJobs(districtId);
+        setJobs(jobsData);
+        setFilteredJobs(jobsData);
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load jobs. Please try again later.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleCreateJob = (job: Job) => {
-    setJobs(prevJobs => [job, ...prevJobs]);
+    if (districtId) {
+      loadJobs();
+    }
+  }, [districtId, toast]);
+
+  // Apply filters whenever filter states change
+  useEffect(() => {
+    if (!jobs.length) return;
+
+    let result = [...jobs];
+
+    // Apply search term filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        job => 
+          job.title.toLowerCase().includes(term) || 
+          job.description.toLowerCase().includes(term) ||
+          (job.city && job.city.toLowerCase().includes(term)) ||
+          (job.state && job.state.toLowerCase().includes(term))
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter && statusFilter !== 'all') {
+      result = result.filter(job => job.status === statusFilter);
+    }
+
+    // Apply location filter
+    if (locationFilter && locationFilter !== 'all') {
+      result = result.filter(job => job.work_location === locationFilter);
+    }
+
+    // Apply job type filter
+    if (jobTypeFilter && jobTypeFilter !== 'all') {
+      result = result.filter(job => job.work_type === jobTypeFilter);
+    }
+
+    setFilteredJobs(result);
+  }, [jobs, searchTerm, statusFilter, locationFilter, jobTypeFilter]);
+
+  const handleJobCreated = (newJob: Job) => {
+    setJobs(prev => [newJob, ...prev]);
     toast({
-      title: 'Job Created',
-      description: 'Your job posting has been created and is pending approval.',
+      title: 'Success',
+      description: 'Job created successfully!',
     });
   };
 
-  const handleDeleteJob = async () => {
-    if (!deleteJobId) return;
-    
+  const handleViewJob = (job: Job) => {
+    setJobToView(job);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!jobToDelete) return;
+
     try {
-      await deleteJob(deleteJobId);
-      setJobs(prevJobs => prevJobs.filter(job => job.id !== deleteJobId));
+      setIsDeleting(true);
+      await deleteJob(jobToDelete);
+      setJobs(prev => prev.filter(job => job.id !== jobToDelete));
       toast({
-        title: 'Job Deleted',
-        description: 'The job posting has been successfully deleted.',
+        title: 'Success',
+        description: 'Job deleted successfully!',
       });
     } catch (error) {
-      console.error('Failed to delete job:', error);
+      console.error('Error deleting job:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete job posting.',
+        description: 'Failed to delete job. Please try again later.',
         variant: 'destructive',
       });
     } finally {
-      setDeleteJobId(null);
+      setIsDeleting(false);
+      setJobToDelete(null);
     }
   };
 
-  const handleViewJobDetails = (job: Job) => {
-    setSelectedJob(job);
-    setShowJobDetails(true);
-  };
-
-  const filteredJobs = jobs
-    .filter(job => !searchTerm || 
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.description.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(job => !statusFilter || job.status === statusFilter)
-    .filter(job => !locationFilter || job.work_location === locationFilter)
-    .filter(job => !jobTypeFilter || job.work_type === jobTypeFilter);
-
+  // Render loading state
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center py-12">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
       </div>
     );
@@ -103,15 +137,16 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Job Listings</h2>
-        <Button onClick={() => setShowCreateJobDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Job
+      {/* Header with create button */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Job Listings</h2>
+        <Button onClick={() => setCreateJobDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" /> Create New Job
         </Button>
       </div>
-      
-      <JobsFilter 
+
+      {/* Filters */}
+      <JobsFilter
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         statusFilter={statusFilter}
@@ -121,16 +156,16 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
         jobTypeFilter={jobTypeFilter}
         setJobTypeFilter={setJobTypeFilter}
       />
-      
+
+      {/* Jobs grid */}
       {filteredJobs.length === 0 ? (
         <EmptyState
-          title="No job listings found"
-          description="No job listings match your criteria. Try adjusting your filters or create your first job."
-          icon={<Filter className="h-10 w-10" />}
+          icon={<Filter className="h-10 w-10 text-muted-foreground" />}
+          title="No jobs found"
+          description="No jobs match your search criteria. Try adjusting your filters or create a new job."
           action={
-            <Button onClick={() => setShowCreateJobDialog(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Job
+            <Button onClick={() => setCreateJobDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Create New Job
             </Button>
           }
         />
@@ -140,32 +175,36 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
             <JobCard
               key={job.id}
               job={job}
-              onView={handleViewJobDetails}
-              onDelete={(jobId) => setDeleteJobId(jobId)}
+              onView={handleViewJob}
+              onDelete={setJobToDelete}
             />
           ))}
         </div>
       )}
-      
+
+      {/* Dialogs */}
       <CreateJobDialog
-        open={showCreateJobDialog}
-        onOpenChange={setShowCreateJobDialog}
+        open={createJobDialogOpen}
+        onOpenChange={setCreateJobDialogOpen}
         districtId={districtId}
-        onJobCreated={handleCreateJob}
+        onJobCreated={handleJobCreated}
       />
 
+      {jobToView && (
+        <JobDetailsDialog
+          open={!!jobToView}
+          onOpenChange={() => setJobToView(null)}
+          job={jobToView}
+        />
+      )}
+
       <ConfirmDeleteDialog
-        open={!!deleteJobId}
-        onOpenChange={() => setDeleteJobId(null)}
+        open={!!jobToDelete}
+        onOpenChange={() => setJobToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
         title="Delete Job"
-        description="Are you sure you want to delete this job posting? This action cannot be undone."
-        onConfirm={handleDeleteJob}
-      />
-      
-      <JobDetailsDialog
-        job={selectedJob}
-        open={showJobDetails}
-        onOpenChange={setShowJobDetails}
+        description="Are you sure you want to delete this job? This action cannot be undone."
       />
     </div>
   );

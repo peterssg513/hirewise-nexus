@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Filter } from 'lucide-react';
@@ -18,23 +19,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
-import { Checkbox } from "@/components/ui/checkbox"
+} from "@/components/ui/table";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from 'lucide-react';
 import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
 
@@ -158,7 +149,7 @@ const StudentsList: React.FC<StudentsListProps> = ({ schoolId }) => {
               <SelectValue placeholder="Filter by Grade" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Grades</SelectItem>
+              <SelectItem value="all">All Grades</SelectItem>
               <SelectItem value="9">Grade 9</SelectItem>
               <SelectItem value="10">Grade 10</SelectItem>
               <SelectItem value="11">Grade 11</SelectItem>
@@ -169,29 +160,17 @@ const StudentsList: React.FC<StudentsListProps> = ({ schoolId }) => {
       </div>
 
       {filteredStudents.length === 0 ? (
-        
-        
-        
-          
-            
-              <Filter className="h-10 w-10 text-muted-foreground" />
-            
-            
-              No students found
-            
-            
-              No students match your criteria. Try adjusting your filters or add a new student.
-            
-            
-              
-                
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Student
-                
-              
-            
-          
-        
+        <EmptyState
+          icon={<Filter className="h-10 w-10 text-muted-foreground" />}
+          title="No students found"
+          description="No students match your criteria. Try adjusting your filters or add a new student."
+          action={
+            <Button onClick={() => setShowCreateStudentDialog(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Student
+            </Button>
+          }
+        />
       ) : (
         <div className="overflow-x-auto">
           <Table>

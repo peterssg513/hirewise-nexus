@@ -44,7 +44,7 @@ export const JobsFilter: React.FC<JobsFilterProps> = ({
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="pending">Pending Approval</SelectItem>
             <SelectItem value="active">Open</SelectItem>
             <SelectItem value="offered">Offered</SelectItem>
@@ -57,7 +57,7 @@ export const JobsFilter: React.FC<JobsFilterProps> = ({
             <SelectValue placeholder="Work Location" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Locations</SelectItem>
+            <SelectItem value="all">All Locations</SelectItem>
             {WORK_LOCATIONS.map(location => (
               <SelectItem key={location} value={location}>{location}</SelectItem>
             ))}
@@ -69,7 +69,7 @@ export const JobsFilter: React.FC<JobsFilterProps> = ({
             <SelectValue placeholder="Work Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Types</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
             {WORK_TYPES.map(type => (
               <SelectItem key={type} value={type}>{type}</SelectItem>
             ))}
