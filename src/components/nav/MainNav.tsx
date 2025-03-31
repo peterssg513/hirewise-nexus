@@ -17,13 +17,13 @@ export const MainNav: React.FC<MainNavProps> = ({ items = [] }) => {
   const location = useLocation();
 
   return (
-    <nav className="hidden md:flex space-x-6">
+    <nav className="flex items-center space-x-6">
       {items.map((item) => (
         <Link 
           key={item.href}
           to={item.href} 
           className={`font-medium relative ${
-            location.pathname === item.href 
+            location.pathname === item.href || location.pathname.startsWith(`${item.href}/`)
               ? item.isHighlighted 
                 ? 'text-psyched-orange' 
                 : 'text-psyched-lightBlue' 
@@ -31,7 +31,7 @@ export const MainNav: React.FC<MainNavProps> = ({ items = [] }) => {
           }`}
         >
           {item.label}
-          {location.pathname === item.href && (
+          {(location.pathname === item.href || location.pathname.startsWith(`${item.href}/`)) && (
             <motion.span 
               className={`absolute -bottom-1 left-0 w-full h-0.5 ${
                 item.isHighlighted ? 'bg-psyched-orange' : 'bg-psyched-lightBlue'

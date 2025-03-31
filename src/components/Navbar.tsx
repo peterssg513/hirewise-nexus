@@ -52,14 +52,34 @@ const Navbar = () => {
     }
   }, [isAuthenticated, user?.id, profile?.role]);
 
-  // Determine which navigation links to show based on authentication state
+  // Determine which navigation links to show based on authentication state and role
   const renderNavLinks = () => {
-    if (isAuthenticated && profile?.role === 'psychologist') {
-      return (
-        <div className="hidden md:flex space-x-6">
-          <PsychologistNav />
-        </div>
-      );
+    if (isAuthenticated) {
+      if (profile?.role === 'admin') {
+        return (
+          <div className="flex space-x-6">
+            <MainNav items={[
+              { label: 'Dashboard', href: '/admin-dashboard' },
+              { label: 'Districts', href: '/admin-dashboard/districts' },
+              { label: 'Psychologists', href: '/admin-dashboard/psychologists' },
+              { label: 'Jobs', href: '/admin-dashboard/jobs' },
+              { label: 'Evaluations', href: '/admin-dashboard/evaluations' }
+            ]} />
+          </div>
+        );
+      } else if (profile?.role === 'psychologist') {
+        return (
+          <div className="hidden md:flex space-x-6">
+            <PsychologistNav />
+          </div>
+        );
+      } else {
+        return (
+          <div className="hidden md:flex space-x-6">
+            <PublicNav />
+          </div>
+        );
+      }
     } else {
       return (
         <div className="hidden md:flex space-x-6">
@@ -73,11 +93,10 @@ const Navbar = () => {
     <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm' : 'bg-white'} border-b border-gray-200`}>
       <div className="psyched-container py-4">
         <div className="flex justify-between items-center">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-8">
             <NavLogo />
+            {renderNavLinks()}
           </div>
-          
-          {renderNavLinks()}
           
           <div className="flex items-center space-x-3">
             {isAuthenticated ? (
