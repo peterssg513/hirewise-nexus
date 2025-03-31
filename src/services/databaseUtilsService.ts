@@ -1,25 +1,35 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Check if a column exists in a table
-export const checkColumnExists = async (tableName: string, columnName: string): Promise<boolean> => {
+export const setup = async () => {
   try {
-    const { data, error } = await supabase.rpc('get_column_info', {
-      table_name: tableName,
-      column_name: columnName
-    });
+    // Add Row Level Security (RLS) policies for jobs table
+    const { error: policiesError } = await supabase.rpc('add_missing_rls_policies');
     
-    if (error) {
-      console.error('Error checking column existence:', error);
-      // Default to false if there's an error
-      return false;
+    if (policiesError) {
+      console.error('Error setting up RLS policies:', policiesError);
+      throw policiesError;
     }
     
-    // If data is returned and has length, the column exists
-    return Array.isArray(data) && data.length > 0;
+    return { success: true };
   } catch (error) {
-    console.error('Exception checking column existence:', error);
-    // Default to false on exception
-    return false;
+    console.error('Database setup error:', error);
+    return { success: false, error };
+  }
+};
+
+export const enableRealtime = async () => {
+  try {
+    const { error } = await supabase.rpc('enable_realtime_for_tables');
+    
+    if (error) {
+      console.error('Error enabling realtime:', error);
+      throw error;
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Enable realtime error:', error);
+    return { success: false, error };
   }
 };

@@ -5,7 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, Users, Briefcase, ClipboardCheck, Activity, AlertTriangle, UserPlus, FileText } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { ShieldCheck, Users, Briefcase, ClipboardCheck, Activity, AlertTriangle, UserPlus, FileText, Check, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
@@ -21,13 +23,19 @@ const AdminDashboard = () => {
     activeJobs: 0,
     completedEvaluations: 0
   });
+  
   const [pendingDistricts, setPendingDistricts] = useState([]);
   const [pendingPsychologists, setPendingPsychologists] = useState([]);
   const [pendingJobs, setPendingJobs] = useState([]);
   const [pendingEvaluations, setPendingEvaluations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('districts');
-
+  
+  // Rejection dialog state
+  const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [entityToReject, setEntityToReject] = useState({ type: '', id: '', name: '' });
+  
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -45,7 +53,11 @@ const AdminDashboard = () => {
           
         const { count: pendingPsychologistsCount, data: pendingPsychologistsData } = await supabase
           .from('psychologists')
-          .select('*, profiles(name, email)')
+          .select(`
+            *,
+            profiles(name, email),
+            certifications:certification_details
+          `)
           .eq('status', 'pending');
           
         const { count: pendingJobsCount, data: pendingJobsData } = await supabase
@@ -116,32 +128,88 @@ const AdminDashboard = () => {
     };
   }, []);
   
-  const approveEntity = async (type, id) => {
+  const approveEntity = async (type, id, name) => {
     try {
       let result;
+      let recipientId;
+      let notificationMessage = '';
       
       switch(type) {
         case 'district':
           result = await supabase.rpc('approve_district', { district_id: id });
+          
+          // Get district user_id for notification
+          const { data: districtData } = await supabase
+            .from('districts')
+            .select('user_id, name')
+            .eq('id', id)
+            .single();
+            
+          recipientId = districtData?.user_id;
+          notificationMessage = `Your district "${districtData?.name}" has been approved! You can now create jobs and evaluations.`;
           break;
+          
         case 'psychologist':
           result = await supabase.rpc('approve_psychologist', { psychologist_id: id });
+          
+          // Get psychologist user_id for notification
+          const { data: psychData } = await supabase
+            .from('psychologists')
+            .select('user_id, profiles:user_id(name)')
+            .eq('id', id)
+            .single();
+            
+          recipientId = psychData?.user_id;
+          notificationMessage = `Your psychologist profile has been approved! You can now apply for jobs and evaluations.`;
           break;
+          
         case 'job':
           result = await supabase.rpc('approve_job', { job_id: id });
+          
+          // Get job details for notification
+          const { data: jobData } = await supabase
+            .from('jobs')
+            .select('title, district_id, districts!inner(user_id)')
+            .eq('id', id)
+            .single();
+            
+          recipientId = jobData?.districts?.user_id;
+          notificationMessage = `Your job "${jobData?.title}" has been approved and is now visible to psychologists!`;
           break;
+          
         case 'evaluation':
           // Update the evaluation status from pending to active
           result = await supabase
             .from('evaluation_requests')
             .update({ status: 'active' })
             .eq('id', id);
+          
+          // Get evaluation district user_id for notification
+          const { data: evalData } = await supabase
+            .from('evaluation_requests')
+            .select('legal_name, district_id, districts!inner(user_id, name)')
+            .eq('id', id)
+            .single();
+            
+          recipientId = evalData?.districts?.user_id;
+          notificationMessage = `Evaluation request for "${evalData?.legal_name}" has been approved!`;
           break;
+          
         default:
           throw new Error('Invalid entity type');
       }
       
       if (result.error) throw result.error;
+      
+      // Create notification for the user
+      if (recipientId && notificationMessage) {
+        await supabase.from('notifications').insert({
+          user_id: recipientId,
+          message: notificationMessage,
+          type: `${type}_approved`,
+          related_id: id
+        });
+      }
       
       toast({
         title: 'Success',
@@ -165,6 +233,7 @@ const AdminDashboard = () => {
         user_id: profile?.id,
         event_data: { 
           entity_id: id,
+          entity_name: name,
           timestamp: new Date().toISOString()
         }
       });
@@ -178,42 +247,113 @@ const AdminDashboard = () => {
     }
   };
 
-  const denyEntity = async (type, id) => {
+  const openRejectionDialog = (type, id, name) => {
+    setEntityToReject({ type, id, name });
+    setRejectionReason('');
+    setRejectionDialogOpen(true);
+  };
+
+  const handleReject = async () => {
+    const { type, id, name } = entityToReject;
+    
     try {
       let result;
+      let recipientId;
+      let notificationMessage = '';
       
-      // For simplicity, denial just changes status to 'rejected'
-      // In a real system, you might want different handling
+      // For simplicity, rejection just changes status to 'rejected'
       switch(type) {
         case 'district':
           result = await supabase
             .from('districts')
-            .update({ status: 'rejected' })
+            .update({ 
+              status: 'rejected'
+            })
             .eq('id', id);
+          
+          // Get district user_id for notification
+          const { data: districtData } = await supabase
+            .from('districts')
+            .select('user_id, name')
+            .eq('id', id)
+            .single();
+            
+          recipientId = districtData?.user_id;
+          notificationMessage = `Your district "${districtData?.name}" registration was not approved.`;
           break;
+          
         case 'psychologist':
           result = await supabase
             .from('psychologists')
-            .update({ status: 'rejected' })
+            .update({ 
+              status: 'rejected'
+            })
             .eq('id', id);
+          
+          // Get psychologist user_id for notification
+          const { data: psychData } = await supabase
+            .from('psychologists')
+            .select('user_id')
+            .eq('id', id)
+            .single();
+            
+          recipientId = psychData?.user_id;
+          notificationMessage = `Your psychologist profile was not approved.`;
           break;
+          
         case 'job':
           result = await supabase
             .from('jobs')
-            .update({ status: 'rejected' })
+            .update({ 
+              status: 'rejected'
+            })
             .eq('id', id);
+          
+          // Get job details for notification
+          const { data: jobData } = await supabase
+            .from('jobs')
+            .select('title, district_id, districts!inner(user_id)')
+            .eq('id', id)
+            .single();
+            
+          recipientId = jobData?.districts?.user_id;
+          notificationMessage = `Your job "${jobData?.title}" was not approved.`;
           break;
+          
         case 'evaluation':
           result = await supabase
             .from('evaluation_requests')
-            .update({ status: 'rejected' })
+            .update({ 
+              status: 'rejected'
+            })
             .eq('id', id);
+          
+          // Get evaluation district user_id for notification
+          const { data: evalData } = await supabase
+            .from('evaluation_requests')
+            .select('legal_name, district_id, districts!inner(user_id)')
+            .eq('id', id)
+            .single();
+            
+          recipientId = evalData?.districts?.user_id;
+          notificationMessage = `Evaluation request for "${evalData?.legal_name}" was not approved.`;
           break;
+          
         default:
           throw new Error('Invalid entity type');
       }
       
       if (result.error) throw result.error;
+      
+      // Create notification for the user
+      if (recipientId && notificationMessage) {
+        await supabase.from('notifications').insert({
+          user_id: recipientId,
+          message: `${notificationMessage} Reason: ${rejectionReason}`,
+          type: `${type}_rejected`,
+          related_id: id
+        });
+      }
       
       toast({
         title: 'Rejected',
@@ -231,12 +371,14 @@ const AdminDashboard = () => {
         setPendingEvaluations(pendingEvaluations.filter(e => e.id !== id));
       }
       
-      // Log this denial action
+      // Log this rejection action
       await supabase.from('analytics_events').insert({
         event_type: `${type}_rejected`,
         user_id: profile?.id,
         event_data: { 
           entity_id: id,
+          entity_name: name,
+          reason: rejectionReason,
           timestamp: new Date().toISOString()
         }
       });
@@ -247,6 +389,8 @@ const AdminDashboard = () => {
         title: `Failed to reject ${type}`,
         variant: 'destructive'
       });
+    } finally {
+      setRejectionDialogOpen(false);
     }
   };
   
@@ -415,6 +559,22 @@ const AdminDashboard = () => {
                       <p className="text-sm font-medium">Contact</p>
                       <p className="text-sm text-muted-foreground">{district.contact_phone || 'No phone provided'}</p>
                     </div>
+                    <div>
+                      <p className="text-sm font-medium">State</p>
+                      <p className="text-sm text-muted-foreground">{district.state || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Size</p>
+                      <p className="text-sm text-muted-foreground">{district.district_size ? `${district.district_size} students` : 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Website</p>
+                      <p className="text-sm text-muted-foreground">{district.website ? <a href={district.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{district.website}</a> : 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Job Title</p>
+                      <p className="text-sm text-muted-foreground">{district.job_title || 'Not specified'}</p>
+                    </div>
                   </div>
                   <div className="mt-4">
                     <p className="text-sm font-medium">Description</p>
@@ -424,13 +584,15 @@ const AdminDashboard = () => {
                     <Button 
                       variant="outline" 
                       className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => denyEntity('district', district.id)}
+                      onClick={() => openRejectionDialog('district', district.id, district.name)}
                     >
+                      <X className="mr-1 h-4 w-4" />
                       Reject
                     </Button>
                     <Button 
-                      onClick={() => approveEntity('district', district.id)}
+                      onClick={() => approveEntity('district', district.id, district.name)}
                     >
+                      <Check className="mr-1 h-4 w-4" />
                       Approve District
                     </Button>
                   </div>
@@ -473,6 +635,18 @@ const AdminDashboard = () => {
                       <p className="text-sm text-muted-foreground">{psych.experience_years ? `${psych.experience_years} years` : 'Not specified'}</p>
                     </div>
                     <div>
+                      <p className="text-sm font-medium">Location</p>
+                      <p className="text-sm text-muted-foreground">
+                        {psych.city && psych.state ? `${psych.city}, ${psych.state}` : 'Not specified'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Phone</p>
+                      <p className="text-sm text-muted-foreground">
+                        {psych.phone_number || 'Not provided'}
+                      </p>
+                    </div>
+                    <div>
                       <p className="text-sm font-medium">Specialties</p>
                       <p className="text-sm text-muted-foreground">
                         {psych.specialties?.length ? psych.specialties.join(', ') : 'None specified'}
@@ -484,16 +658,66 @@ const AdminDashboard = () => {
                         {psych.certifications?.length ? psych.certifications.join(', ') : 'None specified'}
                       </p>
                     </div>
+                    <div>
+                      <p className="text-sm font-medium">Work Types</p>
+                      <p className="text-sm text-muted-foreground">
+                        {psych.work_types?.length ? psych.work_types.join(', ') : 'None specified'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Evaluation Types</p>
+                      <p className="text-sm text-muted-foreground">
+                        {psych.evaluation_types?.length ? psych.evaluation_types.join(', ') : 'None specified'}
+                      </p>
+                    </div>
                   </div>
+                  
+                  {psych.experience && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium">Experience</p>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        {Array.isArray(JSON.parse(psych.experience || '[]')) ? (
+                          <div className="border rounded-md p-2 bg-gray-50">
+                            {JSON.parse(psych.experience).map((exp, i) => (
+                              <div key={i} className="mb-2 pb-2 border-b last:border-b-0">
+                                <p className="font-medium">{exp.organization} - {exp.position}</p>
+                                <p className="text-xs">{exp.startDate} to {exp.current ? 'Present' : exp.endDate}</p>
+                                <p className="mt-1">{exp.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          psych.experience
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {psych.certification_details && Object.keys(psych.certification_details).length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium">Certification Details</p>
+                      <div className="border rounded-md p-2 bg-gray-50 mt-1">
+                        {Object.entries(psych.certification_details).map(([key, value], i) => (
+                          <div key={i} className="mb-2">
+                            <p className="text-xs font-medium">{key}</p>
+                            <p className="text-sm">{value.toString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="mt-6 flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
                       className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => denyEntity('psychologist', psych.id)}
+                      onClick={() => openRejectionDialog('psychologist', psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
                     >
+                      <X className="mr-1 h-4 w-4" />
                       Reject
                     </Button>
-                    <Button onClick={() => approveEntity('psychologist', psych.id)}>
+                    <Button onClick={() => approveEntity('psychologist', psych.id, psych.profiles?.name || 'Unnamed Psychologist')}>
+                      <Check className="mr-1 h-4 w-4" />
                       Approve Psychologist
                     </Button>
                   </div>
@@ -529,11 +753,27 @@ const AdminDashboard = () => {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-sm font-medium">Location</p>
-                      <p className="text-sm text-muted-foreground">{job.location || 'Remote/Not specified'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {job.city && job.state 
+                          ? `${job.city}, ${job.state}` 
+                          : job.location || 'Remote/Not specified'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Job Type</p>
+                      <p className="text-sm text-muted-foreground">{job.job_type || 'Not specified'}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium">Timeframe</p>
                       <p className="text-sm text-muted-foreground">{job.timeframe || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Salary</p>
+                      <p className="text-sm text-muted-foreground">
+                        {job.salary 
+                          ? `$${job.salary.toLocaleString()}` 
+                          : 'Not specified'}
+                      </p>
                     </div>
                   </div>
                   <div>
@@ -546,15 +786,37 @@ const AdminDashboard = () => {
                       {job.skills_required?.length ? job.skills_required.join(', ') : 'None specified'}
                     </p>
                   </div>
+                  {job.qualifications?.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">Qualifications</p>
+                      <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                        {job.qualifications.map((qual, idx) => (
+                          <li key={idx}>{qual}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {job.benefits?.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">Benefits</p>
+                      <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                        {job.benefits.map((benefit, idx) => (
+                          <li key={idx}>{benefit}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <div className="mt-6 flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
                       className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => denyEntity('job', job.id)}
+                      onClick={() => openRejectionDialog('job', job.id, job.title)}
                     >
+                      <X className="mr-1 h-4 w-4" />
                       Reject
                     </Button>
-                    <Button onClick={() => approveEntity('job', job.id)}>
+                    <Button onClick={() => approveEntity('job', job.id, job.title)}>
+                      <Check className="mr-1 h-4 w-4" />
                       Approve Job
                     </Button>
                   </div>
@@ -585,7 +847,7 @@ const AdminDashboard = () => {
                     <Badge className="bg-yellow-500">Pending</Badge>
                   </div>
                   <CardDescription>
-                    {evaluation.service_type || 'General Evaluation'} - 
+                    {evaluation.service_type || 'General Evaluation'} - {' '}
                     {evaluation.districts?.name || 'Unknown District'}
                   </CardDescription>
                 </CardHeader>
@@ -601,16 +863,58 @@ const AdminDashboard = () => {
                         {new Date(evaluation.created_at).toLocaleDateString()}
                       </p>
                     </div>
+                    <div>
+                      <p className="text-sm font-medium">Grade</p>
+                      <p className="text-sm text-muted-foreground">
+                        {evaluation.grade || 'Not specified'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Age</p>
+                      <p className="text-sm text-muted-foreground">
+                        {evaluation.age ? `${evaluation.age} years` : 'Not specified'}
+                      </p>
+                    </div>
                   </div>
+                  
+                  {evaluation.general_education_teacher && (
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">General Education Teacher</p>
+                      <p className="text-sm text-muted-foreground">
+                        {evaluation.general_education_teacher}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {evaluation.parents && (
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">Parents/Guardians</p>
+                      <p className="text-sm text-muted-foreground">
+                        {evaluation.parents}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {evaluation.other_relevant_info && (
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">Additional Information</p>
+                      <p className="text-sm text-muted-foreground">
+                        {evaluation.other_relevant_info}
+                      </p>
+                    </div>
+                  )}
+                  
                   <div className="mt-6 flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
                       className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => denyEntity('evaluation', evaluation.id)}
+                      onClick={() => openRejectionDialog('evaluation', evaluation.id, evaluation.legal_name || 'Unnamed Student')}
                     >
+                      <X className="mr-1 h-4 w-4" />
                       Reject
                     </Button>
-                    <Button onClick={() => approveEntity('evaluation', evaluation.id)}>
+                    <Button onClick={() => approveEntity('evaluation', evaluation.id, evaluation.legal_name || 'Unnamed Student')}>
+                      <Check className="mr-1 h-4 w-4" />
                       Approve Evaluation
                     </Button>
                   </div>
@@ -620,6 +924,36 @@ const AdminDashboard = () => {
           )}
         </TabsContent>
       </Tabs>
+      
+      {/* Rejection Dialog */}
+      <AlertDialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject {entityToReject.type}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please provide a reason for rejecting "{entityToReject.name}". This will be shared with the user.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Textarea 
+              placeholder="Enter rejection reason..." 
+              value={rejectionReason} 
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleReject}
+              disabled={!rejectionReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Reject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
