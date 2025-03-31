@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
@@ -16,7 +15,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 
-// Sidebar Navigation Button Component
 const SidebarNavButton = ({ 
   icon, 
   label, 
@@ -54,7 +52,6 @@ const SidebarNavButton = ({
   );
 };
 
-// Mobile Navigation Button Component
 const MobileNavButton = ({ 
   icon, 
   label, 
@@ -81,12 +78,11 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true); // Set to true by default
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const pathname = location.pathname;
   const role = profile?.role;
 
-  // Fetch profile picture if user is logged in
   useEffect(() => {
     const fetchProfilePic = async () => {
       if (user?.id && role === 'psychologist') {
@@ -100,7 +96,24 @@ const DashboardLayout = () => {
           console.log("Dashboard Layout - Profile Pic Data:", data);
             
           if (!error && data?.profile_picture_url) {
+            console.log("Setting profile picture URL in layout:", data.profile_picture_url);
             setProfilePicUrl(data.profile_picture_url);
+          } else {
+            console.log("No profile picture found in DB, checking if we need to fetch it");
+            const sessionProfilePic = localStorage.getItem('temp_profile_picture');
+            if (sessionProfilePic) {
+              console.log("Found temp profile picture in localStorage:", sessionProfilePic);
+              setProfilePicUrl(sessionProfilePic);
+              
+              const { error: updateError } = await supabase
+                .from('psychologists')
+                .update({ profile_picture_url: sessionProfilePic })
+                .eq('user_id', user.id);
+                
+              if (!updateError) {
+                localStorage.removeItem('temp_profile_picture');
+              }
+            }
           }
         } catch (error) {
           console.error('Failed to fetch profile picture:', error);

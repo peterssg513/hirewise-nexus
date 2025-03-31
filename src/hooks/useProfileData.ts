@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   fetchPsychologistProfile, 
   createPsychologistProfile 
@@ -97,6 +97,28 @@ export const useProfileData = (): ProfileDataState => {
       try {
         const data = await fetchPsychologistProfile(user.id);
         console.log("Profile data retrieved:", data);
+        
+        // Ensure profile_picture_url is correctly set
+        if (data && !data.profile_picture_url) {
+          console.log("No profile picture found in data - checking for one in signup data");
+          // Try to find profile picture from signup data if it exists
+          if (data.signup_completed && data.signup_progress >= 2) {
+            console.log("User has completed profile setup, checking for profile picture");
+            // The user has completed at least the profile picture upload step
+            const { data: signupData, error: signupError } = await supabase
+              .from('psychologists')
+              .select('profile_picture_url')
+              .eq('user_id', user.id)
+              .single();
+              
+            if (!signupError && signupData?.profile_picture_url) {
+              console.log("Found profile picture from signup:", signupData.profile_picture_url);
+              data.profile_picture_url = signupData.profile_picture_url;
+            }
+          }
+        }
+        
+        console.log("Final profile picture URL:", data.profile_picture_url);
         setProfile(data);
         
         if (data.experience) {

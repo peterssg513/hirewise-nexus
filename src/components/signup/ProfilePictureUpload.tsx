@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, Loader2 } from 'lucide-react';
@@ -18,6 +18,15 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   const { toast } = useToast();
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(profilePictureUrl);
+
+  // Initialize from localStorage if available
+  useEffect(() => {
+    const savedUrl = localStorage.getItem('temp_profile_picture');
+    if (savedUrl && !profilePictureUrl) {
+      setImagePreview(savedUrl);
+      onUploadComplete(savedUrl);
+    }
+  }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,6 +66,9 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         .eq('user_id', userId);
         
       if (updateError) throw updateError;
+      
+      // Also store in localStorage as a fallback during page transitions
+      localStorage.setItem('temp_profile_picture', urlData.publicUrl);
       
       // Update parent component
       onUploadComplete(urlData.publicUrl);
