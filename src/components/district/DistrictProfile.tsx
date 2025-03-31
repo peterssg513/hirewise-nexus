@@ -21,9 +21,15 @@ import {
 
 interface DistrictProfileProps {
   district: District;
+  onProfileUpdated?: (updatedDistrict: District) => void;
+  embedded?: boolean;
 }
 
-export const DistrictProfile: React.FC<DistrictProfileProps> = ({ district }) => {
+export const DistrictProfile: React.FC<DistrictProfileProps> = ({ 
+  district, 
+  onProfileUpdated,
+  embedded = false 
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(district);
   const [isSaving, setIsSaving] = useState(false);
@@ -51,6 +57,10 @@ export const DistrictProfile: React.FC<DistrictProfileProps> = ({ district }) =>
       });
       
       setIsEditing(false);
+      
+      if (onProfileUpdated) {
+        onProfileUpdated(formData);
+      }
     } catch (error) {
       console.error('Error updating district profile:', error);
       
@@ -69,14 +79,16 @@ export const DistrictProfile: React.FC<DistrictProfileProps> = ({ district }) =>
     setIsEditing(false);
   };
 
+  const cardClasses = embedded ? "border-0 shadow-none" : "";
+
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className={cardClasses}>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>District Profile</CardTitle>
+            <CardTitle>{embedded ? "District Information" : "District Profile"}</CardTitle>
             <CardDescription>
-              Manage your district information and contact details
+              {embedded ? "View and edit your district details" : "Manage your district information and contact details"}
             </CardDescription>
           </div>
           
@@ -171,6 +183,7 @@ export const DistrictProfile: React.FC<DistrictProfileProps> = ({ district }) =>
                     value={formData.district_size || ''}
                     onChange={handleChange}
                     placeholder="Enter district size"
+                    type="number"
                   />
                 ) : (
                   <div className="flex items-center">
@@ -285,4 +298,3 @@ export const DistrictProfile: React.FC<DistrictProfileProps> = ({ district }) =>
     </div>
   );
 };
-

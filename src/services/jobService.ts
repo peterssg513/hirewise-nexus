@@ -13,6 +13,8 @@ export interface Job {
   country?: string;
   salary?: number;
   job_type?: string;
+  work_location?: string;
+  work_type?: string;
   timeframe?: string;
   skills_required?: string[];
   qualifications?: string[];
@@ -32,11 +34,12 @@ export interface CreateJobParams {
   city?: string;
   state?: string;
   country?: string;
-  salary?: number;
-  job_type?: string;
+  work_location?: string;
+  work_type?: string;
   timeframe?: string;
   skills_required?: string[];
   qualifications?: string[];
+  benefits?: string[];
   documents_required?: string[];
 }
 
@@ -46,6 +49,14 @@ export const JOB_TYPES = [
   "Contract",
   "Temporary",
   "Per diem"
+];
+
+export const JOB_STATUSES = [
+  "pending",
+  "active",
+  "offered",
+  "accepted",
+  "closed"
 ];
 
 /**
@@ -110,9 +121,15 @@ export const fetchJobById = async (jobId: string): Promise<Job | null> => {
  */
 export const createJob = async (jobData: CreateJobParams): Promise<Job> => {
   try {
+    // Set default status to 'pending' for admin approval
+    const jobWithDefaults = {
+      ...jobData,
+      status: 'pending'
+    };
+    
     const { data, error } = await supabase
       .from('jobs')
-      .insert(jobData)
+      .insert(jobWithDefaults)
       .select()
       .single();
 

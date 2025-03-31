@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Job, createJob } from '@/services/jobService';
+import { STATE_CODES, WORK_LOCATIONS, WORK_TYPES } from '@/services/stateSalaryService';
 import { useToast } from '@/hooks/use-toast';
 import { fetchSchools } from '@/services/schoolService';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,12 +30,11 @@ const jobFormSchema = z.object({
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
-  location: z.string().optional(),
-  salary: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
-  country: z.string().optional(),
-  job_type: z.string().optional(),
+  country: z.string().default("USA"),
+  work_location: z.string().optional(),
+  work_type: z.string().optional(),
   school_id: z.string().optional(),
 });
 
@@ -51,7 +51,9 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
   const [qualifications, setQualifications] = useState<{ id: string; text: string }[]>([
     { id: uuidv4(), text: '' }
   ]);
-  const [documentsRequired, setDocumentsRequired] = useState<string[]>([]);
+  const [benefits, setBenefits] = useState<{ id: string; text: string }[]>([
+    { id: uuidv4(), text: '' }
+  ]);
   const { toast } = useToast();
 
   const {
@@ -65,12 +67,11 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
     defaultValues: {
       title: '',
       description: '',
-      location: '',
-      salary: '',
       city: '',
       state: '',
       country: 'USA',
-      job_type: '',
+      work_location: '',
+      work_type: '',
       school_id: '',
     },
   });
@@ -94,15 +95,13 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
     try {
       setIsSubmitting(true);
       
-      // Convert salary from string to number
       const jobData = {
         ...data,
-        title: data.title, // Ensuring required field is passed
-        description: data.description, // Ensuring required field is passed
-        salary: data.salary ? parseFloat(data.salary) : undefined,
+        title: data.title,
+        description: data.description,
         district_id: districtId,
         qualifications: qualifications.filter(q => q.text.trim() !== '').map(q => q.text),
-        documents_required: documentsRequired.filter(doc => doc.trim() !== '')
+        benefits: benefits.filter(b => b.text.trim() !== '').map(b => b.text),
       };
       
       const newJob = await createJob(jobData);
@@ -110,7 +109,7 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
       onOpenChange(false);
       reset();
       setQualifications([{ id: uuidv4(), text: '' }]);
-      setDocumentsRequired([]);
+      setBenefits([{ id: uuidv4(), text: '' }]);
     } catch (error) {
       console.error('Failed to create job:', error);
       toast({
@@ -137,29 +136,23 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
     setQualifications(prev => prev.filter(q => q.id !== id));
   };
 
-  const addDocument = () => {
-    setDocumentsRequired(prev => [...prev, '']);
+  const addBenefit = () => {
+    setBenefits(prev => [...prev, { id: uuidv4(), text: '' }]);
   };
 
-  const updateDocument = (index: number, text: string) => {
-    setDocumentsRequired(prev => {
-      const updatedDocs = [...prev];
-      updatedDocs[index] = text;
-      return updatedDocs;
-    });
+  const updateBenefit = (id: string, text: string) => {
+    setBenefits(prev =>
+      prev.map(b => (b.id === id ? { ...b, text } : b))
+    );
   };
 
-  const removeDocument = (index: number) => {
-    setDocumentsRequired(prev => {
-      const updatedDocs = [...prev];
-      updatedDocs.splice(index, 1);
-      return updatedDocs;
-    });
+  const removeBenefit = (id: string) => {
+    setBenefits(prev => prev.filter(b => b.id !== id));
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Job</DialogTitle>
           <DialogDescription>
@@ -177,27 +170,16 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
           </div>
           
           <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Job Description</Label>
             <Textarea
               id="description"
               {...register("description")}
               placeholder="Job Description"
+              rows={4}
             />
             {errors.description && (
               <p className="text-sm text-red-500">{errors.description.message}</p>
             )}
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="location">Location</Label>
-              <Input id="location" {...register("location")} placeholder="Location" />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="salary">Salary</Label>
-              <Input id="salary" {...register("salary")} placeholder="Salary" />
-            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
@@ -208,37 +190,77 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
             
             <div className="grid gap-2">
               <Label htmlFor="state">State</Label>
-              <Input id="state" {...register("state")} placeholder="State" />
+              <Select onValueChange={(value) => setValue("state", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATE_CODES.map((state) => (
+                    <SelectItem key={state.code} value={state.code}>
+                      {state.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="country">Country</Label>
-              <Input id="country" {...register("country")} placeholder="Country" defaultValue="USA" />
+              <Input id="country" value="USA" disabled placeholder="Country" />
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="job_type">Job Type</Label>
-              <Input id="job_type" {...register("job_type")} placeholder="Job Type" />
+              <Label htmlFor="work_location">Work Location</Label>
+              <Select onValueChange={(value) => setValue("work_location", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select work location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {WORK_LOCATIONS.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
-          <div className="grid gap-2">
-            <Label htmlFor="school_id">School</Label>
-            <Select onValueChange={(value) => setValue("school_id", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a school" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No school selected</SelectItem>
-                {schools.map((school) => (
-                  <SelectItem key={school.id} value={school.id}>
-                    {school.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="work_type">Work Type</Label>
+              <Select onValueChange={(value) => setValue("work_type", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select work type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {WORK_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="school_id">School</Label>
+              <Select onValueChange={(value) => setValue("school_id", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a school" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No school selected</SelectItem>
+                  {schools.map((school) => (
+                    <SelectItem key={school.id} value={school.id}>
+                      {school.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div>
@@ -270,28 +292,30 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
           </div>
           
           <div>
-            <Label>Documents Required</Label>
-            {documentsRequired.length > 0 ? (
-              documentsRequired.map((document, index) => (
-                <div key={index} className="flex items-center space-x-2 mt-2">
-                  <Input
-                    type="text"
-                    placeholder="Document"
-                    value={document}
-                    onChange={(e) => updateDocument(index, e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button type="button" variant="ghost" size="icon" onClick={() => removeDocument(index)}>
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground mt-1">No documents required yet.</p>
-            )}
-            <Button type="button" variant="secondary" size="sm" onClick={addDocument} className="mt-2">
+            <Label>Benefits</Label>
+            {benefits.map((benefit, index) => (
+              <div key={benefit.id} className="flex items-center space-x-2 mt-2">
+                <Input
+                  type="text"
+                  placeholder="Benefit"
+                  value={benefit.text}
+                  onChange={(e) => updateBenefit(benefit.id, e.target.value)}
+                  className="flex-1"
+                />
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => removeBenefit(benefit.id)}
+                  disabled={benefits.length <= 1}
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button type="button" variant="secondary" size="sm" onClick={addBenefit} className="mt-2">
               <Plus className="h-4 w-4 mr-2" />
-              Add Document
+              Add Benefit
             </Button>
           </div>
           

@@ -2,52 +2,40 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Clock, Calendar, MapPin, Plus, School, Users, FileText } from 'lucide-react';
+import { CheckCircle, Clock, Calendar, MapPin, Plus, School, Users, FileText, Briefcase, Award } from 'lucide-react';
 import { District } from '@/types/district';
+import { useNavigate } from 'react-router-dom';
 
 interface DistrictOverviewProps {
   district: District;
   jobsCount: {
     active: number;
     pending: number;
+    offered?: number;
+    accepted?: number;
     total: number;
   };
   schoolsCount: number;
+  evaluationsCount?: number;
 }
 
 export const DistrictOverview: React.FC<DistrictOverviewProps> = ({
   district,
   jobsCount,
-  schoolsCount
+  schoolsCount,
+  evaluationsCount = 0
 }) => {
+  const navigate = useNavigate();
+
   return (
     <>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Welcome, {district.name}</CardTitle>
-            <CardDescription>
-              {district.location && (
-                <div className="flex items-center text-sm">
-                  <MapPin className="h-3.5 w-3.5 mr-1" />
-                  {district.location}
-                </div>
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Manage your district's resources, post jobs, and request evaluations from your dashboard.
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Job Postings</CardTitle>
+            <CardTitle className="text-base">Jobs</CardTitle>
             <CardDescription>
               <div className="flex items-center text-sm">
-                <Calendar className="h-3.5 w-3.5 mr-1" />
+                <Briefcase className="h-3.5 w-3.5 mr-1" />
                 Current job statistics
               </div>
             </CardDescription>
@@ -68,67 +56,85 @@ export const DistrictOverview: React.FC<DistrictOverviewProps> = ({
                 </span>
                 <span className="font-medium">{jobsCount.pending}</span>
               </div>
+              {jobsCount.offered !== undefined && (
+                <div className="flex justify-between">
+                  <span className="text-sm flex items-center">
+                    <Users className="h-3.5 w-3.5 mr-1 text-blue-500" />
+                    Offered
+                  </span>
+                  <span className="font-medium">{jobsCount.offered}</span>
+                </div>
+              )}
+              {jobsCount.accepted !== undefined && (
+                <div className="flex justify-between">
+                  <span className="text-sm flex items-center">
+                    <Award className="h-3.5 w-3.5 mr-1 text-purple-500" />
+                    Accepted
+                  </span>
+                  <span className="font-medium">{jobsCount.accepted}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-sm">Total Job Posts</span>
                 <span className="font-medium">{jobsCount.total}</span>
               </div>
             </div>
+            <Button 
+              variant="link" 
+              className="p-0 h-auto text-xs mt-2"
+              onClick={() => navigate('/district-dashboard/jobs')}
+            >
+              View all jobs
+            </Button>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Resources</CardTitle>
+            <CardTitle className="text-base">Schools</CardTitle>
             <CardDescription>
-              Quick links to manage district resources
+              <div className="flex items-center text-sm">
+                <School className="h-3.5 w-3.5 mr-1" />
+                District schools
+              </div>
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm flex items-center">
-                  <School className="h-3.5 w-3.5 mr-1 text-blue-500" />
-                  Schools
-                </span>
-                <span className="font-medium">{schoolsCount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm flex items-center">
-                  <Users className="h-3.5 w-3.5 mr-1 text-purple-500" />
-                  Students
-                </span>
-                <span className="font-medium">-</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm flex items-center">
-                  <FileText className="h-3.5 w-3.5 mr-1 text-indigo-500" />
-                  Evaluations
-                </span>
-                <span className="font-medium">-</span>
-              </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Total Schools</span>
+              <span className="text-2xl font-bold">{schoolsCount}</span>
             </div>
+            <Button 
+              variant="link" 
+              className="p-0 h-auto text-xs mt-2"
+              onClick={() => navigate('/district-dashboard/schools')}
+            >
+              Manage schools
+            </Button>
           </CardContent>
         </Card>
-      </div>
-      
-      <div className="grid gap-4 grid-cols-1">
+        
         <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Access frequently used actions</CardDescription>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Evaluations</CardTitle>
+            <CardDescription>
+              <div className="flex items-center text-sm">
+                <FileText className="h-3.5 w-3.5 mr-1" />
+                Evaluation requests
+              </div>
+            </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Button className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90">
-              <Plus className="mr-2 h-4 w-4" /> Post New Job
-            </Button>
-            <Button variant="outline">
-              <FileText className="mr-2 h-4 w-4" /> Request Evaluation
-            </Button>
-            <Button variant="outline">
-              <School className="mr-2 h-4 w-4" /> Add School
-            </Button>
-            <Button variant="outline">
-              <Users className="mr-2 h-4 w-4" /> Add Student
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Total Evaluations</span>
+              <span className="text-2xl font-bold">{evaluationsCount}</span>
+            </div>
+            <Button 
+              variant="link" 
+              className="p-0 h-auto text-xs mt-2"
+              onClick={() => navigate('/district-dashboard/evaluations')}
+            >
+              Manage evaluations
             </Button>
           </CardContent>
         </Card>

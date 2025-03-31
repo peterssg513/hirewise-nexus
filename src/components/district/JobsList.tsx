@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
-import { Job, fetchJobs, deleteJob, JOB_TYPES } from '@/services/jobService';
+import { Job, fetchJobs, deleteJob, JOB_STATUSES } from '@/services/jobService';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { MapPin, Building, Calendar, DollarSign, Edit, Plus, Trash, AlertTriangle, FileText, Eye, CheckCircle, Clock, Briefcase } from 'lucide-react';
+import { MapPin, Building, Calendar, DollarSign, Edit, Plus, Trash, AlertTriangle, FileText, Eye, CheckCircle, Clock, Briefcase, Users } from 'lucide-react';
 import { CreateJobDialog } from './CreateJobDialog';
 import { EditJobDialog } from './EditJobDialog';
 import { JobDetailsDialog } from './JobDetailsDialog';
@@ -65,7 +66,7 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
     setJobs(prev => [...prev, newJob]);
     toast({
       title: 'Job created',
-      description: `${newJob.title} has been created successfully.`,
+      description: `${newJob.title} has been created and is pending admin approval.`,
     });
   };
 
@@ -119,7 +120,9 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
       job.description.toLowerCase().includes(lowerCaseSearch) ||
       (job.location && job.location.toLowerCase().includes(lowerCaseSearch)) ||
       (job.city && job.city.toLowerCase().includes(lowerCaseSearch)) ||
-      (job.state && job.state.toLowerCase().includes(lowerCaseSearch))
+      (job.state && job.state.toLowerCase().includes(lowerCaseSearch)) ||
+      (job.work_location && job.work_location.toLowerCase().includes(lowerCaseSearch)) ||
+      (job.work_type && job.work_type.toLowerCase().includes(lowerCaseSearch))
     );
     
     setFilteredJobs(filtered);
@@ -132,7 +135,7 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
     }
     
     const filtered = jobs.filter(job => 
-      job.status === filterValue || job.job_type === filterValue
+      job.status === filterValue || job.work_type === filterValue || job.work_location === filterValue
     );
     
     setFilteredJobs(filtered);
@@ -151,7 +154,21 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
         return (
           <div className="flex items-center text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full text-xs">
             <Clock className="h-3 w-3 mr-1" />
-            Pending
+            Pending Approval
+          </div>
+        );
+      case 'offered':
+        return (
+          <div className="flex items-center text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full text-xs">
+            <Users className="h-3 w-3 mr-1" />
+            Offered
+          </div>
+        );
+      case 'accepted':
+        return (
+          <div className="flex items-center text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full text-xs">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Accepted
           </div>
         );
       default:
@@ -164,9 +181,11 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
   };
 
   const filterOptions = [
+    { value: "pending", label: "Pending Approval" },
     { value: "active", label: "Active Jobs" },
-    { value: "pending", label: "Pending Jobs" },
-    ...JOB_TYPES.map(type => ({ value: type, label: type }))
+    { value: "offered", label: "Offered Jobs" },
+    { value: "accepted", label: "Accepted Jobs" },
+    ...WORK_TYPES.map(type => ({ value: type, label: type }))
   ];
 
   return (
@@ -219,17 +238,24 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
                     {getStatusBadge(job.status)}
                   </div>
                   <CardDescription>
-                    {job.location || (job.city && job.state) ? (
+                    {job.city && job.state && (
                       <div className="flex items-center text-sm">
                         <MapPin className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                        {job.location || `${job.city}, ${job.state}`}
+                        {`${job.city}, ${job.state}`}
                       </div>
-                    ) : null}
+                    )}
 
-                    {job.timeframe && (
+                    {job.work_location && (
                       <div className="flex items-center text-sm mt-1">
-                        <Calendar className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                        {job.timeframe}
+                        <Building className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                        {job.work_location}
+                      </div>
+                    )}
+                    
+                    {job.work_type && (
+                      <div className="flex items-center text-sm mt-1">
+                        <Briefcase className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                        {job.work_type}
                       </div>
                     )}
                   </CardDescription>
@@ -246,7 +272,7 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
                     className="text-psyched-darkBlue hover:text-psyched-darkBlue hover:bg-psyched-darkBlue/10"
                     onClick={() => setSelectedJob(job)}
                   >
-                    View Details
+                    <Eye className="h-3.5 w-3.5 mr-1" /> View
                   </Button>
                   <Button 
                     variant="outline" 
