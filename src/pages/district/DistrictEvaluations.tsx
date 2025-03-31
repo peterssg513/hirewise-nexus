@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { EvaluationsList } from '@/components/district/EvaluationsList';
+import { EvaluationsPage } from '@/components/district/evaluations/EvaluationsPage';
 
 const DistrictEvaluations = () => {
   const [districtId, setDistrictId] = useState<string | null>(null);
@@ -65,7 +65,7 @@ const DistrictEvaluations = () => {
         <h1 className="text-2xl font-bold">District Evaluations</h1>
       </div>
       
-      <EvaluationsList districtId={districtId} />
+      <EvaluationsPage districtId={districtId} />
     </div>
   );
 };
