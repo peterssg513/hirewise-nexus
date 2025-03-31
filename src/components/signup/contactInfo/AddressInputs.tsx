@@ -55,7 +55,7 @@ const AddressInputs: React.FC<AddressInputsProps> = ({ form }) => {
                 </SelectTrigger>
                 <SelectContent>
                   {US_STATES.map(state => (
-                    <SelectItem key={state.code} value={state.code}>
+                    <SelectItem key={state.code} value={state.code || "unknown"}>
                       {state.code} - {state.name}
                     </SelectItem>
                   ))}

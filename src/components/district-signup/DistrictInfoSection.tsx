@@ -49,7 +49,7 @@ const DistrictInfoSection: React.FC<DistrictInfoSectionProps> = ({ form, distric
                 </FormControl>
                 <SelectContent>
                   {US_STATES.map((state) => (
-                    <SelectItem key={state.value} value={state.value}>
+                    <SelectItem key={state.value} value={state.value || "unknown"}>
                       {state.label}
                     </SelectItem>
                   ))}
