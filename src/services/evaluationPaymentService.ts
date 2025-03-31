@@ -36,6 +36,7 @@ export const GRADE_LEVELS = [
  */
 export const fetchEvaluationPaymentRate = async (stateCode: string, serviceType: string): Promise<number | null> => {
   try {
+    // We need to cast the type to access the new table
     const { data, error } = await supabase
       .from('evaluation_payment_rates')
       .select('payment_amount')
@@ -56,6 +57,7 @@ export const fetchEvaluationPaymentRate = async (stateCode: string, serviceType:
  */
 export const fetchAllEvaluationPaymentRates = async (): Promise<EvaluationPaymentRate[]> => {
   try {
+    // We need to cast the type to access the new table
     const { data, error } = await supabase
       .from('evaluation_payment_rates')
       .select('*')

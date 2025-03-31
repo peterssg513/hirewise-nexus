@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
@@ -5,7 +6,7 @@ import { fetchJobs } from '@/services/jobService';
 import { fetchSchools } from '@/services/schoolService';
 import { fetchEvaluationRequests } from '@/services/evaluationRequestService';
 import { useToast } from '@/hooks/use-toast';
-import { DistrictOverview } from '@/components/district/DistrictOverview';
+import { DistrictOverview }  from '@/components/district/DistrictOverview';
 import { DistrictProfile } from '@/components/district/DistrictProfile';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +25,14 @@ const DistrictHome = () => {
     total: 0
   });
   const [schoolsCount, setSchoolsCount] = useState(0);
-  const [evaluationsCount, setEvaluationsCount] = useState(0);
+  const [evaluationsCount, setEvaluationsCount] = useState({
+    open: 0,
+    offered: 0,
+    accepted: 0,
+    inProgress: 0,
+    closed: 0,
+    total: 0
+  });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -62,7 +70,14 @@ const DistrictHome = () => {
           
           // Load evaluations count
           const evaluations = await fetchEvaluationRequests(districtProfile.id);
-          setEvaluationsCount(evaluations.length);
+          setEvaluationsCount({
+            open: evaluations.filter(e => e.status === 'Open').length,
+            offered: evaluations.filter(e => e.status === 'Offered').length,
+            accepted: evaluations.filter(e => e.status === 'Accepted').length,
+            inProgress: evaluations.filter(e => e.status === 'Evaluation In Progress').length,
+            closed: evaluations.filter(e => e.status === 'Closed').length,
+            total: evaluations.length
+          });
         } else {
           toast({
             title: "Error loading district profile",
@@ -124,6 +139,14 @@ const DistrictHome = () => {
           >
             <Plus className="mr-2 h-4 w-4" />
             Create Job
+          </Button>
+          <Button 
+            onClick={() => navigate('/district-dashboard/evaluations')}
+            variant="outline"
+            className="flex items-center"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Evaluation
           </Button>
         </div>
       </div>

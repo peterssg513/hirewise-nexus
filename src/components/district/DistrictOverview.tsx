@@ -16,14 +16,28 @@ interface DistrictOverviewProps {
     total: number;
   };
   schoolsCount: number;
-  evaluationsCount?: number;
+  evaluationsCount?: {
+    open: number;
+    offered: number;
+    accepted: number;
+    inProgress: number;
+    closed: number;
+    total: number;
+  };
 }
 
 export const DistrictOverview: React.FC<DistrictOverviewProps> = ({
   district,
   jobsCount,
   schoolsCount,
-  evaluationsCount = 0
+  evaluationsCount = {
+    open: 0,
+    offered: 0,
+    accepted: 0,
+    inProgress: 0,
+    closed: 0,
+    total: 0
+  }
 }) => {
   const navigate = useNavigate();
 
@@ -125,9 +139,39 @@ export const DistrictOverview: React.FC<DistrictOverviewProps> = ({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Total Evaluations</span>
-              <span className="text-2xl font-bold">{evaluationsCount}</span>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm flex items-center">
+                  <CheckCircle className="h-3.5 w-3.5 mr-1 text-blue-500" />
+                  Open
+                </span>
+                <span className="font-medium">{evaluationsCount.open}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm flex items-center">
+                  <Users className="h-3.5 w-3.5 mr-1 text-purple-500" />
+                  Offered
+                </span>
+                <span className="font-medium">{evaluationsCount.offered}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm flex items-center">
+                  <Award className="h-3.5 w-3.5 mr-1 text-green-500" />
+                  Accepted
+                </span>
+                <span className="font-medium">{evaluationsCount.accepted}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm flex items-center">
+                  <Clock className="h-3.5 w-3.5 mr-1 text-amber-500" />
+                  In Progress
+                </span>
+                <span className="font-medium">{evaluationsCount.inProgress}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">Total Evaluations</span>
+                <span className="font-medium">{evaluationsCount.total}</span>
+              </div>
             </div>
             <Button 
               variant="link" 
