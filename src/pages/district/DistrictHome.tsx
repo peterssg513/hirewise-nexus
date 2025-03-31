@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
@@ -145,7 +144,10 @@ const DistrictHome = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <DistrictProfile district={district} onUpdate={handleProfileUpdate} />
+            <DistrictProfile 
+              district={district} 
+              onProfileUpdate={handleProfileUpdate} 
+            />
           </CardContent>
         </Card>
       </div>
