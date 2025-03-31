@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import UpdatePassword from './pages/UpdatePassword';
 import PsychologistSignup from './pages/PsychologistSignup';
+import DistrictSignup from './pages/DistrictSignup';
 import AdminDashboard from './pages/AdminDashboard';
 import DistrictDashboard from './pages/DistrictDashboard';
 import PsychologistDashboard from './pages/PsychologistDashboard';
@@ -33,6 +34,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="/psychologist-signup" element={<PsychologistSignup />} />
+        <Route path="/district-signup" element={<DistrictSignup />} />
 
         {/* Admin Routes */}
         <Route

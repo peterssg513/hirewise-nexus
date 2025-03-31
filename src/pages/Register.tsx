@@ -27,9 +27,13 @@ const Register = () => {
     try {
       await signUp(email, password, name, selectedRole);
       
-      // For psychologists, redirect to the signup flow instead of the dashboard
+      // For psychologists, redirect to the psychologist signup flow
       if (selectedRole === 'psychologist') {
         navigate('/psychologist-signup');
+      }
+      // For districts, redirect to the district signup flow
+      else if (selectedRole === 'district') {
+        navigate('/district-signup');
       }
     } catch (error) {
       // Error is already handled in the auth context
