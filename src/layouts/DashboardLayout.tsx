@@ -75,7 +75,7 @@ const DashboardLayout = () => {
     );
   }
 
-  // Define navigation items based on the user role - improved admin navigation
+  // Completely refactored navigation items generation
   const getNavItems = () => {
     if (userRole === 'psychologist') {
       return [
@@ -94,7 +94,7 @@ const DashboardLayout = () => {
         { label: 'Evaluations', href: '/district-dashboard/evaluations' }
       ];
     } else if (userRole === 'admin') {
-      // Improved admin navigation items with clear hash values
+      // Clear hash navigation structure for admin dashboard tabs
       return [
         { label: 'Dashboard', href: '/admin-dashboard' },
         { label: 'Districts', href: '/admin-dashboard', hash: 'districts' },
@@ -119,7 +119,10 @@ const DashboardLayout = () => {
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
-          <MainNav items={getNavItems()} />
+          <div className="flex items-center">
+            <NavLogo />
+            <MainNav items={getNavItems()} />
+          </div>
           <div className="flex items-center gap-4">
             <NotificationsMenu />
             <UserAccountNav 

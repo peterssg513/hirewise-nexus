@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
-// Import new component tabs
+// Import components
 import { DashboardStats } from '@/components/admin/dashboard/DashboardStats';
 import { DistrictsTab } from '@/components/admin/dashboard/districts/DistrictsTab';
 import { PsychologistsTab } from '@/components/admin/dashboard/psychologists/PsychologistsTab';
@@ -18,18 +18,19 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Improved function to get initial tab from hash
-  const getInitialTab = () => {
+  // More robust function to get the active tab from hash
+  const getTabFromHash = () => {
     if (location.hash) {
-      const tabFromHash = location.hash.substring(1);
-      return ['districts', 'psychologists', 'jobs', 'evaluations'].includes(tabFromHash) 
-        ? tabFromHash 
-        : 'districts';
+      const hash = location.hash.substring(1); // Remove the # character
+      return ['districts', 'psychologists', 'jobs', 'evaluations'].includes(hash) 
+        ? hash 
+        : 'districts'; // Default tab
     }
     return 'districts';
   };
   
-  const [activeTab, setActiveTab] = useState(getInitialTab());
+  // Initialize the active tab state based on the current URL hash
+  const [activeTab, setActiveTab] = useState(getTabFromHash());
   
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -230,19 +231,27 @@ const AdminDashboard = () => {
   }, []);
   
   useEffect(() => {
-    // Set window hash without using navigate to avoid infinite loops
-    window.location.hash = activeTab;
-  }, [activeTab]);
+    // Update hash in URL when active tab changes (without full page navigation)
+    const newHash = `#${activeTab}`;
+    if (location.hash !== newHash) {
+      window.history.replaceState(null, '', newHash);
+    }
+  }, [activeTab, location.hash]);
   
   useEffect(() => {
     const handleHashChange = () => {
-      const newTab = getInitialTab();
-      if (newTab !== activeTab) {
-        setActiveTab(newTab);
+      const tabFromHash = getTabFromHash();
+      if (tabFromHash !== activeTab) {
+        setActiveTab(tabFromHash);
       }
     };
     
+    // Set up listener for hash changes in the URL
     window.addEventListener('hashchange', handleHashChange);
+    
+    // Initial check in case the component mounted with a hash already in the URL
+    handleHashChange();
+    
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
@@ -250,6 +259,8 @@ const AdminDashboard = () => {
   
   const handleTabChange = (value) => {
     setActiveTab(value);
+    // Update the URL hash (will also trigger the hashchange event)
+    window.location.hash = value;
   };
   
   const approveEntity = async (type, id, name) => {
@@ -509,7 +520,7 @@ const AdminDashboard = () => {
         pendingEvaluationsCount={pendingEvaluations.length} 
       />
       
-      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="districts">Districts</TabsTrigger>
           <TabsTrigger value="psychologists">Psychologists</TabsTrigger>
