@@ -6,8 +6,8 @@ import { useToast } from '@/hooks/use-toast';
 import SignupProgress from '@/components/signup/SignupProgress';
 import Navbar from '@/components/Navbar';
 import BasicInformation from '@/components/district-signup/BasicInformation';
-import ScheduleMeeting from '@/components/district-signup/ScheduleMeeting';
 import BuildProfile from '@/components/district-signup/BuildProfile';
+import ScheduleMeeting from '@/components/district-signup/ScheduleMeeting';
 import GetPsyched from '@/components/district-signup/GetPsyched';
 import { getDistrictSignupProgress } from '@/services/districtSignupService';
 
@@ -19,11 +19,11 @@ const DistrictSignup = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
-  // Define all steps in the signup process
+  // Define all steps in the signup process - reordered to put Build Profile before Schedule Meeting
   const steps = [
     "Basic Information",
-    "Schedule Meeting",
     "Build Profile",
+    "Schedule Meeting",
     "Get Psyched!"
   ];
   
@@ -93,11 +93,11 @@ const DistrictSignup = () => {
           )}
           
           {currentStep === 2 && (
-            <ScheduleMeeting onComplete={() => handleComplete(2)} />
+            <BuildProfile onComplete={() => handleComplete(2)} />
           )}
           
           {currentStep === 3 && (
-            <BuildProfile onComplete={() => handleComplete(3)} />
+            <ScheduleMeeting onComplete={() => handleComplete(3)} />
           )}
           
           {currentStep === 4 && (

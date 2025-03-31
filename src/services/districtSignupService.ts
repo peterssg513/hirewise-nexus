@@ -78,28 +78,6 @@ export const saveBasicInfo = async (userId: string, data: BasicInfo): Promise<vo
 };
 
 /**
- * Saves meeting information
- */
-export const saveMeetingInfo = async (userId: string, meetingDate: Date): Promise<void> => {
-  const validUserId = validateUserId(userId);
-  
-  try {
-    const { error } = await supabase
-      .from('districts')
-      .update({
-        meeting_scheduled: true,
-        meeting_date: meetingDate.toISOString(),
-        signup_progress: 'meeting'
-      })
-      .eq('user_id', validUserId);
-      
-    if (error) throw error;
-  } catch (error) {
-    handleApiError(error, 'Failed to save meeting information');
-  }
-};
-
-/**
  * Saves profile information
  */
 export const saveProfileData = async (userId: string, data: ProfileData): Promise<void> => {
@@ -118,6 +96,28 @@ export const saveProfileData = async (userId: string, data: ProfileData): Promis
     if (error) throw error;
   } catch (error) {
     handleApiError(error, 'Failed to save profile information');
+  }
+};
+
+/**
+ * Saves meeting information
+ */
+export const saveMeetingInfo = async (userId: string, meetingDate: Date): Promise<void> => {
+  const validUserId = validateUserId(userId);
+  
+  try {
+    const { error } = await supabase
+      .from('districts')
+      .update({
+        meeting_scheduled: true,
+        meeting_date: meetingDate.toISOString(),
+        signup_progress: 'meeting'
+      })
+      .eq('user_id', validUserId);
+      
+    if (error) throw error;
+  } catch (error) {
+    handleApiError(error, 'Failed to save meeting information');
   }
 };
 
@@ -161,11 +161,11 @@ export const getDistrictSignupProgress = async (userId: string): Promise<number>
       return 4; // Final step
     }
     
-    // Convert enum status to step number
+    // Convert enum status to step number - adjusted for new order
     switch (data.signup_progress) {
-      case 'basic_info': return 2;
-      case 'meeting': return 3;
-      case 'profile': return 4;
+      case 'basic_info': return 2; // Move to Build Profile
+      case 'profile': return 3;    // Move to Schedule Meeting
+      case 'meeting': return 4;    // Move to Get Psyched
       default: return 1;
     }
   } catch (error) {
