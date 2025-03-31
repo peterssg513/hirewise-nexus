@@ -4,7 +4,7 @@ export type DistrictSignupStatus = 'basic_info' | 'meeting' | 'profile' | 'compl
 export interface District {
   id: string;
   name: string;
-  state?: string;
+  state: string;
   first_name?: string;
   last_name?: string;
   job_title?: string;
