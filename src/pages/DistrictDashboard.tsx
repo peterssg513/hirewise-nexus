@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import DistrictNavigation from '@/components/district/DistrictNavigation';
@@ -7,13 +7,68 @@ import { StudentsList } from '@/components/district/students/StudentsList';
 import { SchoolsList } from '@/components/district/schools/SchoolsList';
 import { JobsList } from '@/components/district/JobsList';
 import { EvaluationsList } from '@/components/district/EvaluationsList';
+import { useAuth } from '@/contexts/AuthContext';
+import { fetchDistrictProfile } from '@/services/districtProfileService';
+import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 const DistrictDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [districtId, setDistrictId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    const getDistrictProfile = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        const districtProfile = await fetchDistrictProfile(user.id);
+        
+        if (districtProfile) {
+          setDistrictId(districtProfile.id);
+        } else {
+          toast({
+            title: "Error loading district profile",
+            description: "Could not find your district profile. Please contact support.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching district profile:', error);
+        toast({
+          title: "Error loading district profile",
+          description: "Failed to load your district information. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    getDistrictProfile();
+  }, [user, toast]);
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
+  
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  
+  if (!districtId) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96">
+        <h2 className="text-xl font-bold mb-4">District Profile Not Found</h2>
+        <p className="text-muted-foreground">
+          We couldn't find your district profile. Please contact support for assistance.
+        </p>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -80,19 +135,19 @@ const DistrictDashboard = () => {
         </TabsContent>
         
         <TabsContent value="jobs">
-          <JobsList />
+          <JobsList districtId={districtId} />
         </TabsContent>
         
         <TabsContent value="schools">
-          <SchoolsList />
+          <SchoolsList districtId={districtId} />
         </TabsContent>
         
         <TabsContent value="students">
-          <StudentsList />
+          <StudentsList districtId={districtId} />
         </TabsContent>
         
         <TabsContent value="evaluations">
-          <EvaluationsList />
+          <EvaluationsList districtId={districtId} />
         </TabsContent>
       </Tabs>
     </div>
