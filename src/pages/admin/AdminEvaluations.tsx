@@ -86,9 +86,9 @@ const AdminEvaluations = () => {
       if (error) throw error;
       
       // Split evaluations by status
-      const pending = evaluationsData.filter(eval => eval.status === 'pending');
-      const active = evaluationsData.filter(eval => eval.status === 'active');
-      const rejected = evaluationsData.filter(eval => eval.status === 'rejected');
+      const pending = evaluationsData.filter(evaluation => evaluation.status === 'pending');
+      const active = evaluationsData.filter(evaluation => evaluation.status === 'active');
+      const rejected = evaluationsData.filter(evaluation => evaluation.status === 'rejected');
       
       setPendingEvaluations(pending || []);
       setActiveEvaluations(active || []);
