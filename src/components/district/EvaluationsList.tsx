@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { EvaluationsPage } from './evaluations/EvaluationsPage';
 import { fetchEvaluationRequests } from '@/services/evaluationRequestService';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface EvaluationsListProps {

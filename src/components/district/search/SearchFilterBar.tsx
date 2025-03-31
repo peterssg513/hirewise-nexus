@@ -38,8 +38,8 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-4 w-full">
-      <div className="flex-1">
+    <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+      <div className="flex-1 w-full">
         <SearchInput
           value={searchTerm}
           onChange={setSearchTerm}
@@ -52,10 +52,7 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
         <FilterSelect
           value={filterValue}
           onChange={handleFilterChange}
-          options={filterOptions.map(option => ({
-            value: option.value || "default-value",
-            label: option.label
-          }))}
+          options={filterOptions}
         />
       )}
     </div>
