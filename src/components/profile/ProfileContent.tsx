@@ -14,6 +14,7 @@ interface ProfileContentProps {
   onEditProfile: (section: 'basic' | 'experience' | 'education' | 'certification', itemId?: string) => void;
   onProfilePictureUpdate: (url: string) => Promise<void>;
   onDeleteItem: (section: 'experience' | 'education' | 'certification', itemId: string) => Promise<void>;
+  onUpdatePreferences?: (type: 'locations' | 'workTypes' | 'evaluationTypes' | 'relocation', data: any) => Promise<void>;
 }
 
 const ProfileContent: React.FC<ProfileContentProps> = ({
@@ -23,7 +24,8 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   certifications,
   onEditProfile,
   onProfilePictureUpdate,
-  onDeleteItem
+  onDeleteItem,
+  onUpdatePreferences
 }) => {
   // Process profile data for preferences
   const desiredLocations = Array.isArray(profile.desired_locations) 
@@ -53,6 +55,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
             workTypes={workTypes}
             evaluationTypes={evaluationTypes}
             openToRelocation={profile.open_to_relocation}
+            onUpdatePreferences={onUpdatePreferences}
           />
         </div>
         

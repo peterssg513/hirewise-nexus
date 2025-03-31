@@ -27,7 +27,8 @@ const Profile = () => {
       handleCloseEditModal,
       handleSaveProfile,
       handleProfilePictureUpdate,
-      handleDeleteItem
+      handleDeleteItem,
+      handleUpdatePreferences
     }
   ] = useProfileEditor({
     profile,
@@ -62,6 +63,7 @@ const Profile = () => {
         onEditProfile={handleEditProfile}
         onProfilePictureUpdate={handleProfilePictureUpdate}
         onDeleteItem={handleDeleteItem}
+        onUpdatePreferences={handleUpdatePreferences}
       />
 
       {isEditModalOpen && (

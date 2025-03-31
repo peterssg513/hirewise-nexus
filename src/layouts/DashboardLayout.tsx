@@ -81,7 +81,7 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true); // Set to true by default
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const pathname = location.pathname;
   const role = profile?.role;

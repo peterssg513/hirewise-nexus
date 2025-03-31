@@ -30,6 +30,7 @@ interface ProfileEditorActions {
   handleSaveProfile: (updatedData: any) => Promise<void>;
   handleProfilePictureUpdate: (url: string) => Promise<void>;
   handleDeleteItem: (section: 'experience' | 'education' | 'certification', itemId: string) => Promise<void>;
+  handleUpdatePreferences: (type: 'locations' | 'workTypes' | 'evaluationTypes' | 'relocation', data: any) => Promise<void>;
 }
 
 export const useProfileEditor = ({
@@ -218,6 +219,41 @@ export const useProfileEditor = ({
     }
   };
 
+  const handleUpdatePreferences = async (type: 'locations' | 'workTypes' | 'evaluationTypes' | 'relocation', data: any) => {
+    if (!user) return;
+
+    try {
+      let updatedProfile = { ...profile };
+      
+      if (type === 'locations') {
+        updatedProfile.desired_locations = data;
+      } else if (type === 'workTypes') {
+        updatedProfile.work_types = data;
+      } else if (type === 'evaluationTypes') {
+        updatedProfile.evaluation_types = data;
+      } else if (type === 'relocation') {
+        updatedProfile.open_to_relocation = data;
+      }
+      
+      await updatePsychologistProfile(user.id, updatedProfile);
+      
+      toast({
+        title: "Preferences updated",
+        description: "Your preferences have been successfully updated.",
+      });
+      
+      refreshProfile();
+    } catch (error) {
+      console.error("Error updating preferences:", error);
+      toast({
+        title: "Update failed",
+        description: "There was an error updating your preferences. Please try again.",
+        variant: "destructive",
+      });
+      throw error; // Re-throw to allow component to handle error state
+    }
+  };
+
   return [
     state,
     {
@@ -225,7 +261,8 @@ export const useProfileEditor = ({
       handleCloseEditModal,
       handleSaveProfile,
       handleProfilePictureUpdate,
-      handleDeleteItem
+      handleDeleteItem,
+      handleUpdatePreferences
     }
   ];
 };
