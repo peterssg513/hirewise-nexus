@@ -10,6 +10,93 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
+// Helper function to safely parse JSON strings
+const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any[] => {
+  if (!jsonString) return defaultValue;
+  try {
+    const parsed = JSON.parse(jsonString);
+    return Array.isArray(parsed) ? parsed : defaultValue;
+  } catch (err) {
+    console.error('Error parsing JSON data:', err);
+    return defaultValue;
+  }
+};
+
+// Helper function to format education display
+const formatEducation = (educationData: any): string => {
+  if (!educationData) return 'Not specified';
+  
+  try {
+    let education = educationData;
+    
+    // If it's a string, try to parse it as JSON
+    if (typeof educationData === 'string') {
+      education = safeJsonParse(educationData);
+    }
+    
+    // If education is an array, format it
+    if (Array.isArray(education) && education.length > 0) {
+      return education.map(edu => {
+        const institution = edu.institution || edu.schoolName || '';
+        const degree = edu.degree || '';
+        const field = edu.field || edu.major || '';
+        
+        if (institution && (degree || field)) {
+          return `${institution} - ${degree} ${field}`.trim();
+        } else if (institution) {
+          return institution;
+        } else {
+          return 'Unspecified education';
+        }
+      }).join(', ');
+    }
+    
+    return 'Not specified';
+  } catch (err) {
+    console.error('Error formatting education:', err, educationData);
+    return 'Not specified';
+  }
+};
+
+// Helper function to format experience display
+const formatExperience = (experienceData: any): React.ReactNode[] => {
+  if (!experienceData) return [<span key="no-exp">Not specified</span>];
+  
+  try {
+    let experiences = experienceData;
+    
+    // If it's a string, try to parse it as JSON
+    if (typeof experienceData === 'string') {
+      experiences = safeJsonParse(experienceData);
+    }
+    
+    // If experiences is an array, format it
+    if (Array.isArray(experiences) && experiences.length > 0) {
+      return experiences.map((exp, index) => {
+        const organization = exp.organization || exp.company || '';
+        const position = exp.position || exp.title || '';
+        const startDate = exp.startDate || '';
+        const endDate = exp.current ? 'Present' : (exp.endDate || '');
+        
+        return (
+          <div key={index} className="mb-2 last:mb-0">
+            <p className="font-medium">{organization}{position ? ` - ${position}` : ''}</p>
+            {(startDate || endDate) && (
+              <p className="text-xs">{startDate} to {endDate}</p>
+            )}
+            {exp.description && <p className="mt-1 text-sm">{exp.description}</p>}
+          </div>
+        );
+      });
+    }
+    
+    return [<span key="no-exp">Not specified</span>];
+  } catch (err) {
+    console.error('Error formatting experience:', err, experienceData);
+    return [<span key="error-exp">Not specified</span>];
+  }
+};
+
 const AdminPsychologists = () => {
   const { profile } = useAuth();
   const [pendingPsychologists, setPendingPsychologists] = useState([]);
@@ -25,40 +112,36 @@ const AdminPsychologists = () => {
       try {
         setLoading(true);
         
-        // First, get all pending psychologists
+        // First, get all pending psychologists with profile data in a single query
         const { data: pendingPsychologistsData, error } = await supabase
           .from('psychologists')
           .select(`
-            *
+            *,
+            profiles:user_id(
+              id, 
+              name, 
+              email
+            )
           `)
           .eq('status', 'pending');
           
         if (error) throw error;
         
-        // Next, get profiles for each psychologist to get name and email
-        if (pendingPsychologistsData && pendingPsychologistsData.length > 0) {
-          const userIds = pendingPsychologistsData.map(p => p.user_id);
-          const { data: profilesData } = await supabase
-            .from('profiles')
-            .select('id, name, email')
-            .in('id', userIds);
-            
-          // Merge profile data with psychologist data
-          const psychologistsWithProfiles = pendingPsychologistsData.map(psych => {
-            const profile = profilesData?.find(p => p.id === psych.user_id);
-            return {
-              ...psych,
-              profiles: {
-                name: profile?.name || 'Unnamed Psychologist',
-                email: profile?.email || 'No email provided'
-              }
-            };
-          });
-          
-          setPendingPsychologists(psychologistsWithProfiles || []);
-        } else {
-          setPendingPsychologists([]);
-        }
+        // Transform the data for easier use in the UI
+        const transformedData = pendingPsychologistsData.map(psych => {
+          return {
+            ...psych,
+            // Ensure profile data is properly structured
+            profiles: {
+              name: psych.profiles?.name || 'Unnamed Psychologist',
+              email: psych.profiles?.email || 'No email provided',
+              id: psych.profiles?.id
+            }
+          };
+        });
+        
+        console.log('Transformed psychologist data:', transformedData);
+        setPendingPsychologists(transformedData || []);
       } catch (error) {
         console.error('Error fetching pending psychologists:', error);
         toast({
@@ -239,13 +322,13 @@ const AdminPsychologists = () => {
                 <CardTitle>{psych.profiles?.name || 'Unnamed Psychologist'}</CardTitle>
                 <Badge className="bg-yellow-500">Pending</Badge>
               </div>
-              <CardDescription>{psych.profiles?.email}</CardDescription>
+              <CardDescription>{psych.profiles?.email || 'No email provided'}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium">Education</p>
-                  <p className="text-sm text-muted-foreground">{psych.education || 'Not specified'}</p>
+                  <p className="text-sm text-muted-foreground">{formatEducation(psych.education)}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium">Experience</p>
@@ -291,34 +374,21 @@ const AdminPsychologists = () => {
               
               {psych.experience && (
                 <div className="mt-4">
-                  <p className="text-sm font-medium">Experience</p>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {psych.experience && (
-                      <div className="border rounded-md p-2 bg-gray-50">
-                        {Array.isArray(JSON.parse(psych.experience || '[]')) ? 
-                          JSON.parse(psych.experience).map((exp, i) => (
-                            <div key={i} className="mb-2 pb-2 border-b last:border-b-0">
-                              <p className="font-medium">{exp.organization} - {exp.position}</p>
-                              <p className="text-xs">{exp.startDate} to {exp.current ? 'Present' : exp.endDate}</p>
-                              <p className="mt-1">{exp.description}</p>
-                            </div>
-                          )) : 
-                          <p>{psych.experience}</p>
-                        }
-                      </div>
-                    )}
+                  <p className="text-sm font-medium">Experience Details</p>
+                  <div className="text-sm text-muted-foreground mt-1 border rounded-md p-3 bg-gray-50">
+                    {formatExperience(psych.experience)}
                   </div>
                 </div>
               )}
               
-              {psych.certification_details && Object.keys(psych.certification_details).length > 0 && (
+              {psych.certification_details && Object.keys(typeof psych.certification_details === 'object' ? psych.certification_details : {}).length > 0 && (
                 <div className="mt-4">
                   <p className="text-sm font-medium">Certification Details</p>
                   <div className="border rounded-md p-2 bg-gray-50 mt-1">
-                    {Object.entries(psych.certification_details).map(([key, value], i) => (
+                    {Object.entries(typeof psych.certification_details === 'object' ? psych.certification_details : {}).map(([key, value], i) => (
                       <div key={i} className="mb-2">
                         <p className="text-xs font-medium">{key}</p>
-                        <p className="text-sm">{value.toString()}</p>
+                        <p className="text-sm">{typeof value === 'string' ? value : JSON.stringify(value)}</p>
                       </div>
                     ))}
                   </div>
