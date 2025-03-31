@@ -121,8 +121,8 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
       const jobData: Partial<Job> = {
         ...data,
         salary: data.salary ? parseFloat(data.salary) : undefined,
-        qualifications: qualifications.map(q => q.text),
-        documents_required: documentsRequired
+        qualifications: qualifications.filter(q => q.text.trim() !== '').map(q => q.text),
+        documents_required: documentsRequired.filter(doc => doc.trim() !== '')
       };
       
       const updatedJob = await updateJob(job.id, jobData);

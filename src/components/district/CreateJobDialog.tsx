@@ -97,10 +97,12 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
       // Convert salary from string to number
       const jobData = {
         ...data,
+        title: data.title, // Ensuring required field is passed
+        description: data.description, // Ensuring required field is passed
         salary: data.salary ? parseFloat(data.salary) : undefined,
         district_id: districtId,
-        qualifications: qualifications.map(q => q.text),
-        documents_required: documentsRequired
+        qualifications: qualifications.filter(q => q.text.trim() !== '').map(q => q.text),
+        documents_required: documentsRequired.filter(doc => doc.trim() !== '')
       };
       
       const newJob = await createJob(jobData);

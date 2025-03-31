@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { EvaluationRequest, fetchEvaluationRequests, SERVICE_TYPES } from '@/services/evaluationRequestService';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -84,7 +83,6 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
   };
 
   const handleEvaluationUpdated = (updatedEvaluation: EvaluationRequest) => {
-    // Fix: Renamed 'eval' to 'evaluation' to avoid reserved keyword
     setEvaluations(prev => prev.map(evaluation => 
       evaluation.id === updatedEvaluation.id ? updatedEvaluation : evaluation
     ));

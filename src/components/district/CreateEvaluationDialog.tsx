@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
@@ -71,7 +71,7 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     const loadSchools = async () => {
       try {
         const schoolsData = await fetchSchools(districtId);

@@ -1,13 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
-import { Job, fetchJobs } from '@/services/jobService';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Job, fetchJobs, deleteJob } from '@/services/jobService';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Briefcase, Edit, MapPin, Plus, Calendar, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { MapPin, Building, Calendar, DollarSign, Edit, Plus, Trash, AlertTriangle, FileText, Eye } from 'lucide-react';
 import { CreateJobDialog } from './CreateJobDialog';
 import { EditJobDialog } from './EditJobDialog';
 import { JobDetailsDialog } from './JobDetailsDialog';
+import { fetchSchoolById } from '@/services/schoolService';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from '@/components/ui/badge';
 
 interface JobsListProps {
   districtId: string;
@@ -163,6 +174,13 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
                     onClick={() => setEditingJob(job)}
                   >
                     <Edit className="h-3.5 w-3.5 mr-1" /> Edit
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => deleteJob(job.id)}
+                  >
+                    <Trash className="h-3.5 w-3.5 mr-1" /> Delete
                   </Button>
                 </CardFooter>
               </Card>
