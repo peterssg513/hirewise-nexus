@@ -25,18 +25,40 @@ const AdminPsychologists = () => {
       try {
         setLoading(true);
         
+        // First, get all pending psychologists
         const { data: pendingPsychologistsData, error } = await supabase
           .from('psychologists')
           .select(`
-            *,
-            profiles(name, email),
-            certifications:certification_details
+            *
           `)
           .eq('status', 'pending');
           
         if (error) throw error;
         
-        setPendingPsychologists(pendingPsychologistsData || []);
+        // Next, get profiles for each psychologist to get name and email
+        if (pendingPsychologistsData && pendingPsychologistsData.length > 0) {
+          const userIds = pendingPsychologistsData.map(p => p.user_id);
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, name, email')
+            .in('id', userIds);
+            
+          // Merge profile data with psychologist data
+          const psychologistsWithProfiles = pendingPsychologistsData.map(psych => {
+            const profile = profilesData?.find(p => p.id === psych.user_id);
+            return {
+              ...psych,
+              profiles: {
+                name: profile?.name || 'Unnamed Psychologist',
+                email: profile?.email || 'No email provided'
+              }
+            };
+          });
+          
+          setPendingPsychologists(psychologistsWithProfiles || []);
+        } else {
+          setPendingPsychologists([]);
+        }
       } catch (error) {
         console.error('Error fetching pending psychologists:', error);
         toast({

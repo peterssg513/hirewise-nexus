@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,19 +44,79 @@ const AdminDashboard = () => {
           .from('profiles')
           .select('*', { count: 'exact', head: true });
           
-        const { count: pendingDistrictsCount, data: pendingDistrictsData } = await supabase
+        // Fetch districts with correct name from profiles
+        const { data: pendingDistrictsData } = await supabase
           .from('districts')
-          .select('*, profiles(name, email)')
+          .select('id, name, user_id, contact_email, contact_phone, location, description, state, job_title, website, district_size')
           .eq('status', 'pending');
+        
+        // Get profiles for these districts to ensure we have names
+        if (pendingDistrictsData && pendingDistrictsData.length > 0) {
+          const userIds = pendingDistrictsData.map(d => d.user_id);
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, name, email')
+            .in('id', userIds);
+            
+          // Merge profile data with district data
+          const districtsWithProfiles = pendingDistrictsData.map(district => {
+            const profile = profilesData?.find(p => p.id === district.user_id);
+            return {
+              ...district,
+              profile_name: profile?.name || null,
+              profile_email: profile?.email || district.contact_email
+            };
+          });
           
-        const { count: pendingPsychologistsCount, data: pendingPsychologistsData } = await supabase
+          setPendingDistricts(districtsWithProfiles || []);
+        } else {
+          setPendingDistricts([]);
+        }
+          
+        // Fix psychologist fetch to join with profiles correctly
+        const { data: pendingPsychologistsData } = await supabase
           .from('psychologists')
           .select(`
-            *,
-            profiles(name, email),
-            certifications:certification_details
+            id, 
+            user_id,
+            education,
+            experience_years,
+            specialties,
+            certification_details,
+            phone_number,
+            city,
+            state,
+            work_types,
+            evaluation_types,
+            experience
           `)
           .eq('status', 'pending');
+        
+        // Get profiles for these psychologists to ensure we have names
+        let psychologistsWithProfiles = [];
+        if (pendingPsychologistsData && pendingPsychologistsData.length > 0) {
+          const userIds = pendingPsychologistsData.map(p => p.user_id);
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, name, email')
+            .in('id', userIds);
+            
+          // Merge profile data with psychologist data
+          psychologistsWithProfiles = pendingPsychologistsData.map(psych => {
+            const profile = profilesData?.find(p => p.id === psych.user_id);
+            return {
+              ...psych,
+              profiles: {
+                name: profile?.name || 'Unnamed Psychologist',
+                email: profile?.email || 'No email provided'
+              }
+            };
+          });
+          
+          setPendingPsychologists(psychologistsWithProfiles || []);
+        } else {
+          setPendingPsychologists([]);
+        }
           
         const { count: pendingJobsCount, data: pendingJobsData } = await supabase
           .from('jobs')
@@ -88,15 +149,13 @@ const AdminDashboard = () => {
         
         setStats({
           totalUsers: userCount || 0,
-          pendingDistricts: pendingDistrictsCount || 0,
-          pendingPsychologists: pendingPsychologistsCount || 0,
+          pendingDistricts: pendingDistrictsData?.length || 0,
+          pendingPsychologists: psychologistsWithProfiles?.length || 0,
           pendingJobs: pendingJobsCount || 0,
           activeJobs: activeJobsCount || 0,
           completedEvaluations: completedEvaluationsCount || 0
         });
         
-        setPendingDistricts(pendingDistrictsData || []);
-        setPendingPsychologists(pendingPsychologistsData || []);
         setPendingJobs(pendingJobsData || []);
         setPendingEvaluations(pendingEvaluationsData || []);
       } catch (error) {
