@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Job, fetchJobs, deleteJob } from '@/services/jobService';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { MapPin, Building, Calendar, DollarSign, Edit, Plus, Trash, AlertTriangle, FileText, Eye } from 'lucide-react';
+import { MapPin, Building, Calendar, DollarSign, Edit, Plus, Trash, AlertTriangle, FileText, Eye, CheckCircle, Clock, Briefcase } from 'lucide-react';
 import { CreateJobDialog } from './CreateJobDialog';
 import { EditJobDialog } from './EditJobDialog';
 import { JobDetailsDialog } from './JobDetailsDialog';
