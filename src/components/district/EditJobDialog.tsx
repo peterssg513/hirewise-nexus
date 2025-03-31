@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Job, updateJob } from '@/services/jobService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
@@ -52,7 +53,14 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
   const [documentsRequired, setDocumentsRequired] = useState<string[]>([]);
   const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
 
-  const form = useForm<JobFormValues>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    getValues,
+    formState: { errors },
+  } = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: {
       title: job.title,
@@ -105,14 +113,14 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
     loadSchools();
   }, [job.district_id, toast]);
 
-  const handleSubmit = async (data: JobFormValues) => {
+  const onSubmit = async (data: JobFormValues) => {
     try {
       setIsSubmitting(true);
       
       // Convert salary from string to number
       const jobData: Partial<Job> = {
         ...data,
-        salary: data.salary ? parseFloat(data.salary as string) : undefined,
+        salary: data.salary ? parseFloat(data.salary) : undefined,
         qualifications: qualifications.map(q => q.text),
         documents_required: documentsRequired
       };
@@ -166,7 +174,9 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
     });
   };
 
-  const { reset } = form;
+  const handleSchoolChange = (value: string) => {
+    setValue("school_id", value);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -177,12 +187,12 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
             Make changes to the job posting here. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-4 py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="title">Job Title</Label>
-            <Input id="title" placeholder="Job Title" {...form.register('title')} />
-            {form.formState.errors.title && (
-              <p className="text-sm text-red-500">{form.formState.errors.title.message}</p>
+            <Input id="title" placeholder="Job Title" {...register('title')} />
+            {errors.title && (
+              <p className="text-sm text-red-500">{errors.title.message}</p>
             )}
           </div>
           <div className="grid gap-2">
@@ -190,42 +200,45 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
             <Textarea
               id="description"
               placeholder="Job Description"
-              {...form.register('description')}
+              {...register('description')}
             />
-            {form.formState.errors.description && (
-              <p className="text-sm text-red-500">{form.formState.errors.description.message}</p>
+            {errors.description && (
+              <p className="text-sm text-red-500">{errors.description.message}</p>
             )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="location">Location</Label>
-            <Input id="location" placeholder="Location" {...form.register('location')} />
+            <Input id="location" placeholder="Location" {...register('location')} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="salary">Salary</Label>
-            <Input id="salary" placeholder="Salary" {...form.register('salary')} />
+            <Input id="salary" placeholder="Salary" {...register('salary')} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="City" {...form.register('city')} />
+              <Input id="city" placeholder="City" {...register('city')} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="state">State</Label>
-              <Input id="state" placeholder="State" {...form.register('state')} />
+              <Input id="state" placeholder="State" {...register('state')} />
             </div>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="country">Country</Label>
-            <Input id="country" placeholder="Country" {...form.register('country')} defaultValue="USA" />
+            <Input id="country" placeholder="Country" {...register('country')} defaultValue="USA" />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="job_type">Job Type</Label>
-            <Input id="job_type" placeholder="Job Type" {...form.register('job_type')} />
+            <Input id="job_type" placeholder="Job Type" {...register('job_type')} />
           </div>
           
           <div className="grid gap-2">
             <Label htmlFor="school_id">School</Label>
-            <Select onValueChange={form.setValue("school_id")} defaultValue={form.getValues("school_id")}>
+            <Select 
+              defaultValue={job.school_id || ''}
+              onValueChange={handleSchoolChange}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a school" />
               </SelectTrigger>
@@ -282,12 +295,13 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
               Add Document
             </Button>
           </div>
+        
+          <DialogFooter>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save changes'}
+            </Button>
+          </DialogFooter>
         </form>
-        <DialogFooter>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save changes'}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

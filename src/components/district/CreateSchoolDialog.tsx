@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -5,17 +6,15 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { useForm, SubmitHandler } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { CreateSchoolParams, School, createSchool } from '@/services/schoolService';
 import { useToast } from '@/hooks/use-toast';
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { v4 as uuidv4 } from 'uuid';
 
 interface CreateSchoolDialogProps {
   open: boolean;
@@ -43,7 +42,7 @@ export const CreateSchoolDialog: React.FC<CreateSchoolDialogProps> = ({ open, on
 
   const {
     register,
-    handleSubmit,
+    handleSubmit: formSubmit,
     reset,
     formState: { errors },
   } = useForm<SchoolFormValues>({
@@ -58,14 +57,15 @@ export const CreateSchoolDialog: React.FC<CreateSchoolDialogProps> = ({ open, on
     },
   })
 
-  const handleSubmit = async (data: SchoolFormValues) => {
+  const onSubmit = async (data: SchoolFormValues) => {
     try {
       setIsSubmitting(true);
       
       // Convert enrollment_size from string to number
       const schoolData: CreateSchoolParams = {
         ...data,
-        enrollment_size: data.enrollment_size ? parseInt(data.enrollment_size as string, 10) : undefined,
+        name: data.name, // Ensuring name is passed
+        enrollment_size: data.enrollment_size ? parseInt(data.enrollment_size, 10) : undefined,
         district_id: districtId
       };
       
@@ -94,7 +94,7 @@ export const CreateSchoolDialog: React.FC<CreateSchoolDialogProps> = ({ open, on
             Add a new school to the district.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(handleSubmit)}>
+        <form onSubmit={formSubmit(onSubmit)}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
