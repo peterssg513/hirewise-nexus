@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +18,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
+  // Improved function to get initial tab from hash
   const getInitialTab = () => {
     if (location.hash) {
       const tabFromHash = location.hash.substring(1);
@@ -230,7 +230,22 @@ const AdminDashboard = () => {
   }, []);
   
   useEffect(() => {
+    // Set window hash without using navigate to avoid infinite loops
     window.location.hash = activeTab;
+  }, [activeTab]);
+  
+  useEffect(() => {
+    const handleHashChange = () => {
+      const newTab = getInitialTab();
+      if (newTab !== activeTab) {
+        setActiveTab(newTab);
+      }
+    };
+    
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
   }, [activeTab]);
   
   const handleTabChange = (value) => {

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -76,7 +75,7 @@ const DashboardLayout = () => {
     );
   }
 
-  // Define navigation items based on the user role
+  // Define navigation items based on the user role - improved admin navigation
   const getNavItems = () => {
     if (userRole === 'psychologist') {
       return [
@@ -95,7 +94,7 @@ const DashboardLayout = () => {
         { label: 'Evaluations', href: '/district-dashboard/evaluations' }
       ];
     } else if (userRole === 'admin') {
-      // For admin, add hash for direct tab navigation
+      // Improved admin navigation items with clear hash values
       return [
         { label: 'Dashboard', href: '/admin-dashboard' },
         { label: 'Districts', href: '/admin-dashboard', hash: 'districts' },

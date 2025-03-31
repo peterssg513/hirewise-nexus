@@ -17,11 +17,16 @@ export interface MainNavProps {
 export const MainNav: React.FC<MainNavProps> = ({ items = [] }) => {
   const location = useLocation();
   
-  // Check if path matches or if hash matches (for admin dashboard tabs)
+  // Improved isActive function to properly handle hash navigation
   const isActive = (item: NavItem) => {
-    const pathMatch = location.pathname === item.href;
-    const hashMatch = item.hash && location.hash === `#${item.hash}`;
-    return pathMatch || hashMatch;
+    if (item.hash) {
+      // For hash-based navigation (admin dashboard tabs)
+      return location.pathname === item.href && 
+             (location.hash === `#${item.hash}` || (!location.hash && item.hash === 'districts'));
+    } else {
+      // For regular path-based navigation
+      return location.pathname === item.href;
+    }
   };
 
   return (
