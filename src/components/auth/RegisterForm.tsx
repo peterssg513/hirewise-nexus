@@ -1,176 +1,150 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
-import RoleSelector from '@/components/RoleSelector';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Loader2 } from 'lucide-react';
 
-type Role = 'psychologist' | 'district' | 'admin';
+const schema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  role: z.enum(['psychologist', 'district', 'admin'], { 
+    required_error: 'Please select a role.' 
+  }),
+});
 
-interface RegisterFormProps {
-  onSubmit: (email: string, password: string, name: string, role: Role) => Promise<void>;
-  initialRole?: Role | null;
-}
+type FormValues = z.infer<typeof schema>;
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit, initialRole }) => {
-  const [selectedRole, setSelectedRole] = useState<Role | null>(initialRole || null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+type RegisterFormProps = {
+  onSubmit: (email: string, password: string, name: string, role: 'psychologist' | 'district' | 'admin') => Promise<void>;
+  initialRole: 'psychologist' | 'district' | 'admin' | null;
+};
 
-  // Update selected role if initialRole changes
-  useEffect(() => {
-    if (initialRole) {
-      setSelectedRole(initialRole);
-    }
-  }, [initialRole]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!selectedRole) {
-      toast({
-        title: "Role required",
-        description: "Please select your role to continue",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!email || !password || !name) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (password.length < 8) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 8 characters long",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!agreeTerms) {
-      toast({
-        title: "Terms agreement required",
-        description: "You must agree to the Terms of Service and Privacy Policy",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
+const RegisterForm = ({ onSubmit, initialRole }: RegisterFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      role: initialRole || 'psychologist',
+    },
+  });
+  
+  const handleSubmit = async (values: FormValues) => {
+    setIsSubmitting(true);
     try {
-      await onSubmit(email, password, name, selectedRole);
+      await onSubmit(values.email, values.password, values.name, values.role);
     } catch (error) {
-      // Error is handled by parent component
+      console.error('Registration error:', error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="role" className="block mb-3">Select Your Role</Label>
-          <RoleSelector 
-            selectedRole={selectedRole} 
-            onChange={setSelectedRole} 
-          />
-        </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your full name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
-        <div>
-          <Label htmlFor="name" className="block mb-1">Full Name</Label>
-          <Input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="John Doe"
-            required
-            className="w-full"
-            disabled={isLoading}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="name@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
-        <div>
-          <Label htmlFor="email" className="block mb-1">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-            className="w-full"
-            disabled={isLoading}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="Create a password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
-        <div>
-          <Label htmlFor="password" className="block mb-1">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••••••"
-            required
-            className="w-full"
-            disabled={isLoading}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Must be at least 8 characters with 1 uppercase, 1 number, and 1 special character
-          </p>
-        </div>
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>I am a</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  className="flex flex-col space-y-1 mt-2"
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="psychologist" />
+                    </FormControl>
+                    <FormLabel className="font-normal cursor-pointer">
+                      Psychologist
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="district" />
+                    </FormControl>
+                    <FormLabel className="font-normal cursor-pointer">
+                      School District
+                    </FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
-        <div className="flex items-center">
-          <Checkbox 
-            id="terms"
-            checked={agreeTerms}
-            onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
-            className="mr-2"
-            disabled={isLoading}
-          />
-          <Label htmlFor="terms" className="text-sm">
-            I agree to the 
-            <Link to="/terms" className="text-psyched-yellow hover:underline mx-1">
-              Terms of Service
-            </Link>
-            and
-            <Link to="/privacy" className="text-psyched-yellow hover:underline ml-1">
-              Privacy Policy
-            </Link>
-          </Label>
-        </div>
-      </div>
-      
-      <Button 
-        type="submit" 
-        className="w-full bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-        disabled={!selectedRole || !agreeTerms || isLoading}
-      >
-        {isLoading ? (
-          <span className="flex items-center">
-            <span className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></span>
-            Creating Account...
-          </span>
-        ) : "Create Account"}
-      </Button>
-    </form>
+        <Button
+          type="submit"
+          className="w-full bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Account...
+            </span>
+          ) : (
+            'Create Account'
+          )}
+        </Button>
+      </form>
+    </Form>
   );
 };
 

@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { DistrictSignupStatus } from '@/types/district';
 
 export interface BasicInfo {
   districtName: string;
