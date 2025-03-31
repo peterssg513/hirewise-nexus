@@ -30,10 +30,18 @@ const Register = () => {
       // For psychologists, redirect to the psychologist signup flow
       if (selectedRole === 'psychologist') {
         navigate('/psychologist-signup');
+        toast({
+          title: "Account created",
+          description: "Please complete your psychologist profile",
+        });
       }
       // For districts, redirect to the district signup flow
       else if (selectedRole === 'district') {
         navigate('/district-signup');
+        toast({
+          title: "Account created",
+          description: "Please complete your district profile",
+        });
       }
     } catch (error) {
       // Error is already handled in the auth context

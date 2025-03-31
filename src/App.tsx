@@ -58,6 +58,11 @@ function App() {
           }
         >
           <Route index element={<DistrictDashboard />} />
+          {/* Add routes for district tabs */}
+          <Route path="jobs" element={<DistrictDashboard />} />
+          <Route path="schools" element={<DistrictDashboard />} />
+          <Route path="students" element={<DistrictDashboard />} />
+          <Route path="evaluations" element={<DistrictDashboard />} />
         </Route>
 
         {/* Psychologist Routes */}

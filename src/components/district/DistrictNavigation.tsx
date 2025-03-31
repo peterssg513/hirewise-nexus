@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Briefcase, School, Users, FileText } from 'lucide-react';
+import { Briefcase, School, Users, FileText, LayoutDashboard } from 'lucide-react';
 
 interface DistrictNavigationProps {
   activeTab: string;
@@ -14,8 +14,9 @@ export const DistrictNavigation: React.FC<DistrictNavigationProps> = ({
 }) => {
   return (
     <Tabs defaultValue={activeTab} value={activeTab} onValueChange={onTabChange} className="w-full">
-      <TabsList className="bg-white mb-4 w-full justify-start">
+      <TabsList className="bg-white mb-4 w-full justify-start overflow-x-auto">
         <TabsTrigger value="overview" className="text-sm flex items-center gap-1.5">
+          <LayoutDashboard className="h-4 w-4" />
           Overview
         </TabsTrigger>
         <TabsTrigger value="jobs" className="text-sm flex items-center gap-1.5">
