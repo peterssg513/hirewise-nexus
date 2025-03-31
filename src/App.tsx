@@ -24,6 +24,10 @@ import DistrictsLanding from './pages/DistrictsLanding';
 import AdminAuth from './pages/AdminAuth';
 import AdminCreate from './pages/AdminCreate';
 import AdminSetup from './pages/AdminSetup';
+import AdminDistricts from './pages/admin/AdminDistricts';
+import AdminPsychologists from './pages/admin/AdminPsychologists';
+import AdminJobs from './pages/admin/AdminJobs';
+import AdminEvaluations from './pages/admin/AdminEvaluations';
 
 // Use a non-guessable path for admin authentication
 const ADMIN_AUTH_PATH = 'admin-secret-auth-84721';
@@ -57,6 +61,10 @@ function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="create-admin" element={<AdminCreate />} />
+          <Route path="districts" element={<AdminDistricts />} />
+          <Route path="psychologists" element={<AdminPsychologists />} />
+          <Route path="jobs" element={<AdminJobs />} />
+          <Route path="evaluations" element={<AdminEvaluations />} />
         </Route>
 
         {/* District Routes */}
