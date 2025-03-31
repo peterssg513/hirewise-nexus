@@ -1,37 +1,23 @@
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building, Mail, Phone, Globe, Map } from 'lucide-react';
-import { District } from '@/types/district';
-import { updateDistrictProfile } from '@/services/districtProfileService';
 import { useToast } from '@/hooks/use-toast';
-
-// Form validation schema
-const formSchema = z.object({
-  name: z.string().min(2, { message: 'District name must be at least 2 characters' }),
-  description: z.string().optional(),
-  location: z.string().optional(),
-  state: z.string().optional(),
-  contact_email: z.string().email({ message: 'Please enter a valid email address' }).optional().or(z.literal('')),
-  contact_phone: z.string().optional(),
-  website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
-});
+import { updateDistrictProfile } from '@/services/districtProfileService';
+import { useAuth } from '@/contexts/AuthContext';
+import { District } from '@/types/district';
+import { 
+  Building, 
+  MapPin, 
+  Globe, 
+  Mail, 
+  Phone, 
+  User, 
+  School, 
+  FileEdit 
+} from 'lucide-react';
 
 interface DistrictProfileProps {
   district: District;
@@ -39,297 +25,245 @@ interface DistrictProfileProps {
 
 export const DistrictProfile: React.FC<DistrictProfileProps> = ({ district }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState(district);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: district.name || '',
-      description: district.description || '',
-      location: district.location || '',
-      state: district.state || '',
-      contact_email: district.contact_email || '',
-      contact_phone: district.contact_phone || '',
-      website: district.website || '',
-    },
-  });
+  const { user } = useAuth();
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    
     try {
-      setIsLoading(true);
-      await updateDistrictProfile(district.user_id, values);
+      setIsSaving(true);
+      await updateDistrictProfile(user.id, formData);
+      
       toast({
         title: "Profile updated",
         description: "Your district profile has been updated successfully.",
       });
+      
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating district profile:', error);
+      
       toast({
         title: "Error updating profile",
         description: "Failed to update your district profile. Please try again later.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
-    form.reset({
-      name: district.name || '',
-      description: district.description || '',
-      location: district.location || '',
-      state: district.state || '',
-      contact_email: district.contact_email || '',
-      contact_phone: district.contact_phone || '',
-      website: district.website || '',
-    });
+    setFormData(district);
     setIsEditing(false);
   };
 
-  // List of US states for dropdown
-  const states = [
-    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", 
-    "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", 
-    "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", 
-    "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", 
-    "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
-  ];
-
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">District Profile</h2>
-        {!isEditing && (
-          <Button 
-            onClick={() => setIsEditing(true)}
-            className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-          >
-            Edit Profile
-          </Button>
-        )}
-      </div>
-
-      {isEditing ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Edit District Information</CardTitle>
-            <CardDescription>Update your district details and contact information.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>District Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter district name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>City</FormLabel>
-                        <FormControl>
-                          <Input placeholder="City" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="state"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>State</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select state" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {states.map((state) => (
-                              <SelectItem key={state} value={state}>
-                                {state}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Brief description of your district" 
-                          className="resize-none" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="contact_email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Contact Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="contact@district.edu" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="contact_phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Contact Phone</FormLabel>
-                        <FormControl>
-                          <Input placeholder="(555) 123-4567" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Website</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://your-district.edu" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={handleCancel}
-                    disabled={isLoading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit"
-                    className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>{district.name}</CardTitle>
-            {district.location && district.state && (
-              <CardDescription className="flex items-center">
-                <Map className="h-4 w-4 mr-1" />
-                {district.location}, {district.state}
-              </CardDescription>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {district.description && (
-              <div>
-                <h3 className="font-medium mb-1">About</h3>
-                <p className="text-sm text-muted-foreground">{district.description}</p>
-              </div>
-            )}
-            
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>District Profile</CardTitle>
+            <CardDescription>
+              Manage your district information and contact details
+            </CardDescription>
+          </div>
+          
+          {!isEditing ? (
+            <Button onClick={() => setIsEditing(true)} variant="outline">
+              <FileEdit className="mr-2 h-4 w-4" />
+              Edit Profile
+            </Button>
+          ) : (
+            <div className="flex space-x-2">
+              <Button onClick={handleCancel} variant="outline">
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          )}
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
+          {/* Basic Information */}
+          <div>
+            <h3 className="text-lg font-medium mb-4">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-medium mb-2">Contact Information</h3>
-                <div className="space-y-2">
-                  {district.contact_email && (
-                    <div className="flex items-center text-sm">
-                      <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>{district.contact_email}</span>
-                    </div>
-                  )}
-                  
-                  {district.contact_phone && (
-                    <div className="flex items-center text-sm">
-                      <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>{district.contact_phone}</span>
-                    </div>
-                  )}
-                  
-                  {district.website && (
-                    <div className="flex items-center text-sm">
-                      <Globe className="h-4 w-4 mr-2 text-gray-500" />
-                      <a href={district.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {district.website.replace(/^https?:\/\//, '')}
-                      </a>
-                    </div>
-                  )}
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="name">District Name</label>
+                {isEditing ? (
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formData.name || ''}
+                    onChange={handleChange}
+                    placeholder="Enter district name"
+                  />
+                ) : (
+                  <div className="flex items-center">
+                    <Building className="h-4 w-4 mr-2 text-gray-500" />
+                    <span>{district.name || 'Not specified'}</span>
+                  </div>
+                )}
               </div>
               
-              <div>
-                <h3 className="font-medium mb-2">District Information</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm">
-                    <Building className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>District ID: {district.id.substring(0, 8)}...</span>
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="location">Location</label>
+                {isEditing ? (
+                  <Input
+                    id="location"
+                    name="location"
+                    value={formData.location || ''}
+                    onChange={handleChange}
+                    placeholder="Enter district location"
+                  />
+                ) : (
+                  <div className="flex items-center">
+                    <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                    <span>{district.location || 'Not specified'}</span>
                   </div>
-                  
-                  {district.district_size && (
-                    <div className="flex items-center text-sm">
-                      <Users className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>Size: {district.district_size} students</span>
-                    </div>
-                  )}
-                </div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="website">Website</label>
+                {isEditing ? (
+                  <Input
+                    id="website"
+                    name="website"
+                    value={formData.website || ''}
+                    onChange={handleChange}
+                    placeholder="Enter district website"
+                  />
+                ) : (
+                  <div className="flex items-center">
+                    <Globe className="h-4 w-4 mr-2 text-gray-500" />
+                    {district.website ? (
+                      <a href={district.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        {district.website}
+                      </a>
+                    ) : (
+                      <span>Not specified</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="size">District Size</label>
+                {isEditing ? (
+                  <Input
+                    id="size"
+                    name="size"
+                    value={formData.size || ''}
+                    onChange={handleChange}
+                    placeholder="Enter district size"
+                  />
+                ) : (
+                  <div className="flex items-center">
+                    <School className="h-4 w-4 mr-2 text-gray-500" />
+                    <span>{district.size || 'Not specified'}</span>
+                  </div>
+                )}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+          
+          {/* Contact Information */}
+          <div>
+            <h3 className="text-lg font-medium mb-4">Contact Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="contact_name">Contact Name</label>
+                {isEditing ? (
+                  <Input
+                    id="contact_name"
+                    name="contact_name"
+                    value={formData.contact_name || ''}
+                    onChange={handleChange}
+                    placeholder="Enter contact name"
+                  />
+                ) : (
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 mr-2 text-gray-500" />
+                    <span>{district.contact_name || 'Not specified'}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="contact_email">Contact Email</label>
+                {isEditing ? (
+                  <Input
+                    id="contact_email"
+                    name="contact_email"
+                    value={formData.contact_email || ''}
+                    onChange={handleChange}
+                    placeholder="Enter contact email"
+                  />
+                ) : (
+                  <div className="flex items-center">
+                    <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                    <span>{district.contact_email || 'Not specified'}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="contact_phone">Contact Phone</label>
+                {isEditing ? (
+                  <Input
+                    id="contact_phone"
+                    name="contact_phone"
+                    value={formData.contact_phone || ''}
+                    onChange={handleChange}
+                    placeholder="Enter contact phone"
+                  />
+                ) : (
+                  <div className="flex items-center">
+                    <Phone className="h-4 w-4 mr-2 text-gray-500" />
+                    <span>{district.contact_phone || 'Not specified'}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Description */}
+          <div>
+            <h3 className="text-lg font-medium mb-4">Description</h3>
+            <div className="space-y-2">
+              {isEditing ? (
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description || ''}
+                  onChange={handleChange}
+                  placeholder="Enter district description"
+                  rows={4}
+                />
+              ) : (
+                <p className="text-gray-700">
+                  {district.description || 'No description available.'}
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

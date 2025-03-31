@@ -31,6 +31,14 @@ import AdminEvaluations from './pages/admin/AdminEvaluations';
 import AdminSchools from './pages/admin/AdminSchools';
 import Approvals from './pages/admin/Approvals';
 
+// District pages
+import DistrictHome from './pages/district/DistrictHome';
+import DistrictJobs from './pages/district/DistrictJobs';
+import DistrictSchools from './pages/district/DistrictSchools';
+import DistrictStudents from './pages/district/DistrictStudents';
+import DistrictEvaluations from './pages/district/DistrictEvaluations';
+import DistrictSettings from './pages/district/DistrictSettings';
+
 // Use a non-guessable path for admin authentication
 const ADMIN_AUTH_PATH = 'admin-secret-auth-84721';
 
@@ -80,12 +88,12 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DistrictDashboard />} />
-          {/* Add routes for district tabs */}
-          <Route path="jobs" element={<DistrictDashboard />} />
-          <Route path="schools" element={<DistrictDashboard />} />
-          <Route path="students" element={<DistrictDashboard />} />
-          <Route path="evaluations" element={<DistrictDashboard />} />
+          <Route index element={<DistrictHome />} />
+          <Route path="jobs" element={<DistrictJobs />} />
+          <Route path="schools" element={<DistrictSchools />} />
+          <Route path="students" element={<DistrictStudents />} />
+          <Route path="evaluations" element={<DistrictEvaluations />} />
+          <Route path="settings" element={<DistrictSettings />} />
         </Route>
 
         {/* Psychologist Routes */}

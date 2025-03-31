@@ -1,37 +1,36 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { MainNav } from './MainNav';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const PublicNav = () => {
-  const location = useLocation();
+  const { profile } = useAuth();
   
+  // If user is logged in as district, show district navigation
+  if (profile?.role === 'district') {
+    return (
+      <MainNav
+        items={[
+          { label: 'Dashboard', href: '/district-dashboard' },
+          { label: 'Jobs', href: '/district-dashboard/jobs' },
+          { label: 'Schools', href: '/district-dashboard/schools' },
+          { label: 'Students', href: '/district-dashboard/students' },
+          { label: 'Evaluations', href: '/district-dashboard/evaluations' },
+          { label: 'Settings', href: '/district-dashboard/settings' },
+        ]}
+      />
+    );
+  }
+  
+  // Default public navigation
   return (
-    <>
-      <Link 
-        to="/for-psychologists" 
-        className={`font-medium relative ${location.pathname === '/for-psychologists' ? 'text-psyched-lightBlue' : 'text-gray-600 hover:text-gray-900'}`}
-      >
-        For School Psychologists
-        {location.pathname === '/for-psychologists' && (
-          <motion.span 
-            className="absolute -bottom-1 left-0 w-full h-0.5 bg-psyched-lightBlue rounded-full" 
-            layoutId="navbar-underline"
-          />
-        )}
-      </Link>
-      <Link 
-        to="/for-districts" 
-        className={`font-medium relative ${location.pathname === '/for-districts' ? 'text-psyched-orange' : 'text-gray-600 hover:text-gray-900'}`}
-      >
-        For Districts/Schools
-        {location.pathname === '/for-districts' && (
-          <motion.span 
-            className="absolute -bottom-1 left-0 w-full h-0.5 bg-psyched-orange rounded-full" 
-            layoutId="navbar-underline"
-          />
-        )}
-      </Link>
-    </>
+    <MainNav
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'For Districts', href: '/for-districts' },
+        { label: 'For Psychologists', href: '/for-psychologists' },
+      ]}
+    />
   );
 };
