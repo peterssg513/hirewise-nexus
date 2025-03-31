@@ -19,7 +19,7 @@ const DistrictSignup = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
-  // Define all steps in the signup process - reordered to put Build Profile before Schedule Meeting
+  // Define all steps in the signup process
   const steps = [
     "Basic Information",
     "Build Profile",
@@ -34,6 +34,7 @@ const DistrictSignup = () => {
       
       try {
         const progress = await getDistrictSignupProgress(user.id);
+        console.log("Loaded signup progress:", progress);
         setCurrentStep(progress);
       } catch (error) {
         console.error('Error loading signup progress:', error);
@@ -65,6 +66,7 @@ const DistrictSignup = () => {
   
   // Handle step completion
   const handleComplete = (step: number) => {
+    console.log(`Completing step ${step}, moving to step ${step + 1}`);
     setCurrentStep(step + 1);
   };
   

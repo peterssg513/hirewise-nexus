@@ -97,11 +97,12 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
           
         if (error) throw error;
         
+        console.log("Loaded district data:", data);
         setDistrictData(data);
         
-        // Populate form with existing data
+        // Populate form with existing data, but don't auto-fill district name
         form.reset({
-          name: data.name || '',
+          name: '', // Don't auto-fill district name
           state: data.state || '',
           district_size: data.district_size || undefined,
           website: data.website || '',
@@ -141,6 +142,17 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     try {
       console.log("Updating profile with values:", values);
       
+      // Check if the districts table has all the needed columns
+      const { data: columnCheck, error: columnError } = await supabase
+        .from('districts')
+        .select('state')
+        .limit(1);
+      
+      if (columnError) {
+        console.error("Column check error:", columnError);
+        throw new Error("The database schema might be missing required columns. Please contact support.");
+      }
+      
       // Update the district record with all the form values
       const { error } = await supabase
         .from('districts')
@@ -163,11 +175,14 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
         throw error;
       }
       
+      console.log("Profile updated successfully, calling onComplete");
+      
       toast({
         title: 'Profile updated',
         description: 'Your district profile has been updated successfully.',
       });
       
+      // Make sure we call onComplete to move to the next step
       onComplete();
     } catch (error: any) {
       console.error("Submission error:", error);
