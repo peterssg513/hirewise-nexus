@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { completeSignup } from '@/services/districtSignupService';
 import { Loader2, CheckCircle, Clock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const GetPsyched = () => {
   const { user } = useAuth();

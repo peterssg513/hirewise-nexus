@@ -94,36 +94,69 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           description: string | null
+          district_size: number | null
+          first_name: string | null
           id: string
+          job_title: string | null
+          last_name: string | null
           location: string | null
+          meeting_date: string | null
+          meeting_scheduled: boolean | null
           name: string
+          signup_completed: boolean | null
+          signup_progress:
+            | Database["public"]["Enums"]["district_signup_status"]
+            | null
           status: string | null
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           description?: string | null
+          district_size?: number | null
+          first_name?: string | null
           id?: string
+          job_title?: string | null
+          last_name?: string | null
           location?: string | null
+          meeting_date?: string | null
+          meeting_scheduled?: boolean | null
           name: string
+          signup_completed?: boolean | null
+          signup_progress?:
+            | Database["public"]["Enums"]["district_signup_status"]
+            | null
           status?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           description?: string | null
+          district_size?: number | null
+          first_name?: string | null
           id?: string
+          job_title?: string | null
+          last_name?: string | null
           location?: string | null
+          meeting_date?: string | null
+          meeting_scheduled?: boolean | null
           name?: string
+          signup_completed?: boolean | null
+          signup_progress?:
+            | Database["public"]["Enums"]["district_signup_status"]
+            | null
           status?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -448,7 +481,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      district_signup_status: "basic_info" | "meeting" | "profile" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never

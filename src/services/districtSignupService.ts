@@ -168,7 +168,7 @@ export const getDistrictSignupProgress = async (userId: string): Promise<number>
       default: return 1;
     }
   } catch (error) {
-    handleApiError(error, 'Failed to get signup progress');
+    console.error('Failed to get signup progress:', error);
     return 1; // Default to the first step
   }
 };

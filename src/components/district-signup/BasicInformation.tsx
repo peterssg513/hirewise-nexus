@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { saveBasicInfo } from '@/services/districtSignupService';
+import { saveBasicInfo, BasicInfo } from '@/services/districtSignupService';
 
 interface BasicInformationProps {
   onComplete: () => void;
@@ -79,7 +79,20 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ onComplete }) => {
     setIsSubmitting(true);
     
     try {
-      await saveBasicInfo(user.id, values);
+      // Create basicInfo object with all required fields
+      const basicInfo: BasicInfo = {
+        districtName: values.districtName,
+        state: values.state,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        jobTitle: values.jobTitle,
+        contactEmail: values.contactEmail,
+        contactPhone: values.contactPhone,
+        website: values.website || '',
+        districtSize: values.districtSize,
+      };
+      
+      await saveBasicInfo(user.id, basicInfo);
       
       toast({
         title: 'Information saved',
