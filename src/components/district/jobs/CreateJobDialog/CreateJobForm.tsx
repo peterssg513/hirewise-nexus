@@ -45,9 +45,14 @@ export type JobFormValues = z.infer<typeof jobFormSchema>;
 export interface CreateJobFormProps {
   districtId: string;
   onJobCreated: (job: Job) => void;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const CreateJobForm: React.FC<CreateJobFormProps> = ({ districtId, onJobCreated }) => {
+export const CreateJobForm: React.FC<CreateJobFormProps> = ({ 
+  districtId, 
+  onJobCreated,
+  onOpenChange 
+}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [schools, setSchools] = useState<School[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
@@ -95,7 +100,7 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({ districtId, onJobC
       
       // Prepare job data
       const jobData = {
-        title: data.title, // Make sure title is specified
+        title: data.title, // Make sure title is specified and required
         description: data.description,
         skills_required: skills,
         qualifications: qualifications,
@@ -112,6 +117,7 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({ districtId, onJobC
       
       const newJob = await createJob(jobData);
       onJobCreated(newJob);
+      onOpenChange(false);
       form.reset();
       setSkills([]);
       setQualifications([]);
@@ -150,9 +156,12 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({ districtId, onJobC
   
   const handleStateChange = async (state: string) => {
     form.setValue('state', state);
-    const salary = await fetchAverageSalaryByState(state);
-    if (salary) {
-      form.setValue('salary', salary.toString());
+    const stateName = STATES.find(s => s.code === state)?.name;
+    if (stateName) {
+      const salary = await fetchAverageSalaryByState(stateName);
+      if (salary) {
+        form.setValue('salary', salary.toString());
+      }
     }
   };
 
@@ -210,8 +219,8 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({ districtId, onJobC
                     </FormControl>
                     <SelectContent>
                       {STATES.map((state) => (
-                        <SelectItem key={state} value={state}>
-                          {state}
+                        <SelectItem key={state.code} value={state.code}>
+                          {state.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
