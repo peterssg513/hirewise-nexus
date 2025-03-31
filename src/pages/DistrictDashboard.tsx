@@ -7,22 +7,47 @@ import { JobsList } from '@/components/district/JobsList';
 import { SchoolsList } from '@/components/district/SchoolsList';
 import { StudentsList } from '@/components/district/StudentsList';
 import { EvaluationsList } from '@/components/district/EvaluationsList';
-import { TabsContent } from '@/components/ui/tabs';
+import { fetchDistrictProfile } from '@/services/districtProfileService';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DistrictDashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(true);
+  const [districtId, setDistrictId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Set loading false after a short delay to simulate data loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
+    const loadDistrictProfile = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setIsLoading(true);
+        const district = await fetchDistrictProfile(user.id);
+        
+        if (district) {
+          setDistrictId(district.id);
+        } else {
+          toast({
+            title: 'Error',
+            description: 'Could not load district profile.',
+            variant: 'destructive',
+          });
+        }
+      } catch (error) {
+        console.error('Error loading district profile:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load district data.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    return () => clearTimeout(timer);
-  }, []);
+    loadDistrictProfile();
+  }, [user, toast]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -30,8 +55,25 @@ const DistrictDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-[50vh]">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-10 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!districtId) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-sm">
+        <h2 className="text-xl font-semibold mb-2">Profile Setup Required</h2>
+        <p className="text-gray-600 mb-4">
+          Please complete your district profile setup before accessing dashboard features.
+        </p>
       </div>
     );
   }
@@ -70,20 +112,20 @@ const DistrictDashboard = () => {
           </div>
         )}
         
-        {activeTab === 'jobs' && user?.id && (
-          <JobsList districtId={user.id} />
+        {activeTab === 'jobs' && districtId && (
+          <JobsList districtId={districtId} />
         )}
         
-        {activeTab === 'schools' && user?.id && (
-          <SchoolsList districtId={user.id} />
+        {activeTab === 'schools' && districtId && (
+          <SchoolsList districtId={districtId} />
         )}
         
-        {activeTab === 'students' && user?.id && (
-          <StudentsList districtId={user.id} />
+        {activeTab === 'students' && districtId && (
+          <StudentsList districtId={districtId} />
         )}
         
-        {activeTab === 'evaluations' && user?.id && (
-          <EvaluationsList districtId={user.id} />
+        {activeTab === 'evaluations' && districtId && (
+          <EvaluationsList districtId={districtId} />
         )}
       </div>
     </div>

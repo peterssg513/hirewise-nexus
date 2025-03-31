@@ -21,6 +21,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Index from './pages/Index';
 import PsychologistsLanding from './pages/PsychologistsLanding';
 import DistrictsLanding from './pages/DistrictsLanding';
+import AdminAuth from './pages/AdminAuth';
+import AdminCreate from './pages/AdminCreate';
+
+// Use a non-guessable path for admin authentication
+const ADMIN_AUTH_PATH = 'admin-secret-auth-84721';
 
 function App() {
   return (
@@ -36,6 +41,9 @@ function App() {
         <Route path="/psychologist-signup" element={<PsychologistSignup />} />
         <Route path="/district-signup" element={<DistrictSignup />} />
 
+        {/* Admin Auth Routes - Non-guessable URL */}
+        <Route path={`/${ADMIN_AUTH_PATH}`} element={<AdminAuth />} />
+
         {/* Admin Routes */}
         <Route
           path="/admin-dashboard"
@@ -46,6 +54,7 @@ function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
+          <Route path="create-admin" element={<AdminCreate />} />
         </Route>
 
         {/* District Routes */}

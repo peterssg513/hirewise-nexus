@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthState, Profile, Role } from '@/hooks/useAuthState';
@@ -25,10 +26,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Handle redirect after authentication changes
   useEffect(() => {
     // Only attempt navigation if we have loaded the profile and we're not on an auth page
-    if (!isLoading && profile && !location.pathname.includes('/login') && !location.pathname.includes('/register') && !location.pathname.includes('/psychologist-signup')) {
+    if (!isLoading && profile && !location.pathname.includes('/login') && !location.pathname.includes('/register') && !location.pathname.includes('/psychologist-signup') && !location.pathname.includes('/admin-secret-auth')) {
       const role = profile.role;
       if (role && location.pathname === '/') {
-        navigate(`/${role}-dashboard`);
+        if (role === 'admin') {
+          navigate('/admin-dashboard');
+        } else {
+          navigate(`/${role}-dashboard`);
+        }
       }
     }
   }, [profile, isLoading, navigate, location.pathname]);
@@ -40,7 +45,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.user && profile) {
         // Redirect based on role
         if (profile.role) {
-          navigate(`/${profile.role}-dashboard`);
+          if (profile.role === 'admin') {
+            navigate('/admin-dashboard');
+          } else {
+            navigate(`/${profile.role}-dashboard`);
+          }
         }
       }
     } catch (error: any) {
@@ -61,6 +70,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           navigate('/psychologist-signup');
         } else if (role === 'district') {
           navigate('/district-signup');
+        } else if (role === 'admin') {
+          navigate('/admin-dashboard');
         }
       } else {
         // Otherwise, redirect to login page
