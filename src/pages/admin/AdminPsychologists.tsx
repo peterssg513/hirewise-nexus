@@ -195,7 +195,7 @@ const formatCertificationDetails = (certificationDetails: any): React.ReactNode[
               </p>
             )}
             {cert.status && (
-              <Badge variant={cert.status === 'verified' ? 'success' : 'secondary'} className="mt-1">
+              <Badge variant={cert.status === 'verified' ? 'secondary' : 'outline'} className="mt-1">
                 {cert.status === 'verified' ? 'Verified' : 'Pending verification'}
               </Badge>
             )}
