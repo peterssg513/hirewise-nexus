@@ -78,6 +78,7 @@ export const WORK_TYPES = [
 
 export const fetchStateSalary = async (stateCode: string): Promise<number | null> => {
   try {
+    // Using a direct query to the state_salaries table with proper type casting
     const { data, error } = await supabase
       .from('state_salaries')
       .select('salary_amount')
