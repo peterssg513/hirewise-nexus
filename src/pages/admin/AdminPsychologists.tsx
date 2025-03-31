@@ -1,15 +1,18 @@
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, Check, X } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Users, Check, X, MapPin, Phone, Mail, Award, GraduationCap, Briefcase, Calendar, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { TabsContent } from '@/components/ui/tabs';
 import { TabsWithSearch } from '@/components/admin/TabsWithSearch';
+import { Separator } from '@/components/ui/separator';
 
 // Helper function to safely parse JSON strings
 const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any[] => {
@@ -24,8 +27,8 @@ const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any
 };
 
 // Helper function to format education display
-const formatEducation = (educationData: any): string => {
-  if (!educationData) return 'Not specified';
+const formatEducation = (educationData: any): React.ReactNode[] => {
+  if (!educationData) return [<span key="no-edu">Not specified</span>];
   
   try {
     let education = educationData;
@@ -37,25 +40,29 @@ const formatEducation = (educationData: any): string => {
     
     // If education is an array, format it
     if (Array.isArray(education) && education.length > 0) {
-      return education.map(edu => {
+      return education.map((edu, index) => {
         const institution = edu.institution || edu.schoolName || '';
         const degree = edu.degree || '';
         const field = edu.field || edu.major || '';
+        const startDate = edu.startDate || '';
+        const endDate = edu.endDate || '';
         
-        if (institution && (degree || field)) {
-          return `${institution} - ${degree} ${field}`.trim();
-        } else if (institution) {
-          return institution;
-        } else {
-          return 'Unspecified education';
-        }
-      }).join(', ');
+        return (
+          <div key={index} className="mb-2 last:mb-0">
+            <p className="font-medium">{institution}</p>
+            {degree && field && <p className="text-sm">{degree} in {field}</p>}
+            {(startDate || endDate) && (
+              <p className="text-xs text-gray-500">{startDate} to {endDate}</p>
+            )}
+          </div>
+        );
+      });
     }
     
-    return 'Not specified';
+    return [<span key="no-edu">Not specified</span>];
   } catch (err) {
     console.error('Error formatting education:', err, educationData);
-    return 'Not specified';
+    return [<span key="error-edu">Not specified</span>];
   }
 };
 
@@ -83,7 +90,7 @@ const formatExperience = (experienceData: any): React.ReactNode[] => {
           <div key={index} className="mb-2 last:mb-0">
             <p className="font-medium">{organization}{position ? ` - ${position}` : ''}</p>
             {(startDate || endDate) && (
-              <p className="text-xs">{startDate} to {endDate}</p>
+              <p className="text-xs text-gray-500">{startDate} to {endDate}</p>
             )}
             {exp.description && <p className="mt-1 text-sm">{exp.description}</p>}
           </div>
@@ -95,6 +102,112 @@ const formatExperience = (experienceData: any): React.ReactNode[] => {
   } catch (err) {
     console.error('Error formatting experience:', err, experienceData);
     return [<span key="error-exp">Not specified</span>];
+  }
+};
+
+// Format certifications display
+const formatCertifications = (certificationsData: any): React.ReactNode[] => {
+  if (!certificationsData) return [<span key="no-cert">Not specified</span>];
+  
+  try {
+    let certifications = certificationsData;
+    
+    // If it's a string or array of URLs, convert to basic object format
+    if (typeof certificationsData === 'string') {
+      certifications = safeJsonParse(certificationsData);
+    } else if (Array.isArray(certificationsData) && certificationsData.length > 0 && typeof certificationsData[0] === 'string') {
+      // If it's just an array of URLs, convert to objects
+      certifications = certificationsData.map(url => ({ name: 'Certification', url }));
+    }
+    
+    // If certification_details exists and is more detailed, use that instead
+    
+    // If certifications is an array, format it
+    if (Array.isArray(certifications) && certifications.length > 0) {
+      return certifications.map((cert, index) => {
+        // Handle both simple string entries and detailed objects
+        if (typeof cert === 'string') {
+          return (
+            <div key={index} className="mb-2 last:mb-0">
+              <p className="font-medium">Certification</p>
+              <p className="text-sm text-gray-500">{cert}</p>
+            </div>
+          );
+        }
+        
+        const name = cert.name || cert.certificationName || 'Certification';
+        const issuer = cert.issuer || cert.issuingAuthority || '';
+        const date = cert.date || cert.startYear || '';
+        const expiry = cert.expirationDate || cert.endYear || '';
+        
+        return (
+          <div key={index} className="mb-2 last:mb-0">
+            <p className="font-medium">{name}</p>
+            {issuer && <p className="text-sm">Issued by {issuer}</p>}
+            {(date || expiry) && (
+              <p className="text-xs text-gray-500">
+                {date && `Valid from ${date}`} 
+                {date && expiry && ' to '} 
+                {expiry && expiry}
+              </p>
+            )}
+          </div>
+        );
+      });
+    }
+    
+    return [<span key="no-cert">Not specified</span>];
+  } catch (err) {
+    console.error('Error formatting certifications:', err, certificationsData);
+    return [<span key="error-cert">Not specified</span>];
+  }
+};
+
+// Format certification details display (more comprehensive format)
+const formatCertificationDetails = (certificationDetails: any): React.ReactNode[] => {
+  if (!certificationDetails) return [<span key="no-cert-details">Not specified</span>];
+  
+  try {
+    let details = certificationDetails;
+    
+    // If it's a string, try to parse it as JSON
+    if (typeof certificationDetails === 'string') {
+      details = safeJsonParse(certificationDetails);
+    }
+    
+    // If details is an array, format it (this is the more detailed format)
+    if (Array.isArray(details) && details.length > 0) {
+      return details.map((cert, index) => {
+        const name = cert.name || 'Certification';
+        const issuer = cert.issuer || cert.issuingAuthority || '';
+        const startYear = cert.startYear || cert.date || '';
+        const endYear = cert.endYear || cert.expirationDate || '';
+        
+        return (
+          <div key={index} className="mb-2 last:mb-0">
+            <p className="font-medium">{name}</p>
+            {issuer && <p className="text-sm">Issued by {issuer}</p>}
+            {(startYear || endYear) && (
+              <p className="text-xs text-gray-500">
+                {startYear && `From ${startYear}`} 
+                {startYear && endYear && ' to '} 
+                {endYear && endYear}
+              </p>
+            )}
+            {cert.status && (
+              <Badge variant={cert.status === 'verified' ? 'success' : 'secondary'} className="mt-1">
+                {cert.status === 'verified' ? 'Verified' : 'Pending verification'}
+              </Badge>
+            )}
+          </div>
+        );
+      });
+    }
+    
+    return [<span key="no-cert-details">Not specified</span>];
+  } catch (err) {
+    console.error('Error formatting certification details:', err, certificationDetails);
+    return [<span key="error-cert-details">Not specified</span>];
   }
 };
 
@@ -112,6 +225,10 @@ const AdminPsychologists = () => {
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [psychologistToReject, setPsychologistToReject] = useState({ id: '', name: '' });
+  
+  // Detailed view state
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
+  const [selectedPsychologist, setSelectedPsychologist] = useState(null);
   
   useEffect(() => {
     fetchPsychologists();
@@ -157,49 +274,31 @@ const AdminPsychologists = () => {
     try {
       setLoading(true);
       
-      // First, fetch all psychologists
+      // First, fetch all psychologists with extended profile data
       const { data: psychologists, error: psychError } = await supabase
         .from('psychologists')
-        .select('*');
+        .select(`
+          *,
+          profiles:user_id (
+            name, 
+            email, 
+            id
+          )
+        `);
         
       if (psychError) throw psychError;
       
-      // For each psychologist, fetch the associated profile data
-      const enhancedPsychologists = await Promise.all(psychologists.map(async (psych) => {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('name, email, id')
-          .eq('id', psych.user_id)
-          .single();
-          
-        if (profileError) {
-          console.error('Error fetching profile for psychologist:', profileError);
-          // Return psychologist with empty profile data rather than throwing
-          return {
-            ...psych,
-            profiles: {
-              name: 'Unnamed Psychologist',
-              email: 'No email provided',
-              id: psych.user_id
-            }
-          };
-        }
-        
-        return {
-          ...psych,
-          profiles: profileData
-        };
-      }));
+      console.log("Fetched psychologists data:", psychologists);
       
       // Split psychologists by status
-      const pending = enhancedPsychologists.filter(p => p.status === 'pending');
-      const approved = enhancedPsychologists.filter(p => p.status === 'approved');
-      const rejected = enhancedPsychologists.filter(p => p.status === 'rejected');
+      const pending = psychologists.filter(p => p.status === 'pending') || [];
+      const approved = psychologists.filter(p => p.status === 'approved') || [];
+      const rejected = psychologists.filter(p => p.status === 'rejected') || [];
       
-      setPendingPsychologists(pending || []);
-      setApprovedPsychologists(approved || []);
-      setRejectedPsychologists(rejected || []);
-      setFilteredPsychologists(pending || []);
+      setPendingPsychologists(pending);
+      setApprovedPsychologists(approved);
+      setRejectedPsychologists(rejected);
+      setFilteredPsychologists(pending);
     } catch (error) {
       console.error('Error fetching psychologists:', error);
       toast({
@@ -252,6 +351,9 @@ const AdminPsychologists = () => {
           timestamp: new Date().toISOString()
         }
       });
+      
+      // Refresh data
+      fetchPsychologists();
       
     } catch (error) {
       console.error(`Error approving psychologist:`, error);
@@ -316,6 +418,9 @@ const AdminPsychologists = () => {
         }
       });
       
+      // Refresh data
+      fetchPsychologists();
+      
     } catch (error) {
       console.error(`Error rejecting psychologist:`, error);
       toast({
@@ -325,6 +430,11 @@ const AdminPsychologists = () => {
     } finally {
       setRejectionDialogOpen(false);
     }
+  };
+  
+  const handleViewDetails = (psychologist) => {
+    setSelectedPsychologist(psychologist);
+    setDetailViewOpen(true);
   };
   
   const handleSearch = (searchTerm: string) => {
@@ -419,6 +529,11 @@ const AdminPsychologists = () => {
     }
   };
   
+  const getInitials = (name: string) => {
+    if (!name) return "?";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -487,6 +602,244 @@ const AdminPsychologists = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Detailed View Dialog */}
+      <AlertDialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
+        <AlertDialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          {selectedPsychologist && (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center">
+                  <div className="flex items-center">
+                    <Avatar className="h-10 w-10 mr-2">
+                      <AvatarImage 
+                        src={selectedPsychologist.profile_picture_url} 
+                        alt={selectedPsychologist.profiles?.name || 'Psychologist'} 
+                      />
+                      <AvatarFallback>
+                        {getInitials(selectedPsychologist.profiles?.name || 'PS')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{selectedPsychologist.profiles?.name || 'Unnamed Psychologist'}</span>
+                  </div>
+                  <div className="ml-auto">
+                    {getStatusBadge(selectedPsychologist.status)}
+                  </div>
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Complete profile details
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              
+              <div className="py-4 space-y-6">
+                {/* Basic Info Section */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Contact Information</h3>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>{selectedPsychologist.profiles?.email || 'No email provided'}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Phone className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>{selectedPsychologist.phone_number || 'No phone provided'}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>
+                        {selectedPsychologist.city && selectedPsychologist.state ? 
+                          `${selectedPsychologist.city}, ${selectedPsychologist.state}` : 
+                          'No location provided'}
+                      </span>
+                    </div>
+                    {selectedPsychologist.zip_code && (
+                      <div className="flex items-start">
+                        <span className="text-sm">ZIP: {selectedPsychologist.zip_code}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                {/* Specialties & Experience */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-medium mb-2 flex items-center">
+                      <Award className="h-4 w-4 mr-2 text-yellow-500" />
+                      Specialties
+                    </h3>
+                    <div className="space-y-1">
+                      {selectedPsychologist.specialties && selectedPsychologist.specialties.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {selectedPsychologist.specialties.map((specialty, i) => (
+                            <Badge key={i} variant="outline" className="font-normal">
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">No specialties specified</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-medium mb-2 flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+                      Experience
+                    </h3>
+                    <div className="space-y-1">
+                      <p className="text-sm">
+                        {selectedPsychologist.experience_years ? 
+                          `${selectedPsychologist.experience_years} years of experience` : 
+                          'Experience not specified'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                {/* Education Section */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2 flex items-center">
+                    <GraduationCap className="h-4 w-4 mr-2 text-green-500" />
+                    Education
+                  </h3>
+                  <div className="rounded-md border p-3 bg-gray-50">
+                    {formatEducation(selectedPsychologist.education)}
+                  </div>
+                </div>
+                
+                {/* Experience Section */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2 flex items-center">
+                    <Briefcase className="h-4 w-4 mr-2 text-indigo-500" />
+                    Professional Experience
+                  </h3>
+                  <div className="rounded-md border p-3 bg-gray-50">
+                    {formatExperience(selectedPsychologist.experience)}
+                  </div>
+                </div>
+                
+                {/* Certifications Section */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2 flex items-center">
+                    <Award className="h-4 w-4 mr-2 text-amber-500" />
+                    Certifications
+                  </h3>
+                  <div className="rounded-md border p-3 bg-gray-50">
+                    {selectedPsychologist.certification_details ? 
+                      formatCertificationDetails(selectedPsychologist.certification_details) : 
+                      formatCertifications(selectedPsychologist.certifications)}
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                {/* Preferences Section */}
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <h4 className="font-medium mb-1">Desired Locations</h4>
+                    {selectedPsychologist.desired_locations && selectedPsychologist.desired_locations.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {Array.isArray(selectedPsychologist.desired_locations) ? 
+                          selectedPsychologist.desired_locations.map((loc, i) => (
+                            <Badge key={i} variant="outline" className="font-normal">
+                              {loc}
+                            </Badge>
+                          )) : 
+                          <p className="text-sm text-gray-500">No locations specified</p>
+                        }
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">No locations specified</p>
+                    )}
+                    <p className="text-xs mt-1">
+                      {selectedPsychologist.open_to_relocation ? 
+                        "Open to relocation" : 
+                        "Not open to relocation"}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-1">Work Types</h4>
+                    {selectedPsychologist.work_types && selectedPsychologist.work_types.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {Array.isArray(selectedPsychologist.work_types) ? 
+                          selectedPsychologist.work_types.map((type, i) => (
+                            <Badge key={i} variant="outline" className="font-normal">
+                              {type}
+                            </Badge>
+                          )) : 
+                          <p className="text-sm text-gray-500">No work types specified</p>
+                        }
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">No work types specified</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-1">Evaluation Types</h4>
+                    {selectedPsychologist.evaluation_types && selectedPsychologist.evaluation_types.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {Array.isArray(selectedPsychologist.evaluation_types) ? 
+                          selectedPsychologist.evaluation_types.map((type, i) => (
+                            <Badge key={i} variant="outline" className="font-normal">
+                              {type}
+                            </Badge>
+                          )) : 
+                          <p className="text-sm text-gray-500">No evaluation types specified</p>
+                        }
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">No evaluation types specified</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <AlertDialogFooter>
+                {selectedPsychologist.status === 'pending' && (
+                  <div className="flex w-full justify-between">
+                    <Button 
+                      variant="outline" 
+                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => {
+                        setDetailViewOpen(false);
+                        openRejectionDialog(selectedPsychologist.id, selectedPsychologist.profiles?.name || 'Unnamed Psychologist');
+                      }}
+                    >
+                      <X className="mr-1 h-4 w-4" />
+                      Reject
+                    </Button>
+                    <div className="flex gap-2">
+                      <AlertDialogCancel>Close</AlertDialogCancel>
+                      <Button 
+                        onClick={() => {
+                          setDetailViewOpen(false);
+                          approvePsychologist(
+                            selectedPsychologist.id, 
+                            selectedPsychologist.profiles?.name || 'Unnamed Psychologist'
+                          );
+                        }}
+                      >
+                        <Check className="mr-1 h-4 w-4" />
+                        Approve Psychologist
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {selectedPsychologist.status !== 'pending' && (
+                  <AlertDialogCancel>Close</AlertDialogCancel>
+                )}
+              </AlertDialogFooter>
+            </>
+          )}
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
   
@@ -530,22 +883,27 @@ const AdminPsychologists = () => {
         {filteredData.map(psych => (
           <Card key={psych.id} className="mb-4">
             <CardHeader className="pb-2">
-              <div className="flex justify-between items-center">
-                <CardTitle>{psych.profiles?.name || 'Unnamed Psychologist'}</CardTitle>
+              <div className="flex justify-between items-start">
+                <div className="flex items-center">
+                  <Avatar className="h-10 w-10 mr-3">
+                    <AvatarImage 
+                      src={psych.profile_picture_url} 
+                      alt={psych.profiles?.name || 'Psychologist'} 
+                    />
+                    <AvatarFallback>
+                      {getInitials(psych.profiles?.name || 'PS')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <CardTitle>{psych.profiles?.name || 'Unnamed Psychologist'}</CardTitle>
+                    <CardDescription>{psych.profiles?.email || 'No email provided'}</CardDescription>
+                  </div>
+                </div>
                 {getStatusBadge(psych.status)}
               </div>
-              <CardDescription>{psych.profiles?.email || 'No email provided'}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium">Education</p>
-                  <p className="text-sm text-muted-foreground">{formatEducation(psych.education)}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Experience</p>
-                  <p className="text-sm text-muted-foreground">{psych.experience_years ? `${psych.experience_years} years` : 'Not specified'}</p>
-                </div>
                 <div>
                   <p className="text-sm font-medium">Location</p>
                   <p className="text-sm text-muted-foreground">
@@ -559,46 +917,62 @@ const AdminPsychologists = () => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Specialties</p>
-                  <p className="text-sm text-muted-foreground">
-                    {psych.specialties?.length ? psych.specialties.join(', ') : 'None specified'}
-                  </p>
+                  <p className="text-sm font-medium">Experience</p>
+                  <p className="text-sm text-muted-foreground">{psych.experience_years ? `${psych.experience_years} years` : 'Not specified'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Certifications</p>
-                  <p className="text-sm text-muted-foreground">
-                    {psych.certifications?.length ? psych.certifications.join(', ') : 'None specified'}
+                  <p className="text-sm font-medium">Education</p>
+                  <p className="text-sm text-muted-foreground truncate max-w-xs">
+                    {typeof psych.education === 'string' && psych.education.length > 50 
+                      ? psych.education.substring(0, 50) + '...' 
+                      : Array.isArray(psych.education) && psych.education.length > 0 
+                        ? `${psych.education.length} education entries` 
+                        : 'Not specified'}
                   </p>
                 </div>
               </div>
               
-              {psych.experience && (
+              {psych.specialties && psych.specialties.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-sm font-medium">Experience Details</p>
-                  <div className="text-sm text-muted-foreground mt-1 border rounded-md p-3 bg-gray-50">
-                    {formatExperience(psych.experience)}
+                  <p className="text-sm font-medium mb-1">Specialties</p>
+                  <div className="flex flex-wrap gap-1">
+                    {psych.specialties.map((specialty, index) => (
+                      <Badge key={index} variant="outline" className="bg-blue-50">
+                        {specialty}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               )}
               
-              {psych.status === 'pending' && (
-                <div className="mt-6 flex justify-end space-x-2">
-                  <Button 
-                    variant="outline" 
-                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    onClick={() => openRejectionDialog(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
-                  >
-                    <X className="mr-1 h-4 w-4" />
-                    Reject
-                  </Button>
-                  <Button 
-                    onClick={() => approvePsychologist(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
-                  >
-                    <Check className="mr-1 h-4 w-4" />
-                    Approve Psychologist
-                  </Button>
-                </div>
-              )}
+              <div className="mt-6 flex justify-between items-center">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                  onClick={() => handleViewDetails(psych)}
+                >
+                  <FileText className="mr-1 h-4 w-4" />
+                  View Full Profile
+                </Button>
+                
+                {psych.status === 'pending' && (
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => openRejectionDialog(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
+                    >
+                      <X className="mr-1 h-4 w-4" />
+                      Reject
+                    </Button>
+                    <Button onClick={() => approvePsychologist(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}>
+                      <Check className="mr-1 h-4 w-4" />
+                      Approve
+                    </Button>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
