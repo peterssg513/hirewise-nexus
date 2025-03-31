@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { saveProfileData } from '@/services/districtSignupService';
 import { supabase } from '@/integrations/supabase/client';
 import { District } from '@/types/district';
 import { US_STATES } from '@/lib/constants';
@@ -140,12 +139,14 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
     setIsSubmitting(true);
     
     try {
+      console.log("Updating profile with values:", values);
+      
       // Update the district record with all the form values
       const { error } = await supabase
         .from('districts')
         .update({
           name: values.name,
-          state: values.state,
+          state: values.state, // Make sure this matches the state field in District type
           district_size: values.district_size,
           website: values.website,
           first_name: values.first_name,
@@ -157,7 +158,10 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
         })
         .eq('user_id', user.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase update error:", error);
+        throw error;
+      }
       
       toast({
         title: 'Profile updated',
@@ -166,6 +170,7 @@ const BuildProfile: React.FC<BuildProfileProps> = ({ onComplete }) => {
       
       onComplete();
     } catch (error: any) {
+      console.error("Submission error:", error);
       toast({
         title: 'Error updating profile',
         description: error.message || 'An unexpected error occurred',
