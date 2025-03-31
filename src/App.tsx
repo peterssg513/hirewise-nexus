@@ -28,6 +28,7 @@ import AdminDistricts from './pages/admin/AdminDistricts';
 import AdminPsychologists from './pages/admin/AdminPsychologists';
 import AdminJobs from './pages/admin/AdminJobs';
 import AdminEvaluations from './pages/admin/AdminEvaluations';
+import Unauthorized from './pages/Unauthorized';
 
 // Use a non-guessable path for admin authentication
 const ADMIN_AUTH_PATH = 'admin-secret-auth-84721';
@@ -45,6 +46,7 @@ function App() {
         <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="/psychologist-signup" element={<PsychologistSignup />} />
         <Route path="/district-signup" element={<DistrictSignup />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Admin Auth Routes - Non-guessable URL */}
         <Route path={`/${ADMIN_AUTH_PATH}`} element={<AdminAuth />} />
