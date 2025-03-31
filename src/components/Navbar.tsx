@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +15,12 @@ const Navbar = () => {
   const location = useLocation();
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Skip rendering if we're on an admin dashboard page
+  const isDashboardRoute = location.pathname.includes('dashboard');
+  if (isDashboardRoute) {
+    return null;
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,8 +40,6 @@ const Navbar = () => {
             .select('profile_picture_url')
             .eq('user_id', user.id)
             .single();
-          
-          console.log("Navbar - Profile picture data:", data);
             
           if (!error && data?.profile_picture_url) {
             setProfilePicUrl(data.profile_picture_url);

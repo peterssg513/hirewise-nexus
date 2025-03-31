@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Users } from 'lucide-react';
 import { usePendingPsychologists } from '@/hooks/usePendingPsychologists';
 import { useApprovedPsychologists } from '@/hooks/useApprovedPsychologists';
 import PsychologistCard from '@/components/admin/psychologists/PsychologistCard';
@@ -45,9 +44,8 @@ const AdminPsychologists = () => {
     setRejectionDialogOpen(false);
   };
   
-  const handleTabChange = (value) => {
-    setActiveTab(value);
-  };
+  console.log('Pending psychologists:', pendingPsychologists);
+  console.log('Approved psychologists:', approvedPsychologists);
   
   return (
     <div className="space-y-6">
@@ -58,7 +56,7 @@ const AdminPsychologists = () => {
         </div>
       </div>
       
-      <Tabs defaultValue="pending" value={activeTab} onValueChange={handleTabChange}>
+      <Tabs defaultValue="pending" value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="pending">Pending</TabsTrigger>
           <TabsTrigger value="approved">Approved</TabsTrigger>

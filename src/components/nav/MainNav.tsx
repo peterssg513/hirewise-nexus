@@ -17,27 +17,20 @@ export interface MainNavProps {
 export const MainNav: React.FC<MainNavProps> = ({ items = [] }) => {
   const location = useLocation();
   
-  // Completely rewritten isActive function to properly handle all navigation scenarios
+  // Simplified isActive function that handles hash navigation properly
   const isActive = (item: NavItem) => {
-    // For items with hash (admin dashboard tabs)
     if (item.hash) {
       // Check if we're on the correct base path
       if (location.pathname === item.href) {
-        // If there's a hash in the URL, check if it matches the item's hash
-        if (location.hash) {
-          return location.hash === `#${item.hash}`;
-        } 
-        // If no hash in URL but this is the default tab (districts)
-        else {
-          return item.hash === 'districts';
-        }
+        // Check if hash matches or if no hash but this is the default tab
+        return location.hash 
+          ? location.hash === `#${item.hash}`
+          : item.hash === 'districts'; // Default tab
       }
       return false;
     } 
     // For regular path navigation (no hash)
-    else {
-      return location.pathname === item.href;
-    }
+    return location.pathname === item.href;
   };
 
   return (

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,7 +76,7 @@ const DashboardLayout = () => {
     );
   }
 
-  // Completely refactored navigation items generation
+  // Updated navigation items generation for clearer structure
   const getNavItems = () => {
     if (userRole === 'psychologist') {
       return [
@@ -94,7 +95,7 @@ const DashboardLayout = () => {
         { label: 'Evaluations', href: '/district-dashboard/evaluations' }
       ];
     } else if (userRole === 'admin') {
-      // Clear hash navigation structure for admin dashboard tabs
+      // Updated structure for admin dashboard tabs
       return [
         { label: 'Dashboard', href: '/admin-dashboard' },
         { label: 'Districts', href: '/admin-dashboard', hash: 'districts' },

@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { User, Users } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApprovedDistricts } from '@/hooks/useApprovedDistricts';
 import { usePendingDistricts } from '@/hooks/usePendingDistricts';
 import ApprovedDistrictCard from '@/components/admin/districts/ApprovedDistrictCard';
 import EmptyState from '@/components/admin/psychologists/EmptyState';
 import LoadingState from '@/components/admin/psychologists/LoadingState';
+import { RejectionDialog } from '@/components/admin/dashboard/RejectionDialog';
 
 const AdminDistricts = () => {
   const [activeTab, setActiveTab] = useState('pending');
@@ -43,9 +43,8 @@ const AdminDistricts = () => {
     setRejectionDialogOpen(false);
   };
   
-  const handleTabChange = (value) => {
-    setActiveTab(value);
-  };
+  console.log('Pending districts:', pendingDistricts);
+  console.log('Approved districts:', approvedDistricts);
   
   return (
     <div className="space-y-6">
@@ -56,7 +55,7 @@ const AdminDistricts = () => {
         </div>
       </div>
       
-      <Tabs defaultValue="pending" value={activeTab} onValueChange={handleTabChange}>
+      <Tabs defaultValue="pending" value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="pending">Pending</TabsTrigger>
           <TabsTrigger value="approved">Approved</TabsTrigger>
@@ -74,10 +73,26 @@ const AdminDistricts = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-medium">{district.name || 'Unnamed District'}</h3>
-                      <p className="text-sm text-muted-foreground">{district.profile?.email || 'No email'}</p>
+                      <p className="text-sm text-muted-foreground">{district.profile?.email || district.contact_email || 'No email'}</p>
                       <p className="text-sm text-muted-foreground mt-2">
                         Status: <span className="text-amber-600 font-medium">Pending</span>
                       </p>
+                      
+                      {/* Display more district details */}
+                      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                        <div>
+                          <span className="font-medium">Location:</span> {district.location || 'Not specified'}
+                        </div>
+                        <div>
+                          <span className="font-medium">Contact:</span> {district.contact_phone || 'No phone provided'}
+                        </div>
+                        <div>
+                          <span className="font-medium">State:</span> {district.state || 'Not specified'}
+                        </div>
+                        <div>
+                          <span className="font-medium">Size:</span> {district.district_size ? `${district.district_size} students` : 'Not specified'}
+                        </div>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <button 
@@ -118,36 +133,16 @@ const AdminDistricts = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Rejection Dialog - we'll reuse the dialog from psychologists with slight modifications */}
-      {rejectionDialogOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">Reject District: {districtToReject.name}</h3>
-            <p className="text-sm text-gray-600 mb-4">Please provide a reason for rejection:</p>
-            <textarea
-              className="w-full border rounded-md p-2 mb-4 h-24"
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Rejection reason..."
-            />
-            <div className="flex justify-end gap-2">
-              <button 
-                onClick={() => setRejectionDialogOpen(false)}
-                className="px-4 py-2 border rounded-md"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleReject}
-                className="px-4 py-2 bg-red-500 text-white rounded-md"
-                disabled={!rejectionReason.trim()}
-              >
-                Confirm Rejection
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Rejection Dialog */}
+      <RejectionDialog 
+        open={rejectionDialogOpen}
+        onOpenChange={setRejectionDialogOpen}
+        entityType="district"
+        entityName={districtToReject.name}
+        rejectionReason={rejectionReason}
+        onReasonChange={setRejectionReason}
+        onConfirm={handleReject}
+      />
     </div>
   );
 };
