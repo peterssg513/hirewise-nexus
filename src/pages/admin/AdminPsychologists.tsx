@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +8,8 @@ import { Users, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { TabsContent } from '@/components/ui/tabs';
+import { TabsWithSearch } from '@/components/admin/TabsWithSearch';
 
 // Helper function to safely parse JSON strings
 const safeJsonParse = (jsonString: string | null, defaultValue: any[] = []): any[] => {
@@ -100,7 +101,12 @@ const formatExperience = (experienceData: any): React.ReactNode[] => {
 const AdminPsychologists = () => {
   const { profile } = useAuth();
   const [pendingPsychologists, setPendingPsychologists] = useState([]);
+  const [approvedPsychologists, setApprovedPsychologists] = useState([]);
+  const [rejectedPsychologists, setRejectedPsychologists] = useState([]);
+  const [filteredPsychologists, setFilteredPsychologists] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('pending');
+  const [filterBy, setFilterBy] = useState('');
   
   // Rejection dialog state
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
@@ -108,59 +114,7 @@ const AdminPsychologists = () => {
   const [psychologistToReject, setPsychologistToReject] = useState({ id: '', name: '' });
   
   useEffect(() => {
-    const fetchPendingPsychologists = async () => {
-      try {
-        setLoading(true);
-        
-        // First, fetch all pending psychologists
-        const { data: psychologists, error: psychError } = await supabase
-          .from('psychologists')
-          .select('*')
-          .eq('status', 'pending');
-          
-        if (psychError) throw psychError;
-        
-        // For each psychologist, fetch the associated profile data
-        const enhancedPsychologists = await Promise.all(psychologists.map(async (psych) => {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('name, email, id')
-            .eq('id', psych.user_id)
-            .single();
-            
-          if (profileError) {
-            console.error('Error fetching profile for psychologist:', profileError);
-            // Return psychologist with empty profile data rather than throwing
-            return {
-              ...psych,
-              profiles: {
-                name: 'Unnamed Psychologist',
-                email: 'No email provided',
-                id: psych.user_id
-              }
-            };
-          }
-          
-          return {
-            ...psych,
-            profiles: profileData
-          };
-        }));
-        
-        console.log('Transformed psychologist data:', enhancedPsychologists);
-        setPendingPsychologists(enhancedPsychologists || []);
-      } catch (error) {
-        console.error('Error fetching pending psychologists:', error);
-        toast({
-          title: 'Failed to load psychologists',
-          variant: 'destructive'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchPendingPsychologists();
+    fetchPsychologists();
     
     // Set up realtime subscription for updates
     const channel = supabase
@@ -169,11 +123,10 @@ const AdminPsychologists = () => {
         { 
           event: '*', 
           schema: 'public', 
-          table: 'psychologists',
-          filter: 'status=eq.pending'
+          table: 'psychologists'
         }, 
         () => {
-          fetchPendingPsychologists();
+          fetchPsychologists();
         }
       )
       .subscribe();
@@ -182,6 +135,81 @@ const AdminPsychologists = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+  
+  useEffect(() => {
+    // Set filtered psychologists based on active tab
+    switch (activeTab) {
+      case 'pending':
+        setFilteredPsychologists(pendingPsychologists);
+        break;
+      case 'approved':
+        setFilteredPsychologists(approvedPsychologists);
+        break;
+      case 'rejected':
+        setFilteredPsychologists(rejectedPsychologists);
+        break;
+      default:
+        setFilteredPsychologists(pendingPsychologists);
+    }
+  }, [activeTab, pendingPsychologists, approvedPsychologists, rejectedPsychologists]);
+  
+  const fetchPsychologists = async () => {
+    try {
+      setLoading(true);
+      
+      // First, fetch all psychologists
+      const { data: psychologists, error: psychError } = await supabase
+        .from('psychologists')
+        .select('*');
+        
+      if (psychError) throw psychError;
+      
+      // For each psychologist, fetch the associated profile data
+      const enhancedPsychologists = await Promise.all(psychologists.map(async (psych) => {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('name, email, id')
+          .eq('id', psych.user_id)
+          .single();
+          
+        if (profileError) {
+          console.error('Error fetching profile for psychologist:', profileError);
+          // Return psychologist with empty profile data rather than throwing
+          return {
+            ...psych,
+            profiles: {
+              name: 'Unnamed Psychologist',
+              email: 'No email provided',
+              id: psych.user_id
+            }
+          };
+        }
+        
+        return {
+          ...psych,
+          profiles: profileData
+        };
+      }));
+      
+      // Split psychologists by status
+      const pending = enhancedPsychologists.filter(p => p.status === 'pending');
+      const approved = enhancedPsychologists.filter(p => p.status === 'approved');
+      const rejected = enhancedPsychologists.filter(p => p.status === 'rejected');
+      
+      setPendingPsychologists(pending || []);
+      setApprovedPsychologists(approved || []);
+      setRejectedPsychologists(rejected || []);
+      setFilteredPsychologists(pending || []);
+    } catch (error) {
+      console.error('Error fetching psychologists:', error);
+      toast({
+        title: 'Failed to load psychologists',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const approvePsychologist = async (id, name) => {
     try {
@@ -299,6 +327,98 @@ const AdminPsychologists = () => {
     }
   };
   
+  const handleSearch = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      // Reset to the current tab's full data
+      switch (activeTab) {
+        case 'pending':
+          setFilteredPsychologists(pendingPsychologists);
+          break;
+        case 'approved':
+          setFilteredPsychologists(approvedPsychologists);
+          break;
+        case 'rejected':
+          setFilteredPsychologists(rejectedPsychologists);
+          break;
+      }
+      return;
+    }
+    
+    // Get the current tab's data
+    let dataToFilter;
+    switch (activeTab) {
+      case 'pending':
+        dataToFilter = pendingPsychologists;
+        break;
+      case 'approved':
+        dataToFilter = approvedPsychologists;
+        break;
+      case 'rejected':
+        dataToFilter = rejectedPsychologists;
+        break;
+      default:
+        dataToFilter = pendingPsychologists;
+    }
+    
+    // Filter based on search term
+    const search = searchTerm.toLowerCase();
+    const filtered = dataToFilter.filter(psych => 
+      psych.profiles?.name?.toLowerCase().includes(search) ||
+      psych.profiles?.email?.toLowerCase().includes(search) ||
+      psych.city?.toLowerCase().includes(search) ||
+      psych.state?.toLowerCase().includes(search) ||
+      (psych.specialties && psych.specialties.some(s => s.toLowerCase().includes(search)))
+    );
+    
+    setFilteredPsychologists(filtered);
+  };
+  
+  const handleFilterChange = (value: string) => {
+    setFilterBy(value);
+    
+    // Get the current tab's data
+    let dataToFilter;
+    switch (activeTab) {
+      case 'pending':
+        dataToFilter = pendingPsychologists;
+        break;
+      case 'approved':
+        dataToFilter = approvedPsychologists;
+        break;
+      case 'rejected':
+        dataToFilter = rejectedPsychologists;
+        break;
+      default:
+        dataToFilter = pendingPsychologists;
+    }
+    
+    // Apply filter based on selected value
+    if (value === 'all' || !value) {
+      setFilteredPsychologists(dataToFilter);
+    } else if (value === 'state') {
+      // Group by state, we can improve this later
+      const filtered = dataToFilter.filter(p => p.state);
+      setFilteredPsychologists(filtered);
+    } else if (value === 'specialties') {
+      // Has specialties defined
+      const filtered = dataToFilter.filter(p => p.specialties && p.specialties.length > 0);
+      setFilteredPsychologists(filtered);
+    }
+  };
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case 'approved':
+        return <Badge className="bg-green-500">Approved</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-500">Rejected</Badge>;
+      default:
+        return <Badge>Unknown</Badge>;
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -308,26 +428,111 @@ const AdminPsychologists = () => {
         </div>
       </div>
       
-      {loading ? (
+      <TabsWithSearch
+        tabs={[
+          { value: 'pending', label: 'Pending' },
+          { value: 'approved', label: 'Approved' },
+          { value: 'rejected', label: 'Rejected' }
+        ]}
+        filterOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'state', label: 'By State' },
+          { value: 'specialties', label: 'By Specialties' }
+        ]}
+        onSearch={handleSearch}
+        onTabChange={setActiveTab}
+        onFilterChange={handleFilterChange}
+        searchPlaceholder="Search psychologists..."
+        filterPlaceholder="Filter by"
+      >
+        <TabsContent value="pending" className="space-y-4">
+          {renderPsychologistsList(pendingPsychologists, filteredPsychologists, loading, activeTab)}
+        </TabsContent>
+        
+        <TabsContent value="approved" className="space-y-4">
+          {renderPsychologistsList(approvedPsychologists, filteredPsychologists, loading, activeTab)}
+        </TabsContent>
+        
+        <TabsContent value="rejected" className="space-y-4">
+          {renderPsychologistsList(rejectedPsychologists, filteredPsychologists, loading, activeTab)}
+        </TabsContent>
+      </TabsWithSearch>
+      
+      {/* Rejection Dialog */}
+      <AlertDialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Psychologist</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please provide a reason for rejecting "{psychologistToReject.name}". This will be shared with the user.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Textarea 
+              placeholder="Enter rejection reason..." 
+              value={rejectionReason} 
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleReject}
+              disabled={!rejectionReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Reject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+  
+  function renderPsychologistsList(sourceData, filteredData, isLoading, tab) {
+    if (isLoading) {
+      return (
         <div className="flex justify-center p-8">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-psyched-darkBlue"></div>
         </div>
-      ) : pendingPsychologists.length === 0 ? (
+      );
+    }
+    
+    if (sourceData.length === 0) {
+      return (
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-center text-muted-foreground p-8">
               <Users className="mr-2 h-5 w-5" />
-              <span>No pending psychologist approvals</span>
+              <span>No {tab} psychologist approvals</span>
             </div>
           </CardContent>
         </Card>
-      ) : (
-        pendingPsychologists.map(psych => (
+      );
+    }
+    
+    if (filteredData.length === 0 && tab === activeTab) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center text-muted-foreground p-8">
+              <Users className="mr-2 h-5 w-5" />
+              <span>No matching psychologists found</span>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    return (
+      <>
+        {filteredData.map(psych => (
           <Card key={psych.id} className="mb-4">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle>{psych.profiles?.name || 'Unnamed Psychologist'}</CardTitle>
-                <Badge className="bg-yellow-500">Pending</Badge>
+                {getStatusBadge(psych.status)}
               </div>
               <CardDescription>{psych.profiles?.email || 'No email provided'}</CardDescription>
             </CardHeader>
@@ -365,18 +570,6 @@ const AdminPsychologists = () => {
                     {psych.certifications?.length ? psych.certifications.join(', ') : 'None specified'}
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Work Types</p>
-                  <p className="text-sm text-muted-foreground">
-                    {psych.work_types?.length ? psych.work_types.join(', ') : 'None specified'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Evaluation Types</p>
-                  <p className="text-sm text-muted-foreground">
-                    {psych.evaluation_types?.length ? psych.evaluation_types.join(', ') : 'None specified'}
-                  </p>
-                </div>
               </div>
               
               {psych.experience && (
@@ -388,72 +581,30 @@ const AdminPsychologists = () => {
                 </div>
               )}
               
-              {psych.certification_details && Object.keys(typeof psych.certification_details === 'object' ? psych.certification_details : {}).length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium">Certification Details</p>
-                  <div className="border rounded-md p-2 bg-gray-50 mt-1">
-                    {Object.entries(typeof psych.certification_details === 'object' ? psych.certification_details : {}).map(([key, value], i) => (
-                      <div key={i} className="mb-2">
-                        <p className="text-xs font-medium">{key}</p>
-                        <p className="text-sm">{typeof value === 'string' ? value : JSON.stringify(value)}</p>
-                      </div>
-                    ))}
-                  </div>
+              {psych.status === 'pending' && (
+                <div className="mt-6 flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    onClick={() => openRejectionDialog(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
+                  >
+                    <X className="mr-1 h-4 w-4" />
+                    Reject
+                  </Button>
+                  <Button 
+                    onClick={() => approvePsychologist(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
+                  >
+                    <Check className="mr-1 h-4 w-4" />
+                    Approve Psychologist
+                  </Button>
                 </div>
               )}
-              
-              <div className="mt-6 flex justify-end space-x-2">
-                <Button 
-                  variant="outline" 
-                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                  onClick={() => openRejectionDialog(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
-                >
-                  <X className="mr-1 h-4 w-4" />
-                  Reject
-                </Button>
-                <Button 
-                  onClick={() => approvePsychologist(psych.id, psych.profiles?.name || 'Unnamed Psychologist')}
-                >
-                  <Check className="mr-1 h-4 w-4" />
-                  Approve Psychologist
-                </Button>
-              </div>
             </CardContent>
           </Card>
-        ))
-      )}
-      
-      {/* Rejection Dialog */}
-      <AlertDialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reject Psychologist</AlertDialogTitle>
-            <AlertDialogDescription>
-              Please provide a reason for rejecting "{psychologistToReject.name}". This will be shared with the user.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4">
-            <Textarea 
-              placeholder="Enter rejection reason..." 
-              value={rejectionReason} 
-              onChange={(e) => setRejectionReason(e.target.value)}
-              className="min-h-[100px]"
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleReject}
-              disabled={!rejectionReason.trim()}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Reject
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
+        ))}
+      </>
+    );
+  }
 };
 
 export default AdminPsychologists;

@@ -8,6 +8,8 @@ import { ShieldCheck, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { TabsContent } from '@/components/ui/tabs';
+import { TabsWithSearch } from '@/components/admin/TabsWithSearch';
 
 interface DistrictWithProfile {
   id: string;
@@ -29,7 +31,12 @@ interface DistrictWithProfile {
 const AdminDistricts = () => {
   const { profile } = useAuth();
   const [pendingDistricts, setPendingDistricts] = useState<DistrictWithProfile[]>([]);
+  const [approvedDistricts, setApprovedDistricts] = useState<DistrictWithProfile[]>([]);
+  const [rejectedDistricts, setRejectedDistricts] = useState<DistrictWithProfile[]>([]);
+  const [filteredDistricts, setFilteredDistricts] = useState<DistrictWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('pending');
+  const [filterBy, setFilterBy] = useState('');
   
   // Rejection dialog state
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
@@ -37,67 +44,7 @@ const AdminDistricts = () => {
   const [districtToReject, setDistrictToReject] = useState({ id: '', name: '' });
   
   useEffect(() => {
-    const fetchPendingDistricts = async () => {
-      try {
-        setLoading(true);
-        console.log('Fetching pending districts...');
-        
-        // Fetch all pending districts
-        const { data: pendingDistrictsData, error } = await supabase
-          .from('districts')
-          .select('*')
-          .eq('status', 'pending');
-          
-        if (error) {
-          console.error('Error fetching pending districts:', error);
-          throw error;
-        }
-        
-        console.log('Pending districts data:', pendingDistrictsData);
-        
-        // If there are pending districts, fetch the associated user profiles
-        const districtsWithProfiles: DistrictWithProfile[] = [];
-        
-        if (pendingDistrictsData && pendingDistrictsData.length > 0) {
-          for (const district of pendingDistrictsData) {
-            try {
-              // Fetch profile data for the district's user_id
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('name, email')
-                .eq('id', district.user_id)
-                .single();
-                
-              districtsWithProfiles.push({
-                ...district,
-                profile_name: profileData?.name || null,
-                profile_email: profileData?.email || district.contact_email
-              });
-            } catch (profileError) {
-              console.error(`Error fetching profile for user_id ${district.user_id}:`, profileError);
-              districtsWithProfiles.push({
-                ...district,
-                profile_name: null,
-                profile_email: district.contact_email
-              });
-            }
-          }
-        }
-        
-        console.log('Districts with profiles:', districtsWithProfiles);
-        setPendingDistricts(districtsWithProfiles);
-      } catch (error) {
-        console.error('Error fetching pending districts:', error);
-        toast({
-          title: 'Failed to load districts',
-          variant: 'destructive'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchPendingDistricts();
+    fetchDistricts();
     
     // Set up realtime subscription for updates
     const channel = supabase
@@ -110,7 +57,7 @@ const AdminDistricts = () => {
         }, 
         (payload) => {
           console.log('Districts table changed:', payload);
-          fetchPendingDistricts();
+          fetchDistricts();
         }
       )
       .subscribe();
@@ -119,6 +66,87 @@ const AdminDistricts = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+  
+  useEffect(() => {
+    // Set filtered districts based on active tab
+    switch (activeTab) {
+      case 'pending':
+        setFilteredDistricts(pendingDistricts);
+        break;
+      case 'approved':
+        setFilteredDistricts(approvedDistricts);
+        break;
+      case 'rejected':
+        setFilteredDistricts(rejectedDistricts);
+        break;
+      default:
+        setFilteredDistricts(pendingDistricts);
+    }
+  }, [activeTab, pendingDistricts, approvedDistricts, rejectedDistricts]);
+  
+  const fetchDistricts = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching districts...');
+      
+      // Fetch all districts
+      const { data: districtsData, error } = await supabase
+        .from('districts')
+        .select('*');
+        
+      if (error) {
+        console.error('Error fetching districts:', error);
+        throw error;
+      }
+      
+      // If there are districts, fetch the associated user profiles
+      const districtsWithProfiles: DistrictWithProfile[] = [];
+      
+      if (districtsData && districtsData.length > 0) {
+        for (const district of districtsData) {
+          try {
+            // Fetch profile data for the district's user_id
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('name, email')
+              .eq('id', district.user_id)
+              .single();
+              
+            districtsWithProfiles.push({
+              ...district,
+              profile_name: profileData?.name || null,
+              profile_email: profileData?.email || district.contact_email
+            });
+          } catch (profileError) {
+            console.error(`Error fetching profile for user_id ${district.user_id}:`, profileError);
+            districtsWithProfiles.push({
+              ...district,
+              profile_name: null,
+              profile_email: district.contact_email
+            });
+          }
+        }
+      }
+      
+      // Split districts by status
+      const pending = districtsWithProfiles.filter(d => d.status === 'pending');
+      const approved = districtsWithProfiles.filter(d => d.status === 'approved');
+      const rejected = districtsWithProfiles.filter(d => d.status === 'rejected');
+      
+      setPendingDistricts(pending);
+      setApprovedDistricts(approved);
+      setRejectedDistricts(rejected);
+      setFilteredDistricts(pending);
+    } catch (error) {
+      console.error('Error fetching districts:', error);
+      toast({
+        title: 'Failed to load districts',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const approveDistrict = async (id: string, name: string) => {
     try {
@@ -236,6 +264,99 @@ const AdminDistricts = () => {
     }
   };
   
+  const handleSearch = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      // Reset to the current tab's full data
+      switch (activeTab) {
+        case 'pending':
+          setFilteredDistricts(pendingDistricts);
+          break;
+        case 'approved':
+          setFilteredDistricts(approvedDistricts);
+          break;
+        case 'rejected':
+          setFilteredDistricts(rejectedDistricts);
+          break;
+      }
+      return;
+    }
+    
+    // Get the current tab's data
+    let dataToFilter;
+    switch (activeTab) {
+      case 'pending':
+        dataToFilter = pendingDistricts;
+        break;
+      case 'approved':
+        dataToFilter = approvedDistricts;
+        break;
+      case 'rejected':
+        dataToFilter = rejectedDistricts;
+        break;
+      default:
+        dataToFilter = pendingDistricts;
+    }
+    
+    // Filter based on search term
+    const search = searchTerm.toLowerCase();
+    const filtered = dataToFilter.filter(district => 
+      district.name?.toLowerCase().includes(search) ||
+      district.profile_name?.toLowerCase().includes(search) ||
+      district.profile_email?.toLowerCase().includes(search) ||
+      district.location?.toLowerCase().includes(search) ||
+      district.state?.toLowerCase().includes(search) ||
+      district.job_title?.toLowerCase().includes(search)
+    );
+    
+    setFilteredDistricts(filtered);
+  };
+  
+  const handleFilterChange = (value: string) => {
+    setFilterBy(value);
+    
+    // Get the current tab's data
+    let dataToFilter;
+    switch (activeTab) {
+      case 'pending':
+        dataToFilter = pendingDistricts;
+        break;
+      case 'approved':
+        dataToFilter = approvedDistricts;
+        break;
+      case 'rejected':
+        dataToFilter = rejectedDistricts;
+        break;
+      default:
+        dataToFilter = pendingDistricts;
+    }
+    
+    // Apply filter based on selected value
+    if (value === 'all' || !value) {
+      setFilteredDistricts(dataToFilter);
+    } else if (value === 'state') {
+      // Group by state
+      const filtered = dataToFilter.filter(d => d.state);
+      setFilteredDistricts(filtered);
+    } else if (value === 'size') {
+      // Has district size defined
+      const filtered = dataToFilter.filter(d => d.district_size && d.district_size > 0);
+      setFilteredDistricts(filtered);
+    }
+  };
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case 'approved':
+        return <Badge className="bg-green-500">Approved</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-500">Rejected</Badge>;
+      default:
+        return <Badge>Unknown</Badge>;
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -245,26 +366,111 @@ const AdminDistricts = () => {
         </div>
       </div>
       
-      {loading ? (
+      <TabsWithSearch
+        tabs={[
+          { value: 'pending', label: 'Pending' },
+          { value: 'approved', label: 'Approved' },
+          { value: 'rejected', label: 'Rejected' }
+        ]}
+        filterOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'state', label: 'By State' },
+          { value: 'size', label: 'By Size' }
+        ]}
+        onSearch={handleSearch}
+        onTabChange={setActiveTab}
+        onFilterChange={handleFilterChange}
+        searchPlaceholder="Search districts..."
+        filterPlaceholder="Filter by"
+      >
+        <TabsContent value="pending" className="space-y-4">
+          {renderDistrictsList(pendingDistricts, filteredDistricts, loading, activeTab)}
+        </TabsContent>
+        
+        <TabsContent value="approved" className="space-y-4">
+          {renderDistrictsList(approvedDistricts, filteredDistricts, loading, activeTab)}
+        </TabsContent>
+        
+        <TabsContent value="rejected" className="space-y-4">
+          {renderDistrictsList(rejectedDistricts, filteredDistricts, loading, activeTab)}
+        </TabsContent>
+      </TabsWithSearch>
+      
+      {/* Rejection Dialog */}
+      <AlertDialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject District</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please provide a reason for rejecting "{districtToReject.name}". This will be shared with the user.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Textarea 
+              placeholder="Enter rejection reason..." 
+              value={rejectionReason} 
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleReject}
+              disabled={!rejectionReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Reject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+  
+  function renderDistrictsList(sourceData, filteredData, isLoading, tab) {
+    if (isLoading) {
+      return (
         <div className="flex justify-center p-8">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-psyched-darkBlue"></div>
         </div>
-      ) : pendingDistricts.length === 0 ? (
+      );
+    }
+    
+    if (sourceData.length === 0) {
+      return (
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-center text-muted-foreground p-8">
               <ShieldCheck className="mr-2 h-5 w-5" />
-              <span>No pending district approvals</span>
+              <span>No {tab} district approvals</span>
             </div>
           </CardContent>
         </Card>
-      ) : (
-        pendingDistricts.map(district => (
+      );
+    }
+    
+    if (filteredData.length === 0 && tab === activeTab) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center text-muted-foreground p-8">
+              <ShieldCheck className="mr-2 h-5 w-5" />
+              <span>No matching districts found</span>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    return (
+      <>
+        {filteredData.map(district => (
           <Card key={district.id} className="mb-4">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle>{district.name}</CardTitle>
-                <Badge className="bg-yellow-500">Pending</Badge>
+                {getStatusBadge(district.status)}
               </div>
               <CardDescription>{district.profile_email || district.contact_email}</CardDescription>
             </CardHeader>
@@ -299,58 +505,31 @@ const AdminDistricts = () => {
                 <p className="text-sm font-medium">Description</p>
                 <p className="text-sm text-muted-foreground">{district.description || 'No description provided'}</p>
               </div>
-              <div className="mt-6 flex justify-end space-x-2">
-                <Button 
-                  variant="outline" 
-                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                  onClick={() => openRejectionDialog(district.id, district.name)}
-                >
-                  <X className="mr-1 h-4 w-4" />
-                  Reject
-                </Button>
-                <Button 
-                  onClick={() => approveDistrict(district.id, district.name)}
-                >
-                  <Check className="mr-1 h-4 w-4" />
-                  Approve District
-                </Button>
-              </div>
+              
+              {district.status === 'pending' && (
+                <div className="mt-6 flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    onClick={() => openRejectionDialog(district.id, district.name)}
+                  >
+                    <X className="mr-1 h-4 w-4" />
+                    Reject
+                  </Button>
+                  <Button 
+                    onClick={() => approveDistrict(district.id, district.name)}
+                  >
+                    <Check className="mr-1 h-4 w-4" />
+                    Approve District
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
-        ))
-      )}
-      
-      {/* Rejection Dialog */}
-      <AlertDialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reject District</AlertDialogTitle>
-            <AlertDialogDescription>
-              Please provide a reason for rejecting "{districtToReject.name}". This will be shared with the user.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4">
-            <Textarea 
-              placeholder="Enter rejection reason..." 
-              value={rejectionReason} 
-              onChange={(e) => setRejectionReason(e.target.value)}
-              className="min-h-[100px]"
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleReject}
-              disabled={!rejectionReason.trim()}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Reject
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
+        ))}
+      </>
+    );
+  }
 };
 
 export default AdminDistricts;

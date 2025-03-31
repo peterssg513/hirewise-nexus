@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,11 +8,18 @@ import { FileText, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { TabsContent } from '@/components/ui/tabs';
+import { TabsWithSearch } from '@/components/admin/TabsWithSearch';
 
 const AdminEvaluations = () => {
   const { profile } = useAuth();
   const [pendingEvaluations, setPendingEvaluations] = useState([]);
+  const [activeEvaluations, setActiveEvaluations] = useState([]);
+  const [rejectedEvaluations, setRejectedEvaluations] = useState([]);
+  const [filteredEvaluations, setFilteredEvaluations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('pending');
+  const [filterBy, setFilterBy] = useState('');
   
   // Rejection dialog state
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
@@ -21,39 +27,7 @@ const AdminEvaluations = () => {
   const [evaluationToReject, setEvaluationToReject] = useState({ id: '', name: '' });
   
   useEffect(() => {
-    const fetchPendingEvaluations = async () => {
-      try {
-        setLoading(true);
-        
-        const { data: pendingEvaluationsData, error } = await supabase
-          .from('evaluation_requests')
-          .select(`
-            id, 
-            legal_name,
-            service_type, 
-            created_at,
-            status,
-            districts:district_id(name),
-            schools:school_id(name)
-          `)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false });
-          
-        if (error) throw error;
-        
-        setPendingEvaluations(pendingEvaluationsData || []);
-      } catch (error) {
-        console.error('Error fetching pending evaluations:', error);
-        toast({
-          title: 'Failed to load evaluations',
-          variant: 'destructive'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchPendingEvaluations();
+    fetchEvaluations();
     
     // Set up realtime subscription for updates
     const channel = supabase
@@ -63,10 +37,9 @@ const AdminEvaluations = () => {
           event: '*', 
           schema: 'public', 
           table: 'evaluation_requests',
-          filter: 'status=eq.pending'
         }, 
         () => {
-          fetchPendingEvaluations();
+          fetchEvaluations();
         }
       )
       .subscribe();
@@ -75,6 +48,62 @@ const AdminEvaluations = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+  
+  useEffect(() => {
+    // Set filtered evaluations based on active tab
+    switch (activeTab) {
+      case 'pending':
+        setFilteredEvaluations(pendingEvaluations);
+        break;
+      case 'active':
+        setFilteredEvaluations(activeEvaluations);
+        break;
+      case 'rejected':
+        setFilteredEvaluations(rejectedEvaluations);
+        break;
+      default:
+        setFilteredEvaluations(pendingEvaluations);
+    }
+  }, [activeTab, pendingEvaluations, activeEvaluations, rejectedEvaluations]);
+  
+  const fetchEvaluations = async () => {
+    try {
+      setLoading(true);
+      
+      const { data: evaluationsData, error } = await supabase
+        .from('evaluation_requests')
+        .select(`
+          id, 
+          legal_name,
+          service_type, 
+          created_at,
+          status,
+          districts:district_id(name),
+          schools:school_id(name)
+        `)
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      
+      // Split evaluations by status
+      const pending = evaluationsData.filter(eval => eval.status === 'pending');
+      const active = evaluationsData.filter(eval => eval.status === 'active');
+      const rejected = evaluationsData.filter(eval => eval.status === 'rejected');
+      
+      setPendingEvaluations(pending || []);
+      setActiveEvaluations(active || []);
+      setRejectedEvaluations(rejected || []);
+      setFilteredEvaluations(pending || []);
+    } catch (error) {
+      console.error('Error fetching evaluations:', error);
+      toast({
+        title: 'Failed to load evaluations',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const approveEvaluation = async (id, name) => {
     try {
@@ -196,6 +225,97 @@ const AdminEvaluations = () => {
     }
   };
   
+  const handleSearch = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      // Reset to the current tab's full data
+      switch (activeTab) {
+        case 'pending':
+          setFilteredEvaluations(pendingEvaluations);
+          break;
+        case 'active':
+          setFilteredEvaluations(activeEvaluations);
+          break;
+        case 'rejected':
+          setFilteredEvaluations(rejectedEvaluations);
+          break;
+      }
+      return;
+    }
+    
+    // Get the current tab's data
+    let dataToFilter;
+    switch (activeTab) {
+      case 'pending':
+        dataToFilter = pendingEvaluations;
+        break;
+      case 'active':
+        dataToFilter = activeEvaluations;
+        break;
+      case 'rejected':
+        dataToFilter = rejectedEvaluations;
+        break;
+      default:
+        dataToFilter = pendingEvaluations;
+    }
+    
+    // Filter based on search term
+    const search = searchTerm.toLowerCase();
+    const filtered = dataToFilter.filter(evaluation => 
+      evaluation.legal_name?.toLowerCase().includes(search) ||
+      evaluation.service_type?.toLowerCase().includes(search) ||
+      evaluation.districts?.name?.toLowerCase().includes(search) ||
+      evaluation.schools?.name?.toLowerCase().includes(search)
+    );
+    
+    setFilteredEvaluations(filtered);
+  };
+  
+  const handleFilterChange = (value: string) => {
+    setFilterBy(value);
+    
+    // Get the current tab's data
+    let dataToFilter;
+    switch (activeTab) {
+      case 'pending':
+        dataToFilter = pendingEvaluations;
+        break;
+      case 'active':
+        dataToFilter = activeEvaluations;
+        break;
+      case 'rejected':
+        dataToFilter = rejectedEvaluations;
+        break;
+      default:
+        dataToFilter = pendingEvaluations;
+    }
+    
+    // Apply filter based on selected value
+    if (value === 'all' || !value) {
+      setFilteredEvaluations(dataToFilter);
+    } else if (value === 'type') {
+      // Group by service type
+      const filtered = dataToFilter.filter(e => e.service_type);
+      setFilteredEvaluations(filtered);
+    } else if (value === 'district') {
+      // Filter by district data available
+      const filtered = dataToFilter.filter(e => e.districts?.name);
+      setFilteredEvaluations(filtered);
+    }
+  };
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case 'active':
+        return <Badge className="bg-green-500">Active</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-500">Rejected</Badge>;
+      default:
+        return <Badge>Unknown</Badge>;
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -205,64 +325,35 @@ const AdminEvaluations = () => {
         </div>
       </div>
       
-      {loading ? (
-        <div className="flex justify-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-psyched-darkBlue"></div>
-        </div>
-      ) : pendingEvaluations.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center text-muted-foreground p-8">
-              <FileText className="mr-2 h-5 w-5" />
-              <span>No pending evaluation approvals</span>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        pendingEvaluations.map(evaluation => (
-          <Card key={evaluation.id} className="mb-4">
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-center">
-                <CardTitle>{evaluation.legal_name || 'Unnamed Student'}</CardTitle>
-                <Badge className="bg-yellow-500">Pending</Badge>
-              </div>
-              <CardDescription>
-                {evaluation.service_type || 'General Evaluation'} - {' '}
-                {evaluation.districts?.name || 'Unknown District'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <p className="text-sm font-medium">School</p>
-                  <p className="text-sm text-muted-foreground">{evaluation.schools?.name || 'Not specified'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Submission Date</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(evaluation.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="mt-6 flex justify-end space-x-2">
-                <Button 
-                  variant="outline" 
-                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                  onClick={() => openRejectionDialog(evaluation.id, evaluation.legal_name || 'Unnamed Student')}
-                >
-                  <X className="mr-1 h-4 w-4" />
-                  Reject
-                </Button>
-                <Button onClick={() => approveEvaluation(evaluation.id, evaluation.legal_name || 'Unnamed Student')}>
-                  <Check className="mr-1 h-4 w-4" />
-                  Approve Evaluation
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))
-      )}
+      <TabsWithSearch
+        tabs={[
+          { value: 'pending', label: 'Pending' },
+          { value: 'active', label: 'Active' },
+          { value: 'rejected', label: 'Rejected' }
+        ]}
+        filterOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'type', label: 'By Type' },
+          { value: 'district', label: 'By District' }
+        ]}
+        onSearch={handleSearch}
+        onTabChange={setActiveTab}
+        onFilterChange={handleFilterChange}
+        searchPlaceholder="Search evaluations..."
+        filterPlaceholder="Filter by"
+      >
+        <TabsContent value="pending" className="space-y-4">
+          {renderEvaluationsList(pendingEvaluations, filteredEvaluations, loading, activeTab)}
+        </TabsContent>
+        
+        <TabsContent value="active" className="space-y-4">
+          {renderEvaluationsList(activeEvaluations, filteredEvaluations, loading, activeTab)}
+        </TabsContent>
+        
+        <TabsContent value="rejected" className="space-y-4">
+          {renderEvaluationsList(rejectedEvaluations, filteredEvaluations, loading, activeTab)}
+        </TabsContent>
+      </TabsWithSearch>
       
       {/* Rejection Dialog */}
       <AlertDialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
@@ -295,6 +386,92 @@ const AdminEvaluations = () => {
       </AlertDialog>
     </div>
   );
+  
+  function renderEvaluationsList(sourceData, filteredData, isLoading, tab) {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-psyched-darkBlue"></div>
+        </div>
+      );
+    }
+    
+    if (sourceData.length === 0) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center text-muted-foreground p-8">
+              <FileText className="mr-2 h-5 w-5" />
+              <span>No {tab} evaluation approvals</span>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    if (filteredData.length === 0 && tab === activeTab) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center text-muted-foreground p-8">
+              <FileText className="mr-2 h-5 w-5" />
+              <span>No matching evaluations found</span>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    return (
+      <>
+        {filteredData.map(evaluation => (
+          <Card key={evaluation.id} className="mb-4">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <CardTitle>{evaluation.legal_name || 'Unnamed Student'}</CardTitle>
+                {getStatusBadge(evaluation.status)}
+              </div>
+              <CardDescription>
+                {evaluation.service_type || 'General Evaluation'} - {' '}
+                {evaluation.districts?.name || 'Unknown District'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-sm font-medium">School</p>
+                  <p className="text-sm text-muted-foreground">{evaluation.schools?.name || 'Not specified'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Submission Date</p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(evaluation.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              
+              {evaluation.status === 'pending' && (
+                <div className="mt-6 flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    onClick={() => openRejectionDialog(evaluation.id, evaluation.legal_name || 'Unnamed Student')}
+                  >
+                    <X className="mr-1 h-4 w-4" />
+                    Reject
+                  </Button>
+                  <Button onClick={() => approveEvaluation(evaluation.id, evaluation.legal_name || 'Unnamed Student')}>
+                    <Check className="mr-1 h-4 w-4" />
+                    Approve Evaluation
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </>
+    );
+  }
 };
 
 export default AdminEvaluations;
