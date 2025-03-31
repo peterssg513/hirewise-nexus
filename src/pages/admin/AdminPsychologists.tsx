@@ -112,36 +112,43 @@ const AdminPsychologists = () => {
       try {
         setLoading(true);
         
-        // First, get all pending psychologists with profile data in a single query
-        const { data: pendingPsychologistsData, error } = await supabase
+        // First, fetch all pending psychologists
+        const { data: psychologists, error: psychError } = await supabase
           .from('psychologists')
-          .select(`
-            *,
-            profiles:user_id(
-              id, 
-              name, 
-              email
-            )
-          `)
+          .select('*')
           .eq('status', 'pending');
           
-        if (error) throw error;
+        if (psychError) throw psychError;
         
-        // Transform the data for easier use in the UI
-        const transformedData = pendingPsychologistsData.map(psych => {
+        // For each psychologist, fetch the associated profile data
+        const enhancedPsychologists = await Promise.all(psychologists.map(async (psych) => {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('name, email, id')
+            .eq('id', psych.user_id)
+            .single();
+            
+          if (profileError) {
+            console.error('Error fetching profile for psychologist:', profileError);
+            // Return psychologist with empty profile data rather than throwing
+            return {
+              ...psych,
+              profiles: {
+                name: 'Unnamed Psychologist',
+                email: 'No email provided',
+                id: psych.user_id
+              }
+            };
+          }
+          
           return {
             ...psych,
-            // Ensure profile data is properly structured
-            profiles: {
-              name: psych.profiles?.name || 'Unnamed Psychologist',
-              email: psych.profiles?.email || 'No email provided',
-              id: psych.profiles?.id
-            }
+            profiles: profileData
           };
-        });
+        }));
         
-        console.log('Transformed psychologist data:', transformedData);
-        setPendingPsychologists(transformedData || []);
+        console.log('Transformed psychologist data:', enhancedPsychologists);
+        setPendingPsychologists(enhancedPsychologists || []);
       } catch (error) {
         console.error('Error fetching pending psychologists:', error);
         toast({
