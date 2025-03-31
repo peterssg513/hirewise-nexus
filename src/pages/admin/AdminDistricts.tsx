@@ -24,14 +24,19 @@ const AdminDistricts = () => {
     const fetchPendingDistricts = async () => {
       try {
         setLoading(true);
+        console.log('Fetching pending districts...');
         
         const { data: pendingDistrictsData, error } = await supabase
           .from('districts')
           .select('*, profiles(name, email)')
           .eq('status', 'pending');
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching pending districts:', error);
+          throw error;
+        }
         
+        console.log('Pending districts data:', pendingDistrictsData);
         setPendingDistricts(pendingDistrictsData || []);
       } catch (error) {
         console.error('Error fetching pending districts:', error);
@@ -56,7 +61,8 @@ const AdminDistricts = () => {
           table: 'districts',
           filter: 'status=eq.pending'
         }, 
-        () => {
+        (payload) => {
+          console.log('Districts table changed:', payload);
           fetchPendingDistricts();
         }
       )

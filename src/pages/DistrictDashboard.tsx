@@ -1,133 +1,100 @@
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import DistrictNavigation from '@/components/district/DistrictNavigation'; // Fixed import
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import DistrictNavigation from '@/components/district/DistrictNavigation';
+import { StudentsList } from '@/components/district/students/StudentsList';
+import { SchoolsList } from '@/components/district/schools/SchoolsList';
 import { JobsList } from '@/components/district/JobsList';
-import { SchoolsList } from '@/components/district/SchoolsList';
-import { StudentsList } from '@/components/district/StudentsList';
 import { EvaluationsList } from '@/components/district/EvaluationsList';
-import { fetchDistrictProfile } from '@/services/districtProfileService';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const DistrictDashboard = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [isLoading, setIsLoading] = useState(true);
-  const [districtId, setDistrictId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadDistrictProfile = async () => {
-      if (!user?.id) return;
-      
-      try {
-        setIsLoading(true);
-        const district = await fetchDistrictProfile(user.id);
-        
-        if (district) {
-          setDistrictId(district.id);
-        } else {
-          toast({
-            title: 'Error',
-            description: 'Could not load district profile.',
-            variant: 'destructive',
-          });
-        }
-      } catch (error) {
-        console.error('Error loading district profile:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load district data.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadDistrictProfile();
-  }, [user, toast]);
-
+  const [activeTab, setActiveTab] = useState('dashboard');
+  
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-10 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!districtId) {
-    return (
-      <div className="p-6 bg-white rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-2">Profile Setup Required</h2>
-        <p className="text-gray-600 mb-4">
-          Please complete your district profile setup before accessing dashboard features.
-        </p>
-      </div>
-    );
-  }
-
+  
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">District Dashboard</h1>
-      
-      <DistrictNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-
-      <div className="mt-4">
-        {activeTab === 'overview' && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Welcome to Your Dashboard</h2>
-            <p className="text-gray-600 mb-4">
-              Manage your district's jobs, schools, students, and evaluation requests all in one place.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <h3 className="font-medium text-blue-700">Active Jobs</h3>
-                <p className="text-2xl font-bold mt-2">-</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                <h3 className="font-medium text-green-700">Schools</h3>
-                <p className="text-2xl font-bold mt-2">-</p>
-              </div>
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                <h3 className="font-medium text-purple-700">Students</h3>
-                <p className="text-2xl font-bold mt-2">-</p>
-              </div>
-              <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
-                <h3 className="font-medium text-amber-700">Pending Evaluations</h3>
-                <p className="text-2xl font-bold mt-2">-</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {activeTab === 'jobs' && districtId && (
-          <JobsList districtId={districtId} />
-        )}
-        
-        {activeTab === 'schools' && districtId && (
-          <SchoolsList districtId={districtId} />
-        )}
-        
-        {activeTab === 'students' && districtId && (
-          <StudentsList districtId={districtId} />
-        )}
-        
-        {activeTab === 'evaluations' && districtId && (
-          <EvaluationsList districtId={districtId} />
-        )}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">District Dashboard</h1>
       </div>
+      
+      <Tabs defaultValue="dashboard" onValueChange={handleTabChange}>
+        <TabsList className="grid grid-cols-5 w-full">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="jobs">Jobs</TabsTrigger>
+          <TabsTrigger value="schools">Schools</TabsTrigger>
+          <TabsTrigger value="students">Students</TabsTrigger>
+          <TabsTrigger value="evaluations">Evaluations</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="dashboard" className="space-y-4">
+          <Card>
+            <CardContent className="pt-6">
+              <h2 className="text-xl font-semibold mb-4">Welcome to Your District Dashboard</h2>
+              <p className="text-muted-foreground">
+                This is your central hub for managing your district's resources, jobs, and evaluations.
+              </p>
+            </CardContent>
+          </Card>
+          
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="font-medium">Quick Actions</h3>
+                <ul className="mt-2 space-y-1">
+                  <li>Post a new job</li>
+                  <li>Request an evaluation</li>
+                  <li>Add a school</li>
+                </ul>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="font-medium">Recent Activity</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  No recent activity to display.
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="font-medium">Status</h3>
+                <div className="mt-2 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Active Jobs:</span>
+                    <span className="text-sm font-medium">0</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm">Pending Evaluations:</span>
+                    <span className="text-sm font-medium">0</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="jobs">
+          <JobsList />
+        </TabsContent>
+        
+        <TabsContent value="schools">
+          <SchoolsList />
+        </TabsContent>
+        
+        <TabsContent value="students">
+          <StudentsList />
+        </TabsContent>
+        
+        <TabsContent value="evaluations">
+          <EvaluationsList />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

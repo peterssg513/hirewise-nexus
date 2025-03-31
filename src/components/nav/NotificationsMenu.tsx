@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { markAllNotificationsAsRead, markNotificationAsRead, Notification } from '@/services/notificationService';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 const NotificationsMenu = () => {
   const { user, profile } = useAuth();
@@ -36,9 +37,14 @@ const NotificationsMenu = () => {
         .limit(10);
       
       if (error) throw error;
+      console.log('Fetched notifications:', data);
       setNotifications(data || []);
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      toast({
+        title: 'Failed to load notifications',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +63,8 @@ const NotificationsMenu = () => {
           table: 'notifications',
           filter: `user_id=eq.${user?.id}`
         }, 
-        () => {
+        (payload) => {
+          console.log('Notification change detected:', payload);
           fetchNotifications();
         }
       )
@@ -102,6 +109,7 @@ const NotificationsMenu = () => {
     
     // Navigate based on notification type and user role
     const type = notification.type;
+    console.log('Navigating based on notification type:', type, 'user role:', profile?.role);
     
     if (profile?.role === 'admin') {
       // Admin navigation rules
