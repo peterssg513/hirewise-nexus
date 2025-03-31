@@ -54,8 +54,8 @@ export const fetchAverageSalaryByState = async (state: string): Promise<number |
     const { data, error } = await supabase
       .from('state_salaries') // Using the actual table name that exists in your database
       .select('salary_amount')
-      .eq('state', state)
-      .order('year', { ascending: false })
+      .eq('state_name', state)
+      .order('created_at', { ascending: false })
       .limit(1)
       .single();
 

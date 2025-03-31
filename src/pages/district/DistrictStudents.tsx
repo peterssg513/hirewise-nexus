@@ -74,7 +74,7 @@ const DistrictStudents = () => {
       <EmptyState
         icon={<GraduationCap className="h-10 w-10 text-muted-foreground" />}
         title="No students yet"
-        description="Start by adding students to your district."
+        description="Student management is coming soon."
         action={
           <Button>
             <Plus className="mr-2 h-4 w-4" /> Add Student
