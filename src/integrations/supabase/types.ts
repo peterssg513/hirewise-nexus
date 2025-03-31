@@ -163,6 +163,33 @@ export type Database = {
         }
         Relationships: []
       }
+      evaluation_payment_rates: {
+        Row: {
+          created_at: string
+          id: string
+          payment_amount: number
+          service_type: string
+          state_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payment_amount: number
+          service_type: string
+          state_code: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payment_amount?: number
+          service_type?: string
+          state_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       evaluation_requests: {
         Row: {
           age: number | null
