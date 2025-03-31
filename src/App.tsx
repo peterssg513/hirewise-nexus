@@ -29,7 +29,6 @@ import AdminPsychologists from './pages/admin/AdminPsychologists';
 import AdminJobs from './pages/admin/AdminJobs';
 import AdminEvaluations from './pages/admin/AdminEvaluations';
 import AdminSchools from './pages/admin/AdminSchools';
-import AdminStudents from './pages/admin/AdminStudents';
 import Approvals from './pages/admin/Approvals';
 
 // Use a non-guessable path for admin authentication
@@ -69,7 +68,6 @@ function App() {
           <Route path="psychologists" element={<AdminPsychologists />} />
           <Route path="jobs" element={<AdminJobs />} />
           <Route path="schools" element={<AdminSchools />} />
-          <Route path="students" element={<AdminStudents />} />
           <Route path="evaluations" element={<AdminEvaluations />} />
         </Route>
 
