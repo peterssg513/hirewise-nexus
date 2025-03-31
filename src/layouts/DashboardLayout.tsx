@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { MainNav } from '@/components/nav/MainNav';
 import { UserAccountNav } from '@/components/nav/UserAccountNav';
@@ -13,7 +13,6 @@ import { setup as setupDatabaseUtils } from '@/services/databaseUtilsService';
 const DashboardLayout = () => {
   const { user, isLoading, profile } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
 
@@ -76,7 +75,7 @@ const DashboardLayout = () => {
     );
   }
 
-  // Updated navigation items generation for clearer structure
+  // Define navigation items based on the user role
   const getNavItems = () => {
     if (userRole === 'psychologist') {
       return [
@@ -95,13 +94,12 @@ const DashboardLayout = () => {
         { label: 'Evaluations', href: '/district-dashboard/evaluations' }
       ];
     } else if (userRole === 'admin') {
-      // Updated admin dashboard tabs with proper hash-based navigation
       return [
         { label: 'Dashboard', href: '/admin-dashboard' },
-        { label: 'Districts', href: '/admin-dashboard', hash: 'districts' },
-        { label: 'Psychologists', href: '/admin-dashboard', hash: 'psychologists' },
-        { label: 'Jobs', href: '/admin-dashboard', hash: 'jobs' },
-        { label: 'Evaluations', href: '/admin-dashboard', hash: 'evaluations' }
+        { label: 'Districts', href: '/admin-dashboard/districts' },
+        { label: 'Psychologists', href: '/admin-dashboard/psychologists' },
+        { label: 'Jobs', href: '/admin-dashboard/jobs' },
+        { label: 'Evaluations', href: '/admin-dashboard/evaluations' }
       ];
     }
     return [];
@@ -120,10 +118,7 @@ const DashboardLayout = () => {
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
-          <div className="flex items-center">
-            <NavLogo />
-            <MainNav items={getNavItems()} />
-          </div>
+          <MainNav items={getNavItems()} />
           <div className="flex items-center gap-4">
             <NotificationsMenu />
             <UserAccountNav 

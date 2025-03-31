@@ -16,12 +16,6 @@ const Navbar = () => {
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Skip rendering if we're on an admin dashboard page
-  const isDashboardRoute = location.pathname.includes('dashboard');
-  if (isDashboardRoute) {
-    return null;
-  }
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -31,6 +25,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Fetch profile picture if user is logged in
   useEffect(() => {
     const fetchProfilePic = async () => {
       if (user?.id && profile?.role === 'psychologist') {
@@ -40,6 +35,8 @@ const Navbar = () => {
             .select('profile_picture_url')
             .eq('user_id', user.id)
             .single();
+          
+          console.log("Navbar - Profile picture data:", data);
             
           if (!error && data?.profile_picture_url) {
             setProfilePicUrl(data.profile_picture_url);
@@ -55,17 +52,20 @@ const Navbar = () => {
     }
   }, [isAuthenticated, user?.id, profile?.role]);
 
+  // Determine which navigation links to show based on authentication state
   const renderNavLinks = () => {
-    if (isAuthenticated) {
-      if (profile?.role === 'psychologist') {
-        return <PsychologistNav />;
-      } else if (profile?.role === 'admin') {
-        return null;
-      } else {
-        return <PublicNav />;
-      }
+    if (isAuthenticated && profile?.role === 'psychologist') {
+      return (
+        <div className="hidden md:flex space-x-6">
+          <PsychologistNav />
+        </div>
+      );
     } else {
-      return <PublicNav />;
+      return (
+        <div className="hidden md:flex space-x-6">
+          <PublicNav />
+        </div>
+      );
     }
   };
 
@@ -73,10 +73,11 @@ const Navbar = () => {
     <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm' : 'bg-white'} border-b border-gray-200`}>
       <div className="psyched-container py-4">
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center">
             <NavLogo />
-            {renderNavLinks()}
           </div>
+          
+          {renderNavLinks()}
           
           <div className="flex items-center space-x-3">
             {isAuthenticated ? (

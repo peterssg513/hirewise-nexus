@@ -1,38 +1,117 @@
-
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, Info } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { ShieldCheck, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { DataTable } from '@/components/admin/dashboard/DataTable';
-import { RejectionDialog } from '@/components/admin/dashboard/RejectionDialog';
-import EmptyState from '@/components/admin/psychologists/EmptyState';
+
+interface DistrictWithProfile {
+  id: string;
+  name: string;
+  contact_email: string;
+  status: string;
+  location?: string;
+  contact_phone?: string;
+  state?: string;
+  district_size?: number;
+  website?: string;
+  job_title?: string;
+  description?: string;
+  user_id: string;
+  profile_name?: string;
+  profile_email?: string;
+}
 
 const AdminDistricts = () => {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState('pending');
-  const [pendingDistricts, setPendingDistricts] = useState([]);
-  const [approvedDistricts, setApprovedDistricts] = useState([]);
+  const [pendingDistricts, setPendingDistricts] = useState<DistrictWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Rejection dialog state
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [districtToReject, setDistrictToReject] = useState({ id: '', name: '' });
-
+  
   useEffect(() => {
-    fetchDistricts();
+    const fetchPendingDistricts = async () => {
+      try {
+        setLoading(true);
+        console.log('Fetching pending districts...');
+        
+        // Fetch all pending districts
+        const { data: pendingDistrictsData, error } = await supabase
+          .from('districts')
+          .select('*')
+          .eq('status', 'pending');
+          
+        if (error) {
+          console.error('Error fetching pending districts:', error);
+          throw error;
+        }
+        
+        console.log('Pending districts data:', pendingDistrictsData);
+        
+        // If there are pending districts, fetch the associated user profiles
+        const districtsWithProfiles: DistrictWithProfile[] = [];
+        
+        if (pendingDistrictsData && pendingDistrictsData.length > 0) {
+          for (const district of pendingDistrictsData) {
+            try {
+              // Fetch profile data for the district's user_id
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('name, email')
+                .eq('id', district.user_id)
+                .single();
+                
+              districtsWithProfiles.push({
+                ...district,
+                profile_name: profileData?.name || null,
+                profile_email: profileData?.email || district.contact_email
+              });
+            } catch (profileError) {
+              console.error(`Error fetching profile for user_id ${district.user_id}:`, profileError);
+              districtsWithProfiles.push({
+                ...district,
+                profile_name: null,
+                profile_email: district.contact_email
+              });
+            }
+          }
+        }
+        
+        console.log('Districts with profiles:', districtsWithProfiles);
+        setPendingDistricts(districtsWithProfiles);
+      } catch (error) {
+        console.error('Error fetching pending districts:', error);
+        toast({
+          title: 'Failed to load districts',
+          variant: 'destructive'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    // Set up realtime subscription
+    fetchPendingDistricts();
+    
+    // Set up realtime subscription for updates
     const channel = supabase
       .channel('admin-districts-changes')
       .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'districts' }, 
-        () => fetchDistricts()
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'districts'
+        }, 
+        (payload) => {
+          console.log('Districts table changed:', payload);
+          fetchPendingDistricts();
+        }
       )
       .subscribe();
       
@@ -41,80 +120,16 @@ const AdminDistricts = () => {
     };
   }, []);
   
-  const fetchDistricts = async () => {
+  const approveDistrict = async (id: string, name: string) => {
     try {
-      setLoading(true);
+      const result = await supabase.rpc('approve_district', { district_id: id });
       
-      // Fetch pending districts
-      const { data: pendingData, error: pendingError } = await supabase
-        .from('districts')
-        .select(`
-          id, 
-          name, 
-          location, 
-          description, 
-          contact_email, 
-          contact_phone,
-          state,
-          district_size,
-          job_title,
-          website,
-          first_name,
-          last_name,
-          created_at,
-          profiles:user_id(email, name)
-        `)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-        
-      if (pendingError) throw pendingError;
-      
-      // Fetch approved districts
-      const { data: approvedData, error: approvedError } = await supabase
-        .from('districts')
-        .select(`
-          id, 
-          name, 
-          location, 
-          description, 
-          contact_email, 
-          contact_phone,
-          state,
-          district_size,
-          job_title,
-          website,
-          first_name,
-          last_name,
-          created_at,
-          profiles:user_id(email, name)
-        `)
-        .eq('status', 'approved')
-        .order('name', { ascending: true });
-        
-      if (approvedError) throw approvedError;
-      
-      setPendingDistricts(pendingData || []);
-      setApprovedDistricts(approvedData || []);
-      
-    } catch (error) {
-      console.error('Error fetching districts:', error);
-      toast({
-        title: 'Failed to load districts',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const approveDistrict = async (id, name) => {
-    try {
-      await supabase.rpc('approve_district', { district_id: id });
+      if (result.error) throw result.error;
       
       // Get district user_id for notification
       const { data: districtData } = await supabase
         .from('districts')
-        .select('user_id')
+        .select('user_id, name')
         .eq('id', id)
         .single();
         
@@ -122,7 +137,7 @@ const AdminDistricts = () => {
       if (districtData?.user_id) {
         await supabase.from('notifications').insert({
           user_id: districtData.user_id,
-          message: `Your district "${name}" has been approved!`,
+          message: `Your district "${districtData.name}" has been approved! You can now create jobs and evaluations.`,
           type: 'district_approved',
           related_id: id
         });
@@ -130,8 +145,11 @@ const AdminDistricts = () => {
       
       toast({
         title: 'Success',
-        description: `District "${name}" approved successfully`
+        description: `District approved successfully`
       });
+      
+      // Update local state to reflect the approval
+      setPendingDistricts(pendingDistricts.filter(d => d.id !== id));
       
       // Log this approval action
       await supabase.from('analytics_events').insert({
@@ -153,7 +171,7 @@ const AdminDistricts = () => {
     }
   };
 
-  const openRejectionDialog = (id, name) => {
+  const openRejectionDialog = (id: string, name: string) => {
     setDistrictToReject({ id, name });
     setRejectionReason('');
     setRejectionDialogOpen(true);
@@ -161,7 +179,6 @@ const AdminDistricts = () => {
 
   const handleReject = async () => {
     try {
-      // Update district status
       const result = await supabase
         .from('districts')
         .update({ 
@@ -174,7 +191,7 @@ const AdminDistricts = () => {
       // Get district user_id for notification
       const { data: districtData } = await supabase
         .from('districts')
-        .select('user_id')
+        .select('user_id, name')
         .eq('id', districtToReject.id)
         .single();
         
@@ -182,16 +199,19 @@ const AdminDistricts = () => {
       if (districtData?.user_id) {
         await supabase.from('notifications').insert({
           user_id: districtData.user_id,
-          message: `Your district "${districtToReject.name}" was not approved. Reason: ${rejectionReason}`,
+          message: `Your district "${districtData.name}" registration was not approved. Reason: ${rejectionReason}`,
           type: 'district_rejected',
           related_id: districtToReject.id
         });
       }
       
       toast({
-        title: 'District rejected',
-        description: `District "${districtToReject.name}" has been rejected`
+        title: 'Rejected',
+        description: `District has been rejected`
       });
+      
+      // Update local state to reflect the rejection
+      setPendingDistricts(pendingDistricts.filter(d => d.id !== districtToReject.id));
       
       // Log this rejection action
       await supabase.from('analytics_events').insert({
@@ -205,9 +225,6 @@ const AdminDistricts = () => {
         }
       });
       
-      // Refresh the list
-      fetchDistricts();
-      
     } catch (error) {
       console.error(`Error rejecting district:`, error);
       toast({
@@ -219,202 +236,119 @@ const AdminDistricts = () => {
     }
   };
   
-  const pendingColumns = [
-    {
-      key: 'name',
-      header: 'District Name',
-      cell: (district) => (
-        <div className="font-medium">{district.name || 'Unnamed District'}</div>
-      )
-    },
-    {
-      key: 'contact_email',
-      header: 'Contact Email',
-      cell: (district) => (
-        <div>{district.contact_email || district.profiles?.email || 'No email'}</div>
-      )
-    },
-    {
-      key: 'location',
-      header: 'Location',
-      cell: (district) => (
-        <div>{district.state ? `${district.location}, ${district.state}` : (district.location || 'Not specified')}</div>
-      )
-    },
-    {
-      key: 'district_size',
-      header: 'Size',
-      cell: (district) => (
-        <div>{district.district_size ? `${district.district_size} students` : 'Not specified'}</div>
-      )
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      cell: (district) => (
-        <Badge className="bg-yellow-500">Pending</Badge>
-      )
-    }
-  ];
-  
-  const approvedColumns = [
-    {
-      key: 'name',
-      header: 'District Name',
-      cell: (district) => (
-        <div className="font-medium">{district.name || 'Unnamed District'}</div>
-      )
-    },
-    {
-      key: 'contact_email',
-      header: 'Contact Email',
-      cell: (district) => (
-        <div>{district.contact_email || district.profiles?.email || 'No email'}</div>
-      )
-    },
-    {
-      key: 'location',
-      header: 'Location',
-      cell: (district) => (
-        <div>{district.state ? `${district.location}, ${district.state}` : (district.location || 'Not specified')}</div>
-      )
-    },
-    {
-      key: 'district_size',
-      header: 'Size',
-      cell: (district) => (
-        <div>{district.district_size ? `${district.district_size} students` : 'Not specified'}</div>
-      )
-    },
-    {
-      key: 'website',
-      header: 'Website',
-      cell: (district) => (
-        <div>
-          {district.website ? (
-            <a href={district.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-              {district.website}
-            </a>
-          ) : 'Not provided'}
-        </div>
-      )
-    }
-  ];
-  
-  const pendingDistrictActions = (district) => (
-    <div className="flex gap-2 justify-end">
-      <Button 
-        variant="outline" 
-        className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 h-8 px-2"
-        onClick={() => openRejectionDialog(district.id, district.name || 'Unnamed District')}
-      >
-        <X className="h-4 w-4" />
-      </Button>
-      <Button 
-        variant="outline" 
-        className="border-green-200 text-green-600 hover:bg-green-50 hover:text-green-700 h-8 px-2"
-        onClick={() => approveDistrict(district.id, district.name || 'Unnamed District')}
-      >
-        <Check className="h-4 w-4" />
-      </Button>
-      <Button 
-        variant="outline" 
-        className="h-8 px-2"
-        onClick={() => {
-          // TODO: Implement view details functionality
-          toast({
-            title: 'View Details',
-            description: `Viewing details for ${district.name}`
-          });
-        }}
-      >
-        <Info className="h-4 w-4" />
-      </Button>
-    </div>
-  );
-  
-  const approvedDistrictActions = (district) => (
-    <div className="flex justify-end">
-      <Button 
-        variant="outline" 
-        className="h-8 px-2"
-        onClick={() => {
-          // TODO: Implement view details functionality
-          toast({
-            title: 'View Details',
-            description: `Viewing details for ${district.name}`
-          });
-        }}
-      >
-        <Info className="h-4 w-4" />
-      </Button>
-    </div>
-  );
-  
-  const emptyPendingState = (
-    <Card>
-      <CardContent className="pt-6 pb-6 flex items-center justify-center">
-        <EmptyState message="No pending districts found" />
-      </CardContent>
-    </Card>
-  );
-  
-  const emptyApprovedState = (
-    <Card>
-      <CardContent className="pt-6 pb-6 flex items-center justify-center">
-        <EmptyState message="No approved districts found" />
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Districts</h1>
-          <p className="text-muted-foreground">Manage district applications and approved districts</p>
+          <h1 className="text-2xl font-bold">District Approvals</h1>
+          <p className="text-muted-foreground">Manage district applications</p>
         </div>
       </div>
       
-      <Tabs defaultValue="pending" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="approved">Approved</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="pending" className="mt-6">
-          <DataTable 
-            columns={pendingColumns} 
-            data={pendingDistricts}
-            loading={loading}
-            emptyState={emptyPendingState}
-            actions={pendingDistrictActions}
-            searchPlaceholder="Search pending districts..."
-          />
-        </TabsContent>
-        
-        <TabsContent value="approved" className="mt-6">
-          <DataTable 
-            columns={approvedColumns} 
-            data={approvedDistricts}
-            loading={loading}
-            emptyState={emptyApprovedState}
-            actions={approvedDistrictActions}
-            searchPlaceholder="Search approved districts..."
-          />
-        </TabsContent>
-      </Tabs>
+      {loading ? (
+        <div className="flex justify-center p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-psyched-darkBlue"></div>
+        </div>
+      ) : pendingDistricts.length === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center text-muted-foreground p-8">
+              <ShieldCheck className="mr-2 h-5 w-5" />
+              <span>No pending district approvals</span>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        pendingDistricts.map(district => (
+          <Card key={district.id} className="mb-4">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <CardTitle>{district.name}</CardTitle>
+                <Badge className="bg-yellow-500">Pending</Badge>
+              </div>
+              <CardDescription>{district.profile_email || district.contact_email}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium">Location</p>
+                  <p className="text-sm text-muted-foreground">{district.location || 'Not specified'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Contact</p>
+                  <p className="text-sm text-muted-foreground">{district.contact_phone || 'No phone provided'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">State</p>
+                  <p className="text-sm text-muted-foreground">{district.state || 'Not specified'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Size</p>
+                  <p className="text-sm text-muted-foreground">{district.district_size ? `${district.district_size} students` : 'Not specified'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Website</p>
+                  <p className="text-sm text-muted-foreground">{district.website ? <a href={district.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{district.website}</a> : 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Job Title</p>
+                  <p className="text-sm text-muted-foreground">{district.job_title || 'Not specified'}</p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <p className="text-sm font-medium">Description</p>
+                <p className="text-sm text-muted-foreground">{district.description || 'No description provided'}</p>
+              </div>
+              <div className="mt-6 flex justify-end space-x-2">
+                <Button 
+                  variant="outline" 
+                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  onClick={() => openRejectionDialog(district.id, district.name)}
+                >
+                  <X className="mr-1 h-4 w-4" />
+                  Reject
+                </Button>
+                <Button 
+                  onClick={() => approveDistrict(district.id, district.name)}
+                >
+                  <Check className="mr-1 h-4 w-4" />
+                  Approve District
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))
+      )}
       
       {/* Rejection Dialog */}
-      <RejectionDialog 
-        open={rejectionDialogOpen}
-        onOpenChange={setRejectionDialogOpen}
-        entityType="district"
-        entityName={districtToReject.name}
-        rejectionReason={rejectionReason}
-        onReasonChange={setRejectionReason}
-        onConfirm={handleReject}
-      />
+      <AlertDialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject District</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please provide a reason for rejecting "{districtToReject.name}". This will be shared with the user.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Textarea 
+              placeholder="Enter rejection reason..." 
+              value={rejectionReason} 
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleReject}
+              disabled={!rejectionReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Reject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
