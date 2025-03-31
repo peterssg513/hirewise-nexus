@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { District } from '@/types/district';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
 import { Loader2, Edit, Clock, CheckCircle, School, MapPin, Users, Phone, Mail, Plus, Briefcase, FileText, User } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { SchoolsList } from '@/components/district/SchoolsList';
 import { JobsList } from '@/components/district/JobsList';
 import { StudentsList } from '@/components/district/StudentsList';
 import { EvaluationsList } from '@/components/district/EvaluationsList';
+import { DistrictNavigation } from '@/components/district/DistrictNavigation';
 
 const DistrictDashboard = () => {
   const { profile, user } = useAuth();
@@ -47,7 +48,7 @@ const DistrictDashboard = () => {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Welcome, {profile?.name || 'District'}</h1>
-      <p className="text-muted-foreground">Manage job postings and review applications</p>
+      <p className="text-muted-foreground">Manage job postings, schools, students, and evaluations</p>
       
       {district && (
         <Card className="mb-6 overflow-hidden border-0 shadow-md">
@@ -140,15 +141,9 @@ const DistrictDashboard = () => {
         </Card>
       )}
       
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-white mb-4">
-          <TabsTrigger value="overview" className="text-sm">Overview</TabsTrigger>
-          <TabsTrigger value="jobs" className="text-sm">Jobs</TabsTrigger>
-          <TabsTrigger value="schools" className="text-sm">Schools</TabsTrigger>
-          <TabsTrigger value="students" className="text-sm">Students</TabsTrigger>
-          <TabsTrigger value="evaluations" className="text-sm">Evaluations</TabsTrigger>
-        </TabsList>
-        
+      <DistrictNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      
+      <Tabs value={activeTab}>
         <TabsContent value="overview">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card className="hover:shadow-md transition-shadow border border-gray-100">

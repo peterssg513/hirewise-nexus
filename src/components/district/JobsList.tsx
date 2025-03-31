@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Job, fetchJobs, deleteJob } from '@/services/jobService';
+import { Job, fetchJobs, deleteJob, JOB_TYPES } from '@/services/jobService';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +8,7 @@ import { CreateJobDialog } from './CreateJobDialog';
 import { EditJobDialog } from './EditJobDialog';
 import { JobDetailsDialog } from './JobDetailsDialog';
 import { fetchSchoolById } from '@/services/schoolService';
+import { SearchFilterBar } from './SearchFilterBar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,15 +27,22 @@ interface JobsListProps {
 
 export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     loadJobs();
   }, [districtId]);
+
+  useEffect(() => {
+    setFilteredJobs(jobs);
+  }, [jobs]);
 
   const loadJobs = async () => {
     try {
@@ -71,6 +79,65 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
     });
   };
 
+  const confirmDeleteJob = (job: Job) => {
+    setJobToDelete(job);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteJob = async () => {
+    if (!jobToDelete) return;
+    
+    try {
+      await deleteJob(jobToDelete.id);
+      setJobs(prev => prev.filter(job => job.id !== jobToDelete.id));
+      toast({
+        title: 'Job deleted',
+        description: `${jobToDelete.title} has been deleted successfully.`,
+      });
+    } catch (error) {
+      console.error('Failed to delete job:', error);
+      toast({
+        title: 'Error deleting job',
+        description: 'Failed to delete job. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setJobToDelete(null);
+    }
+  };
+
+  const handleSearch = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      setFilteredJobs(jobs);
+      return;
+    }
+    
+    const lowerCaseSearch = searchTerm.toLowerCase();
+    const filtered = jobs.filter(job => 
+      job.title.toLowerCase().includes(lowerCaseSearch) || 
+      job.description.toLowerCase().includes(lowerCaseSearch) ||
+      (job.location && job.location.toLowerCase().includes(lowerCaseSearch)) ||
+      (job.city && job.city.toLowerCase().includes(lowerCaseSearch)) ||
+      (job.state && job.state.toLowerCase().includes(lowerCaseSearch))
+    );
+    
+    setFilteredJobs(filtered);
+  };
+
+  const handleFilter = (filterValue: string) => {
+    if (!filterValue) {
+      setFilteredJobs(jobs);
+      return;
+    }
+    
+    const filtered = jobs.filter(job => 
+      job.status === filterValue || job.job_type === filterValue
+    );
+    
+    setFilteredJobs(filtered);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
@@ -96,6 +163,12 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
     }
   };
 
+  const filterOptions = [
+    { value: "active", label: "Active Jobs" },
+    { value: "pending", label: "Pending Jobs" },
+    ...JOB_TYPES.map(type => ({ value: type, label: type }))
+  ];
+
   return (
     <>
       <div className="flex justify-between items-center mb-4">
@@ -108,13 +181,20 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
         </Button>
       </div>
 
+      <SearchFilterBar 
+        placeholder="Search jobs by title, description, location..."
+        filterOptions={filterOptions}
+        onSearch={handleSearch}
+        onFilter={handleFilter}
+      />
+
       {loading ? (
         <div className="flex justify-center items-center h-40">
           <div className="animate-spin h-8 w-8 border-4 border-psyched-darkBlue border-t-transparent rounded-full"></div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {jobs.length === 0 ? (
+          {filteredJobs.length === 0 ? (
             <div className="col-span-full text-center py-8">
               <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-semibold text-gray-900">No job listings</h3>
@@ -129,7 +209,7 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
               </div>
             </div>
           ) : (
-            jobs.map((job) => (
+            filteredJobs.map((job) => (
               <Card key={job.id} className="overflow-hidden">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
@@ -178,7 +258,8 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => deleteJob(job.id)}
+                    onClick={() => confirmDeleteJob(job)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash className="h-3.5 w-3.5 mr-1" /> Delete
                   </Button>
@@ -213,6 +294,24 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
           onJobUpdated={handleJobUpdated}
         />
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the job listing{' '}
+              <span className="font-semibold">{jobToDelete?.title}</span>. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteJob} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
