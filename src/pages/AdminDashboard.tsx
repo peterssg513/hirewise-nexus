@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,11 +9,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { ShieldCheck, Users, Briefcase, ClipboardCheck, Activity, AlertTriangle, UserPlus, FileText, Check, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const getInitialTab = () => {
+    if (location.hash) {
+      const tabFromHash = location.hash.substring(1);
+      return ['districts', 'psychologists', 'jobs', 'evaluations'].includes(tabFromHash) 
+        ? tabFromHash 
+        : 'districts';
+    }
+    return 'districts';
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab());
+  
   const [stats, setStats] = useState({
     totalUsers: 0,
     pendingDistricts: 0,
@@ -29,7 +42,6 @@ const AdminDashboard = () => {
   const [pendingJobs, setPendingJobs] = useState([]);
   const [pendingEvaluations, setPendingEvaluations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('districts');
   
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -44,13 +56,11 @@ const AdminDashboard = () => {
           .from('profiles')
           .select('*', { count: 'exact', head: true });
           
-        // Fetch districts with correct name from profiles
         const { data: pendingDistrictsData } = await supabase
           .from('districts')
           .select('id, name, user_id, contact_email, contact_phone, location, description, state, job_title, website, district_size')
           .eq('status', 'pending');
         
-        // Get profiles for these districts to ensure we have names
         if (pendingDistrictsData && pendingDistrictsData.length > 0) {
           const userIds = pendingDistrictsData.map(d => d.user_id);
           const { data: profilesData } = await supabase
@@ -58,7 +68,6 @@ const AdminDashboard = () => {
             .select('id, name, email')
             .in('id', userIds);
             
-          // Merge profile data with district data
           const districtsWithProfiles = pendingDistrictsData.map(district => {
             const profile = profilesData?.find(p => p.id === district.user_id);
             return {
@@ -73,7 +82,6 @@ const AdminDashboard = () => {
           setPendingDistricts([]);
         }
           
-        // Fix psychologist fetch to join with profiles correctly
         const { data: pendingPsychologistsData } = await supabase
           .from('psychologists')
           .select(`
@@ -92,7 +100,6 @@ const AdminDashboard = () => {
           `)
           .eq('status', 'pending');
         
-        // Get profiles for these psychologists to ensure we have names
         let psychologistsWithProfiles = [];
         if (pendingPsychologistsData && pendingPsychologistsData.length > 0) {
           const userIds = pendingPsychologistsData.map(p => p.user_id);
@@ -101,7 +108,6 @@ const AdminDashboard = () => {
             .select('id, name, email')
             .in('id', userIds);
             
-          // Merge profile data with psychologist data
           psychologistsWithProfiles = pendingPsychologistsData.map(psych => {
             const profile = profilesData?.find(p => p.id === psych.user_id);
             return {
@@ -219,6 +225,14 @@ const AdminDashboard = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+  
+  useEffect(() => {
+    window.location.hash = activeTab;
+  }, [activeTab]);
+  
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+  };
   
   const approveEntity = async (type, id, name) => {
     try {
@@ -595,7 +609,7 @@ const AdminDashboard = () => {
         </Card>
       </div>
       
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="districts">Districts</TabsTrigger>
           <TabsTrigger value="psychologists">Psychologists</TabsTrigger>

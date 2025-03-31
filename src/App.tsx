@@ -24,10 +24,8 @@ import DistrictsLanding from './pages/DistrictsLanding';
 import AdminAuth from './pages/AdminAuth';
 import AdminCreate from './pages/AdminCreate';
 import AdminSetup from './pages/AdminSetup';
-import AdminDistricts from './pages/admin/AdminDistricts';
-import AdminPsychologists from './pages/admin/AdminPsychologists';
-import AdminJobs from './pages/admin/AdminJobs';
 import AdminEvaluations from './pages/admin/AdminEvaluations';
+import AdminJobs from './pages/admin/AdminJobs';
 import Unauthorized from './pages/Unauthorized';
 
 // Use a non-guessable path for admin authentication
@@ -63,8 +61,7 @@ function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="create-admin" element={<AdminCreate />} />
-          <Route path="districts" element={<AdminDistricts />} />
-          <Route path="psychologists" element={<AdminPsychologists />} />
+          {/* Removed separate routes for districts/psychologists since we now use hash navigation */}
           <Route path="jobs" element={<AdminJobs />} />
           <Route path="evaluations" element={<AdminEvaluations />} />
         </Route>

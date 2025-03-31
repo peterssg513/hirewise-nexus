@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { MainNav } from '@/components/nav/MainNav';
 import { UserAccountNav } from '@/components/nav/UserAccountNav';
@@ -13,6 +13,7 @@ import { setup as setupDatabaseUtils } from '@/services/databaseUtilsService';
 const DashboardLayout = () => {
   const { user, isLoading, profile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
 
@@ -94,12 +95,13 @@ const DashboardLayout = () => {
         { label: 'Evaluations', href: '/district-dashboard/evaluations' }
       ];
     } else if (userRole === 'admin') {
+      // For admin, add hash for direct tab navigation
       return [
         { label: 'Dashboard', href: '/admin-dashboard' },
-        { label: 'Districts', href: '/admin-dashboard/districts' },
-        { label: 'Psychologists', href: '/admin-dashboard/psychologists' },
-        { label: 'Jobs', href: '/admin-dashboard/jobs' },
-        { label: 'Evaluations', href: '/admin-dashboard/evaluations' }
+        { label: 'Districts', href: '/admin-dashboard', hash: 'districts' },
+        { label: 'Psychologists', href: '/admin-dashboard', hash: 'psychologists' },
+        { label: 'Jobs', href: '/admin-dashboard', hash: 'jobs' },
+        { label: 'Evaluations', href: '/admin-dashboard', hash: 'evaluations' }
       ];
     }
     return [];
