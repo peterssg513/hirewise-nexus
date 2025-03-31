@@ -48,7 +48,7 @@ export const formatEducation = (educationData: any): string => {
 };
 
 // Helper function to format experience display
-export const formatExperience = (experienceData: any): Array<{ key: string; content: React.ReactNode }> => {
+export const formatExperience = (experienceData: any): Array<{ key: string; content: any }> => {
   if (!experienceData) return [{ key: 'no-exp', content: 'Not specified' }];
   
   try {

@@ -2,21 +2,16 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Check, X, UserRound } from 'lucide-react';
+import { UserRound } from 'lucide-react';
 import { formatEducation, formatExperience } from '@/utils/formatters';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
-interface PsychologistCardProps {
+interface ApprovedPsychologistCardProps {
   psych: any;
-  onApprove: (id: string, name: string) => void;
-  onReject: (id: string, name: string) => void;
 }
 
-const PsychologistCard: React.FC<PsychologistCardProps> = ({ 
-  psych, 
-  onApprove, 
-  onReject 
+const ApprovedPsychologistCard: React.FC<ApprovedPsychologistCardProps> = ({ 
+  psych
 }) => {
   const experiences = formatExperience(psych.experience);
 
@@ -39,7 +34,7 @@ const PsychologistCard: React.FC<PsychologistCardProps> = ({
               <CardDescription>{psych.profile?.email || 'No email provided'}</CardDescription>
             </div>
           </div>
-          <Badge className="bg-yellow-500">Pending</Badge>
+          <Badge className="bg-green-500">Approved</Badge>
         </div>
       </CardHeader>
       <CardContent>
@@ -128,26 +123,9 @@ const PsychologistCard: React.FC<PsychologistCardProps> = ({
             </div>
           </div>
         )}
-        
-        <div className="mt-6 flex justify-end space-x-2">
-          <Button 
-            variant="outline" 
-            className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-            onClick={() => onReject(psych.id, psych.profile?.name || 'Unnamed Psychologist')}
-          >
-            <X className="mr-1 h-4 w-4" />
-            Reject
-          </Button>
-          <Button 
-            onClick={() => onApprove(psych.id, psych.profile?.name || 'Unnamed Psychologist')}
-          >
-            <Check className="mr-1 h-4 w-4" />
-            Approve Psychologist
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );
 };
 
-export default PsychologistCard;
+export default ApprovedPsychologistCard;

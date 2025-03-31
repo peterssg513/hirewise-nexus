@@ -6,6 +6,8 @@ import PsychologistCard from '@/components/admin/psychologists/PsychologistCard'
 import RejectionDialog from '@/components/admin/psychologists/RejectionDialog';
 import EmptyState from '@/components/admin/psychologists/EmptyState';
 import LoadingState from '@/components/admin/psychologists/LoadingState';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useNavigate } from 'react-router-dom';
 
 const AdminPsychologists = () => {
   const { 
@@ -14,6 +16,8 @@ const AdminPsychologists = () => {
     approvePsychologist, 
     rejectPsychologist 
   } = usePendingPsychologists();
+  
+  const navigate = useNavigate();
   
   // Rejection dialog state
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
@@ -43,6 +47,13 @@ const AdminPsychologists = () => {
           <p className="text-muted-foreground">Manage psychologist applications</p>
         </div>
       </div>
+      
+      <Tabs defaultValue="pending">
+        <TabsList>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="approved" onClick={() => navigate('/admin-dashboard/approved-psychologists')}>Approved</TabsTrigger>
+        </TabsList>
+      </Tabs>
       
       {loading ? (
         <LoadingState />

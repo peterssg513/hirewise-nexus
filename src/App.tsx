@@ -28,6 +28,8 @@ import AdminDistricts from './pages/admin/AdminDistricts';
 import AdminPsychologists from './pages/admin/AdminPsychologists';
 import AdminJobs from './pages/admin/AdminJobs';
 import AdminEvaluations from './pages/admin/AdminEvaluations';
+import AdminApprovedPsychologists from './pages/admin/AdminApprovedPsychologists';
+import AdminApprovedDistricts from './pages/admin/AdminApprovedDistricts';
 import Unauthorized from './pages/Unauthorized';
 
 // Use a non-guessable path for admin authentication
@@ -64,7 +66,9 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="create-admin" element={<AdminCreate />} />
           <Route path="districts" element={<AdminDistricts />} />
+          <Route path="approved-districts" element={<AdminApprovedDistricts />} />
           <Route path="psychologists" element={<AdminPsychologists />} />
+          <Route path="approved-psychologists" element={<AdminApprovedPsychologists />} />
           <Route path="jobs" element={<AdminJobs />} />
           <Route path="evaluations" element={<AdminEvaluations />} />
         </Route>
