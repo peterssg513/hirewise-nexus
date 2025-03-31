@@ -1,18 +1,8 @@
-
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuthState, Profile, Role } from '@/hooks/useAuthState';
+import { loginWithEmail, signUpWithEmail, logoutUser } from '@/services/authService';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from "@/hooks/use-toast";
-
-type Role = 'psychologist' | 'district' | 'admin' | null;
-
-interface Profile {
-  id: string;
-  email: string;
-  name: string | null;
-  role: Role;
-}
 
 interface AuthContextType {
   user: User | null;
@@ -28,81 +18,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, profile, session, isLoading, setProfile } = useAuthState();
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Fetch user profile data
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-
-      return data as Profile;
-    } catch (error) {
-      console.error('Error in fetchProfile:', error);
-      return null;
-    }
-  };
-
-  // Initialize auth state
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Set up auth state listener FIRST
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (event, currentSession) => {
-            setSession(currentSession);
-            setUser(currentSession?.user ?? null);
-            
-            // Fetch profile if user is authenticated
-            if (currentSession?.user) {
-              setTimeout(async () => {
-                const profileData = await fetchProfile(currentSession.user.id);
-                setProfile(profileData);
-              }, 0);
-            } else {
-              setProfile(null);
-            }
-          }
-        );
-
-        // THEN check for existing session
-        const { data } = await supabase.auth.getSession();
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
-        
-        if (data.session?.user) {
-          const profileData = await fetchProfile(data.session.user.id);
-          setProfile(profileData);
-        }
-        
-        setIsLoading(false);
-        
-        return () => {
-          subscription.unsubscribe();
-        };
-      } catch (error) {
-        console.error('Error in initializeAuth:', error);
-        setIsLoading(false);
-      }
-    };
-
-    initializeAuth();
-  }, []);
 
   // Handle redirect after authentication changes
   useEffect(() => {
@@ -117,73 +35,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      if (data.user) {
-        const profileData = await fetchProfile(data.user.id);
-        setProfile(profileData);
-        
+      const data = await loginWithEmail(email, password);
+      
+      if (data.user && profile) {
         // Redirect based on role
-        if (profileData?.role) {
-          navigate(`/${profileData.role}-dashboard`);
+        if (profile.role) {
+          navigate(`/${profile.role}-dashboard`);
         }
       }
     } catch (error: any) {
       console.error('Login error:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, name: string, role: Role) => {
     try {
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            role,
-          },
-        },
-      });
-
-      if (error) {
-        toast({
-          title: "Registration failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      toast({
-        title: "Registration successful",
-        description: "Please check your email for verification",
-      });
+      const data = await signUpWithEmail(email, password, name, role);
 
       // If no email confirmation is required, we can redirect the user
       if (data.user && data.session) {
-        const profileData = await fetchProfile(data.user.id);
-        setProfile(profileData);
+        // Wait for profile to be updated via auth state change
         
-        if (profileData?.role) {
-          navigate(`/${profileData.role}-dashboard`);
+        if (role === 'psychologist') {
+          navigate('/psychologist-signup');
+        } else if (role === 'district') {
+          navigate('/district-signup');
         }
       } else {
         // Otherwise, redirect to login page
@@ -192,17 +69,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       console.error('Registration error:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setProfile(null);
-      setSession(null);
+      await logoutUser();
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
