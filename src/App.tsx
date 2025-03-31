@@ -15,6 +15,7 @@ import JobListings from './pages/psychologist/JobListings';
 import Evaluations from './pages/psychologist/Evaluations';
 import Applications from './pages/psychologist/Applications';
 import Profile from './pages/psychologist/Profile';
+import DashboardLayout from './layouts/DashboardLayout';
 import Settings from './pages/psychologist/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 import Index from './pages/Index';
@@ -29,8 +30,6 @@ import AdminJobs from './pages/admin/AdminJobs';
 import AdminEvaluations from './pages/admin/AdminEvaluations';
 import AdminSchools from './pages/admin/AdminSchools';
 import Approvals from './pages/admin/Approvals';
-import SidebarLayout from './layouts/SidebarLayout';
-import Unauthorized from './pages/Unauthorized';
 
 // Use a non-guessable path for admin authentication
 const ADMIN_AUTH_PATH = 'admin-secret-auth-84721';
@@ -39,7 +38,6 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* Public routes with top navbar */}
         <Route path="/" element={<Index />} />
         <Route path="/for-psychologists" element={<PsychologistsLanding />} />
         <Route path="/for-districts" element={<DistrictsLanding />} />
@@ -49,18 +47,17 @@ function App() {
         <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="/psychologist-signup" element={<PsychologistSignup />} />
         <Route path="/district-signup" element={<DistrictSignup />} />
-        <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Admin Auth Routes - Non-guessable URL */}
         <Route path={`/${ADMIN_AUTH_PATH}`} element={<AdminAuth />} />
         <Route path={`/${ADMIN_AUTH_PATH}/setup`} element={<AdminSetup />} />
 
-        {/* Admin Routes with sidebar navigation */}
+        {/* Admin Routes */}
         <Route
           path="/admin-dashboard"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
-              <SidebarLayout />
+              <DashboardLayout />
             </ProtectedRoute>
           }
         >
@@ -74,29 +71,29 @@ function App() {
           <Route path="evaluations" element={<AdminEvaluations />} />
         </Route>
 
-        {/* District Routes with sidebar navigation */}
+        {/* District Routes */}
         <Route
           path="/district-dashboard"
           element={
             <ProtectedRoute allowedRoles={["district"]}>
-              <SidebarLayout />
+              <DashboardLayout />
             </ProtectedRoute>
           }
         >
           <Route index element={<DistrictDashboard />} />
+          {/* Add routes for district tabs */}
           <Route path="jobs" element={<DistrictDashboard />} />
           <Route path="schools" element={<DistrictDashboard />} />
           <Route path="students" element={<DistrictDashboard />} />
           <Route path="evaluations" element={<DistrictDashboard />} />
-          <Route path="settings" element={<DistrictDashboard />} />
         </Route>
 
-        {/* Psychologist Routes with sidebar navigation */}
+        {/* Psychologist Routes */}
         <Route
           path="/psychologist-dashboard"
           element={
             <ProtectedRoute allowedRoles={["psychologist"]}>
-              <SidebarLayout />
+              <DashboardLayout />
             </ProtectedRoute>
           }
         >
