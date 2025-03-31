@@ -95,11 +95,19 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({ districtId, onJobC
       
       // Prepare job data
       const jobData = {
-        ...data,
+        title: data.title, // Make sure title is specified
+        description: data.description,
         skills_required: skills,
         qualifications: qualifications,
         salary,
         district_id: districtId,
+        state: data.state,
+        city: data.city,
+        location: data.location,
+        work_type: data.work_type,
+        work_location: data.work_location,
+        timeframe: data.timeframe,
+        school_id: data.school_id,
       };
       
       const newJob = await createJob(jobData);

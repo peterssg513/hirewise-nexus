@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Job, createJob } from '@/services/jobService';
-import { STATE_CODES, WORK_LOCATIONS, WORK_TYPES } from '@/services/stateSalaryService';
+import { STATES, WORK_LOCATIONS, WORK_TYPES } from '@/services/stateSalaryService';
 import { useToast } from '@/hooks/use-toast';
 import { fetchSchools } from '@/services/schoolService';
 import { v4 as uuidv4 } from 'uuid';
@@ -195,7 +194,7 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATE_CODES.map((state) => (
+                  {STATES.map((state) => (
                     <SelectItem key={state.code} value={state.code}>
                       {state.name}
                     </SelectItem>
