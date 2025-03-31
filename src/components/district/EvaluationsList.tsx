@@ -3,7 +3,7 @@ import {
   EvaluationRequest, 
   fetchEvaluationRequests, 
   deleteEvaluationRequest 
-} from '@/services/evaluationManagementService';
+} from '@/services/evaluationRequestService';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -273,7 +273,7 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
                   {evaluation.schools && (
                     <div className="flex items-center text-sm">
                       <School className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>{(evaluation.schools as any).name}</span>
+                      <span>{evaluation.schools.name}</span>
                     </div>
                   )}
                   
@@ -287,7 +287,7 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
                   {evaluation.students && (
                     <div className="flex items-center text-sm">
                       <Users className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>Student: {(evaluation.students as any).first_name} {(evaluation.students as any).last_name}</span>
+                      <span>Student: {evaluation.students.first_name} {evaluation.students.last_name}</span>
                     </div>
                   )}
                 </CardContent>

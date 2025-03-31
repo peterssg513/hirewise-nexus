@@ -163,19 +163,19 @@ export const DistrictProfile: React.FC<DistrictProfileProps> = ({ district }) =>
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="size">District Size</label>
+                <label className="text-sm font-medium" htmlFor="district_size">District Size</label>
                 {isEditing ? (
                   <Input
-                    id="size"
-                    name="size"
-                    value={formData.size || ''}
+                    id="district_size"
+                    name="district_size"
+                    value={formData.district_size || ''}
                     onChange={handleChange}
                     placeholder="Enter district size"
                   />
                 ) : (
                   <div className="flex items-center">
                     <School className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{district.size || 'Not specified'}</span>
+                    <span>{district.district_size || 'Not specified'}</span>
                   </div>
                 )}
               </div>
@@ -187,19 +187,37 @@ export const DistrictProfile: React.FC<DistrictProfileProps> = ({ district }) =>
             <h3 className="text-lg font-medium mb-4">Contact Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="contact_name">Contact Name</label>
+                <label className="text-sm font-medium" htmlFor="first_name">First Name</label>
                 {isEditing ? (
                   <Input
-                    id="contact_name"
-                    name="contact_name"
-                    value={formData.contact_name || ''}
+                    id="first_name"
+                    name="first_name"
+                    value={formData.first_name || ''}
                     onChange={handleChange}
-                    placeholder="Enter contact name"
+                    placeholder="Enter first name"
                   />
                 ) : (
                   <div className="flex items-center">
                     <User className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{district.contact_name || 'Not specified'}</span>
+                    <span>{district.first_name || 'Not specified'}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="last_name">Last Name</label>
+                {isEditing ? (
+                  <Input
+                    id="last_name"
+                    name="last_name"
+                    value={formData.last_name || ''}
+                    onChange={handleChange}
+                    placeholder="Enter last name"
+                  />
+                ) : (
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 mr-2 text-gray-500" />
+                    <span>{district.last_name || 'Not specified'}</span>
                   </div>
                 )}
               </div>
@@ -267,3 +285,4 @@ export const DistrictProfile: React.FC<DistrictProfileProps> = ({ district }) =>
     </div>
   );
 };
+

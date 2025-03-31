@@ -18,6 +18,15 @@ export interface EvaluationRequest {
   status: string;
   created_at: string;
   updated_at: string;
+  schools?: {
+    id: string;
+    name: string;
+  };
+  students?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+  };
 }
 
 export interface CreateEvaluationRequestParams {
@@ -51,7 +60,7 @@ export const fetchEvaluationRequests = async (districtId: string): Promise<Evalu
   try {
     const { data, error } = await supabase
       .from('evaluation_requests')
-      .select('*')
+      .select('*, schools(*), students(*)')
       .eq('district_id', districtId)
       .order('created_at', { ascending: false });
 
