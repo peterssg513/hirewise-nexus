@@ -84,8 +84,9 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
   };
 
   const handleEvaluationUpdated = (updatedEvaluation: EvaluationRequest) => {
-    setEvaluations(prev => prev.map(eval => 
-      eval.id === updatedEvaluation.id ? updatedEvaluation : eval
+    // Fix: Renamed 'eval' to 'evaluation' to avoid reserved keyword
+    setEvaluations(prev => prev.map(evaluation => 
+      evaluation.id === updatedEvaluation.id ? updatedEvaluation : evaluation
     ));
     toast({
       title: 'Evaluation updated',

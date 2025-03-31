@@ -1,17 +1,21 @@
-
-import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { School, createSchool, CreateSchoolParams } from '@/services/schoolService';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { US_STATES } from '@/lib/constants';
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { useForm, SubmitHandler } from "react-hook-form"
+import { CreateSchoolParams, School, createSchool } from '@/services/schoolService';
+import { useToast } from '@/hooks/use-toast';
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { v4 as uuidv4 } from 'uuid';
 
 interface CreateSchoolDialogProps {
   open: boolean;
@@ -20,56 +24,64 @@ interface CreateSchoolDialogProps {
   onSchoolCreated: (school: School) => void;
 }
 
-const formSchema = z.object({
-  name: z.string().min(1, 'School name is required'),
-  enrollment_size: z.string().optional().transform(val => val ? parseInt(val, 10) : undefined),
+const schoolFormSchema = z.object({
+  name: z.string().min(2, {
+    message: "School name must be at least 2 characters.",
+  }),
+  enrollment_size: z.string().optional(),
   street: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-});
+})
 
-type FormValues = z.infer<typeof formSchema>;
+type SchoolFormValues = z.infer<typeof schoolFormSchema>
 
-export const CreateSchoolDialog: React.FC<CreateSchoolDialogProps> = ({
-  open,
-  onOpenChange,
-  districtId,
-  onSchoolCreated,
-}) => {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+export const CreateSchoolDialog: React.FC<CreateSchoolDialogProps> = ({ open, onOpenChange, districtId, onSchoolCreated }) => {
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const { toast } = useToast();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SchoolFormValues>({
+    resolver: zodResolver(schoolFormSchema),
     defaultValues: {
-      name: '',
-      enrollment_size: '',
-      street: '',
-      city: '',
-      state: '',
-      zip_code: '',
+      name: "",
+      enrollment_size: "",
+      street: "",
+      city: "",
+      state: "",
+      zip_code: "",
     },
-  });
+  })
 
-  const { formState } = form;
-  const { isSubmitting } = formState;
-
-  const onSubmit = async (values: FormValues) => {
+  const handleSubmit = async (data: SchoolFormValues) => {
     try {
-      const schoolParams: CreateSchoolParams = {
-        name: values.name,
-        enrollment_size: values.enrollment_size,
-        street: values.street || undefined,
-        city: values.city || undefined,
-        state: values.state || undefined,
-        zip_code: values.zip_code || undefined,
-        district_id: districtId,
+      setIsSubmitting(true);
+      
+      // Convert enrollment_size from string to number
+      const schoolData: CreateSchoolParams = {
+        ...data,
+        enrollment_size: data.enrollment_size ? parseInt(data.enrollment_size as string, 10) : undefined,
+        district_id: districtId
       };
-
-      const newSchool = await createSchool(schoolParams);
+      
+      const newSchool = await createSchool(schoolData);
       onSchoolCreated(newSchool);
-      form.reset();
       onOpenChange(false);
+      reset();
     } catch (error) {
       console.error('Failed to create school:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create school. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -77,131 +89,65 @@ export const CreateSchoolDialog: React.FC<CreateSchoolDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New School</DialogTitle>
+          <DialogTitle>Add School</DialogTitle>
           <DialogDescription>
-            Create a new school in your district
+            Add a new school to the district.
           </DialogDescription>
         </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>School Name *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter school name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+        <form onSubmit={handleSubmit(handleSubmit)}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input id="name" className="col-span-3" {...register("name")} />
+              {errors.name && (
+                <p className="col-span-4 text-sm text-red-500 mt-1 ml-auto">
+                  {errors.name?.message}
+                </p>
               )}
-            />
-
-            <FormField
-              control={form.control}
-              name="enrollment_size"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Enrollment Size</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Number of students" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="street"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Street Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Street address" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City</FormLabel>
-                    <FormControl>
-                      <Input placeholder="City" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select state" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {US_STATES.map((state) => (
-                          <SelectItem key={state.value} value={state.value}>
-                            {state.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="enrollment_size" className="text-right">
+                Enrollment Size
+              </Label>
+              <Input
+                id="enrollment_size"
+                className="col-span-3"
+                {...register("enrollment_size")}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="zip_code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Zip Code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Zip code" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create School'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="street" className="text-right">
+                Street
+              </Label>
+              <Input id="street" className="col-span-3" {...register("street")} />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="city" className="text-right">
+                City
+              </Label>
+              <Input id="city" className="col-span-3" {...register("city")} />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="state" className="text-right">
+                State
+              </Label>
+              <Input id="state" className="col-span-3" {...register("state")} />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="zip_code" className="text-right">
+                Zip Code
+              </Label>
+              <Input id="zip_code" className="col-span-3" {...register("zip_code")} />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create School"}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

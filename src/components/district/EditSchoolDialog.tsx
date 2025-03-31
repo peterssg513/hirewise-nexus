@@ -1,17 +1,22 @@
-
-import React, { useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import React, { useState, useEffect } from 'react';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { useToast } from '@/hooks/use-toast';
 import { School, updateSchool } from '@/services/schoolService';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { US_STATES } from '@/lib/constants';
 
 interface EditSchoolDialogProps {
   open: boolean;
@@ -20,200 +25,135 @@ interface EditSchoolDialogProps {
   onSchoolUpdated: (school: School) => void;
 }
 
-const formSchema = z.object({
-  name: z.string().min(1, 'School name is required'),
-  enrollment_size: z.string().optional().transform(val => val ? parseInt(val, 10) : undefined),
+const schoolFormSchema = z.object({
+  name: z.string().min(2, {
+    message: "School name must be at least 2 characters.",
+  }),
+  enrollment_size: z.string().optional(),
   street: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-});
+})
 
-type FormValues = z.infer<typeof formSchema>;
+type SchoolFormValues = z.infer<typeof schoolFormSchema>
 
-export const EditSchoolDialog: React.FC<EditSchoolDialogProps> = ({
-  open,
-  onOpenChange,
-  school,
-  onSchoolUpdated,
-}) => {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+export const EditSchoolDialog: React.FC<EditSchoolDialogProps> = ({ open, onOpenChange, school, onSchoolUpdated }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const form = useForm<SchoolFormValues>({
+    resolver: zodResolver(schoolFormSchema),
     defaultValues: {
-      name: school.name || '',
-      enrollment_size: school.enrollment_size?.toString() || '',
+      name: school.name,
+      enrollment_size: school.enrollment_size ? school.enrollment_size.toString() : '',
       street: school.street || '',
       city: school.city || '',
       state: school.state || '',
-      zip_code: school.zip_code || '',
+      zip_code: school.zip_code || ''
     },
-  });
+    mode: "onChange",
+  })
 
-  const { formState } = form;
-  const { isSubmitting } = formState;
-
-  useEffect(() => {
-    if (school && open) {
-      form.reset({
-        name: school.name || '',
-        enrollment_size: school.enrollment_size?.toString() || '',
-        street: school.street || '',
-        city: school.city || '',
-        state: school.state || '',
-        zip_code: school.zip_code || '',
-      });
-    }
-  }, [school, open, form]);
-
-  const onSubmit = async (values: FormValues) => {
+  const handleSubmit = async (data: SchoolFormValues) => {
     try {
-      const updatedSchool = await updateSchool(school.id, {
-        name: values.name,
-        enrollment_size: values.enrollment_size,
-        street: values.street || undefined,
-        city: values.city || undefined,
-        state: values.state || undefined,
-        zip_code: values.zip_code || undefined,
-      });
+      setIsSubmitting(true);
       
+      // Convert enrollment_size from string to number
+      const schoolData: Partial<School> = {
+        ...data,
+        enrollment_size: data.enrollment_size ? parseInt(data.enrollment_size as string, 10) : undefined
+      };
+      
+      const updatedSchool = await updateSchool(school.id, schoolData);
       onSchoolUpdated(updatedSchool);
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to update school:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update school. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  // And ensure the default value is properly handled
+  useEffect(() => {
+    if (school) {
+      form.reset({
+        name: school.name,
+        enrollment_size: school.enrollment_size ? school.enrollment_size.toString() : '',
+        street: school.street || '',
+        city: school.city || '',
+        state: school.state || '',
+        zip_code: school.zip_code || ''
+      });
+    }
+  }, [school, form.reset]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit School</DialogTitle>
-          <DialogDescription>
-            Update school information
-          </DialogDescription>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>School Name *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter school name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="enrollment_size"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Enrollment Size</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Number of students" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="street"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Street Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Street address" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City</FormLabel>
-                    <FormControl>
-                      <Input placeholder="City" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select state" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {US_STATES.map((state) => (
-                          <SelectItem key={state.value} value={state.value}>
-                            {state.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="zip_code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Zip Code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Zip code" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Changes'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Edit School</AlertDialogTitle>
+          <AlertDialogDescription>
+            Make changes to the school here. Click save when you're done.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name">School Name</Label>
+            <Input id="name" placeholder="School Name" type="text" {...form.register("name")} />
+            {form.formState.errors.name?.message && (
+              <p className="text-sm text-red-500">{form.formState.errors.name?.message}</p>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="enrollment_size">Enrollment Size</Label>
+            <Input id="enrollment_size" placeholder="Enrollment Size" type="number" {...form.register("enrollment_size")} />
+            {form.formState.errors.enrollment_size?.message && (
+              <p className="text-sm text-red-500">{form.formState.errors.enrollment_size?.message}</p>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="street">Street</Label>
+            <Input id="street" placeholder="Street" type="text" {...form.register("street")} />
+            {form.formState.errors.street?.message && (
+              <p className="text-sm text-red-500">{form.formState.errors.street?.message}</p>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="city">City</Label>
+            <Input id="city" placeholder="City" type="text" {...form.register("city")} />
+            {form.formState.errors.city?.message && (
+              <p className="text-sm text-red-500">{form.formState.errors.city?.message}</p>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="state">State</Label>
+            <Input id="state" placeholder="State" type="text" {...form.register("state")} />
+            {form.formState.errors.state?.message && (
+              <p className="text-sm text-red-500">{form.formState.errors.state?.message}</p>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="zip_code">Zip Code</Label>
+            <Input id="zip_code" placeholder="Zip Code" type="text" {...form.register("zip_code")} />
+            {form.formState.errors.zip_code?.message && (
+              <p className="text-sm text-red-500">{form.formState.errors.zip_code?.message}</p>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save changes"}
+            </Button>
+          </AlertDialogFooter>
+        </form>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
