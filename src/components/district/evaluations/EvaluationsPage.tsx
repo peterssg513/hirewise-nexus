@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EvaluationCard } from './EvaluationCard';
@@ -8,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchEvaluationRequests, EvaluationRequest } from '@/services/evaluationRequestService';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
+
 interface EvaluationsPageProps {
   districtId: string;
   evaluationCounts: {
@@ -20,6 +22,7 @@ interface EvaluationsPageProps {
   };
   loading?: boolean;
 }
+
 export const EvaluationsPage: React.FC<EvaluationsPageProps> = ({
   districtId,
   evaluationCounts,
@@ -27,6 +30,7 @@ export const EvaluationsPage: React.FC<EvaluationsPageProps> = ({
 }) => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  
   const {
     data: evaluations,
     isLoading,
@@ -54,13 +58,17 @@ export const EvaluationsPage: React.FC<EvaluationsPageProps> = ({
         return true;
     }
   });
+  
   const handleEvaluationCreated = () => {
     refetch();
   };
+  
   const handleCreateEvaluation = () => {
     setCreateDialogOpen(true);
   };
-  return <div className="space-y-6">
+  
+  return (
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Evaluation Requests</h2>
         <Button onClick={() => setCreateDialogOpen(true)} className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90 text-slate-50">
@@ -93,14 +101,33 @@ export const EvaluationsPage: React.FC<EvaluationsPageProps> = ({
         
         {/* Shared content for all tabs */}
         <TabsContent value={activeTab} className="space-y-4">
-          {isLoading || initialLoading ? <div className="flex justify-center py-8">
+          {isLoading || initialLoading ? (
+            <div className="flex justify-center py-8">
               <LoadingSpinner />
-            </div> : filteredEvaluations.length === 0 ? <EmptyState title="No evaluations found" description={`No evaluation requests match the current filter.`} actionLabel="Create New Evaluation" onAction={handleCreateEvaluation} /> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredEvaluations.map((evaluation: EvaluationRequest) => <EvaluationCard key={evaluation.id} evaluation={evaluation} />)}
-            </div>}
+            </div>
+          ) : filteredEvaluations.length === 0 ? (
+            <EmptyState 
+              title="No evaluations found" 
+              description={`No evaluation requests match the current filter.`} 
+              actionLabel="Create New Evaluation" 
+              onAction={handleCreateEvaluation} 
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredEvaluations.map((evaluation: EvaluationRequest) => (
+                <EvaluationCard key={evaluation.id} evaluation={evaluation} />
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
-      <CreateEvaluationDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} districtId={districtId} onEvaluationCreated={handleEvaluationCreated} />
-    </div>;
+      <CreateEvaluationDialog 
+        open={createDialogOpen} 
+        onOpenChange={setCreateDialogOpen} 
+        districtId={districtId} 
+        onEvaluationCreated={handleEvaluationCreated} 
+      />
+    </div>
+  );
 };

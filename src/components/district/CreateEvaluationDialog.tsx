@@ -143,7 +143,7 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Evaluation Request</DialogTitle>
           <DialogDescription>
