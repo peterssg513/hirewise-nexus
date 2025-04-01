@@ -36,6 +36,10 @@ const JobListings = () => {
           languages_required,
           qualifications,
           benefits,
+          city,
+          state,
+          country,
+          district_id,
           districts (
             id,
             name,
@@ -46,23 +50,26 @@ const JobListings = () => {
       
       if (error) throw error;
       
-      // Transform the data to match the Job interface
+      // Transform the data to match the Job interface and handle potential null values
       return data.map(job => ({
         id: job.id,
         title: job.title,
-        district_name: job.districts.name,
-        district_location: job.districts.location,
+        district_name: job.districts?.name || 'Unknown District',
+        district_location: job.districts?.location || '',
         description: job.description,
-        skills_required: job.skills_required,
-        location: job.location,
-        timeframe: job.timeframe,
+        skills_required: job.skills_required || [],
+        location: job.location || (job.city && job.state ? `${job.city}, ${job.state}` : ''),
+        timeframe: job.timeframe || '',
         status: job.status,
         created_at: job.created_at,
-        work_type: job.work_type,
-        work_location: job.work_location,
-        languages_required: job.languages_required,
-        qualifications: job.qualifications,
-        benefits: job.benefits
+        work_type: job.work_type || '',
+        work_location: job.work_location || '',
+        languages_required: job.languages_required || [],
+        qualifications: job.qualifications || [],
+        benefits: job.benefits || [],
+        city: job.city || '',
+        state: job.state || '',
+        country: job.country || 'USA'
       }));
     }
   });

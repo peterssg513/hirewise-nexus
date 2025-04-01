@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Building, MapPin, Clock, Briefcase, Check, Languages, GraduationCap, Calendar, DollarSign } from 'lucide-react';
+import { Building, MapPin, Clock, Briefcase, Check, Languages, GraduationCap, Calendar } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,33 +41,33 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">{job.title}</DialogTitle>
-          <DialogDescription className="flex items-center text-base">
-            <Building className="h-4 w-4 mr-1.5" />
-            {job.district_name}
-          </DialogDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <DialogTitle className="text-2xl font-bold">{job.title}</DialogTitle>
+              <DialogDescription className="flex items-center text-base">
+                <Building className="h-4 w-4 mr-1.5" />
+                {job.district_name}
+              </DialogDescription>
+            </div>
+            <Badge className="bg-green-100 text-green-700 border-green-200">
+              Active
+            </Badge>
+          </div>
         </DialogHeader>
         
         <div className="space-y-6">
           {/* Job details grid */}
           <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-md">
             {/* Location */}
-            <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-gray-600" />
-              <div>
-                <div className="text-xs font-medium text-gray-500">Location</div>
-                <div className="text-sm font-medium">{job.location || "Not specified"}</div>
+            {job.location && (
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-gray-600" />
+                <div>
+                  <div className="text-xs font-medium text-gray-500">Location</div>
+                  <div className="text-sm font-medium">{job.location}</div>
+                </div>
               </div>
-            </div>
-            
-            {/* Timeframe */}
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-gray-600" />
-              <div>
-                <div className="text-xs font-medium text-gray-500">Timeframe</div>
-                <div className="text-sm font-medium">{job.timeframe || "Not specified"}</div>
-              </div>
-            </div>
+            )}
             
             {/* Work Type */}
             {job.work_type && (
@@ -87,6 +87,17 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
                 <div>
                   <div className="text-xs font-medium text-gray-500">Work Location</div>
                   <div className="text-sm font-medium">{job.work_location}</div>
+                </div>
+              </div>
+            )}
+            
+            {/* Timeframe */}
+            {job.timeframe && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-gray-600" />
+                <div>
+                  <div className="text-xs font-medium text-gray-500">Timeframe</div>
+                  <div className="text-sm font-medium">{job.timeframe}</div>
                 </div>
               </div>
             )}
@@ -112,8 +123,8 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
             <div>
               <h3 className="text-lg font-semibold mb-2">Required Skills</h3>
               <div className="flex flex-wrap gap-2">
-                {job.skills_required.map(skill => (
-                  <Badge key={skill} variant="outline" className="bg-blue-50 text-blue-700 border-blue-100 py-1">
+                {job.skills_required.map((skill, index) => (
+                  <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-100 py-1">
                     {skill}
                   </Badge>
                 ))}
