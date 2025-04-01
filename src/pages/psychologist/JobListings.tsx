@@ -16,17 +16,54 @@ const JobListings = () => {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   
-  // Fetch active jobs with district information
+  // Fetch active jobs with district information - ensure we select all needed fields
   const { data: jobs, isLoading, error, refetch } = useQuery({
     queryKey: ['active-jobs'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('active_jobs_with_district')
-        .select('*')
+        .from('jobs')
+        .select(`
+          id,
+          title,
+          description,
+          skills_required,
+          location,
+          timeframe,
+          status,
+          created_at,
+          work_type,
+          work_location,
+          languages_required,
+          qualifications,
+          benefits,
+          districts (
+            id,
+            name,
+            location
+          )
+        `)
         .eq('status', 'active');
       
       if (error) throw error;
-      return data as Job[];
+      
+      // Transform the data to match the Job interface
+      return data.map(job => ({
+        id: job.id,
+        title: job.title,
+        district_name: job.districts.name,
+        district_location: job.districts.location,
+        description: job.description,
+        skills_required: job.skills_required,
+        location: job.location,
+        timeframe: job.timeframe,
+        status: job.status,
+        created_at: job.created_at,
+        work_type: job.work_type,
+        work_location: job.work_location,
+        languages_required: job.languages_required,
+        qualifications: job.qualifications,
+        benefits: job.benefits
+      }));
     }
   });
   
@@ -41,7 +78,7 @@ const JobListings = () => {
       
       const matchesSkills = 
         selectedSkills.length === 0 || 
-        selectedSkills.every(skill => job.skills_required?.includes(skill));
+        (job.skills_required && selectedSkills.every(skill => job.skills_required.includes(skill)));
       
       return matchesSearch && matchesSkills;
     });
@@ -121,6 +158,11 @@ const JobListings = () => {
   
   return (
     <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold mb-1">Job Listings</h1>
+        <p className="text-gray-600">Find and apply for school psychology positions</p>
+      </div>
+      
       <JobsFilter 
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -129,7 +171,7 @@ const JobListings = () => {
         allSkills={allSkills}
       />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {isLoading ? (
           <JobsSkeletonLoader />
         ) : filteredJobs?.length === 0 ? (
@@ -144,7 +186,7 @@ const JobListings = () => {
               job={job}
               onViewDetails={setSelectedJob}
               onApply={handleApplyForJob}
-              isApplying={isApplying}
+              isApplying={isApplying && selectedJob?.id === job.id}
             />
           ))
         )}
