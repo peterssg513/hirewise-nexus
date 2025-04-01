@@ -32,7 +32,8 @@ interface JobCardProps {
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, isApplying }) => {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+    <Card className="overflow-hidden border-l-4 hover:shadow-md transition-shadow" 
+          style={{ borderLeftColor: '#10b981' }}>
       <CardHeader className="pb-4">
         <CardTitle className="text-lg">{job.title}</CardTitle>
         <CardDescription className="flex items-center">
@@ -43,16 +44,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, i
       <CardContent className="space-y-4">
         <p className="text-sm line-clamp-3">{job.description}</p>
         
-        {job.skills_required && job.skills_required.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {job.skills_required.slice(0, 3).map(skill => (
-              <Badge key={skill} variant="outline" className="bg-blue-50">{skill}</Badge>
-            ))}
-            {job.skills_required.length > 3 && (
-              <Badge variant="outline">+{job.skills_required.length - 3} more</Badge>
-            )}
-          </div>
-        )}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {job.skills_required && job.skills_required.map(skill => (
+            <Badge key={skill} variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">
+              {skill}
+            </Badge>
+          ))}
+        </div>
         
         <div className="grid grid-cols-2 text-xs text-muted-foreground gap-y-2">
           <div className="flex items-center">
@@ -74,8 +72,9 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, i
           
           {job.work_location && (
             <div className="flex items-center">
-              <MapPin className="w-3 h-3 mr-1" />
-              {job.work_location}
+              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-100 text-xs font-normal">
+                {job.work_location}
+              </Badge>
             </div>
           )}
           
@@ -94,7 +93,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, i
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex gap-2 pt-2">
+      <CardFooter className="flex gap-2 pt-2 border-t bg-gray-50">
         <Button 
           variant="default" 
           className="flex-1"

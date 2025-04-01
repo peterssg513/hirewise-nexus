@@ -62,6 +62,9 @@ export const JobsFilter: React.FC<JobsFilterProps> = ({
           >
             <Filter className="h-4 w-4" />
             <span>Filter Skills</span>
+            {selectedSkills.length > 0 && (
+              <Badge className="ml-1 bg-primary">{selectedSkills.length}</Badge>
+            )}
           </Button>
           <DialogContent>
             <DialogHeader>
@@ -73,7 +76,11 @@ export const JobsFilter: React.FC<JobsFilterProps> = ({
                 <Badge 
                   key={skill}
                   variant={selectedSkills.includes(skill) ? "default" : "outline"}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${
+                    selectedSkills.includes(skill) 
+                      ? "bg-primary text-primary-foreground" 
+                      : "hover:bg-secondary/50"
+                  }`}
                   onClick={() => toggleSkill(skill)}
                 >
                   {skill}

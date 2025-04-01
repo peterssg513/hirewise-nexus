@@ -25,7 +25,7 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{job.title}</DialogTitle>
           <DialogDescription className="flex items-center">
@@ -37,7 +37,7 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-medium">About this position</h3>
-            <p className="text-sm text-muted-foreground whitespace-pre-line">{job.description}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-line mt-2">{job.description}</p>
           </div>
           
           {job.skills_required && job.skills_required.length > 0 && (
@@ -45,7 +45,7 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
               <h3 className="text-lg font-medium">Required Skills</h3>
               <div className="flex flex-wrap gap-2 mt-2">
                 {job.skills_required.map(skill => (
-                  <Badge key={skill} variant="outline" className="bg-blue-50">{skill}</Badge>
+                  <Badge key={skill} variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">{skill}</Badge>
                 ))}
               </div>
             </div>
@@ -94,9 +94,12 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
           {job.qualifications && job.qualifications.length > 0 && (
             <div>
               <h3 className="text-lg font-medium">Qualifications</h3>
-              <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1 mt-2">
+              <ul className="mt-2 space-y-1">
                 {job.qualifications.map((qual, index) => (
-                  <li key={index}>{qual}</li>
+                  <li key={index} className="flex items-start text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 mr-2 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>{qual}</span>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -106,9 +109,12 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
           {job.benefits && job.benefits.length > 0 && (
             <div>
               <h3 className="text-lg font-medium">Benefits</h3>
-              <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1 mt-2">
+              <ul className="mt-2 space-y-1">
                 {job.benefits.map((benefit, index) => (
-                  <li key={index}>{benefit}</li>
+                  <li key={index} className="flex items-start text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 mr-2 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>{benefit}</span>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -120,7 +126,7 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
               <h3 className="text-lg font-medium">Required Languages</h3>
               <div className="flex flex-wrap gap-2 mt-2">
                 {job.languages_required.map((language, index) => (
-                  <Badge key={index} variant="outline" className="bg-green-50">{language}</Badge>
+                  <Badge key={index} variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100">{language}</Badge>
                 ))}
               </div>
             </div>
@@ -128,8 +134,10 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
           
           <DialogFooter className="flex justify-end pt-4">
             <Button 
+              variant="default"
               onClick={() => onApply(job.id)} 
               disabled={isApplying}
+              className="bg-green-500 hover:bg-green-600"
             >
               {isApplying ? "Submitting..." : "Apply Now"}
             </Button>
