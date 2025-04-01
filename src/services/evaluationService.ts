@@ -16,6 +16,25 @@ export interface Evaluation {
 }
 
 /**
+ * Fetch active evaluations available to psychologists
+ * @returns Array of available evaluations
+ */
+export const fetchActiveEvaluations = async (): Promise<Evaluation[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('active_evaluations_with_district')
+      .select('*')
+      .eq('status', 'active');
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching available evaluations:', error);
+    throw error;
+  }
+};
+
+/**
  * Apply for an evaluation request
  * @param evaluationId ID of the evaluation to apply for
  * @param documentsUrls Optional array of document URLs
@@ -42,44 +61,6 @@ export const applyToEvaluation = async (
   } catch (error: any) {
     console.error('Error applying for evaluation:', error);
     throw new Error(error.message || 'Failed to apply for evaluation');
-  }
-};
-
-/**
- * Fetch active evaluations available to psychologists
- * @returns Array of available evaluations
- */
-export const fetchActiveEvaluations = async (): Promise<Evaluation[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('active_evaluations_with_district')
-      .select('*')
-      .eq('status', 'active');
-
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching available evaluations:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetch evaluations available to a psychologist
- * @returns Array of available evaluations
- */
-export const fetchAvailableEvaluations = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('active_evaluations_with_district')
-      .select('*')
-      .eq('status', 'active');
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error fetching available evaluations:', error);
-    throw error;
   }
 };
 
@@ -112,6 +93,25 @@ export const fetchPsychologistEvaluationApplications = async () => {
     return data;
   } catch (error) {
     console.error('Error fetching evaluation applications:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch evaluations available to a psychologist
+ * @returns Array of available evaluations
+ */
+export const fetchAvailableEvaluations = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('active_evaluations_with_district')
+      .select('*')
+      .eq('status', 'active');
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching available evaluations:', error);
     throw error;
   }
 };
