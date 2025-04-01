@@ -12,6 +12,7 @@ import { AdditionalInfoSection } from './sections/AdditionalInfoSection';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { evaluationFormSchema, EvaluationFormValues } from './schema';
+import { Form } from '@/components/ui/form';
 
 export interface CreateEvaluationFormProps {
   districtId: string;
@@ -106,29 +107,31 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      <StudentSection form={form} />
-      <SchoolSection form={form} districtId={districtId} />
-      <ServiceSection form={form} />
-      <ContactSection form={form} />
-      <AdditionalInfoSection form={form} />
-      
-      <div className="flex justify-end pt-4">
-        <Button 
-          type="submit" 
-          disabled={isSubmitting}
-          className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
-            </>
-          ) : (
-            'Create Evaluation'
-          )}
-        </Button>
-      </div>
-    </form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <StudentSection form={form} />
+        <SchoolSection form={form} districtId={districtId} />
+        <ServiceSection form={form} />
+        <ContactSection form={form} />
+        <AdditionalInfoSection form={form} />
+        
+        <div className="flex justify-end pt-4">
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create Evaluation'
+            )}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };

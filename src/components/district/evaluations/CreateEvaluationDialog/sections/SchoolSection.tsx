@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { 
   FormField, 
@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EvaluationFormValues } from '../schema';
-import { fetchSchools, School } from '@/services/schoolService';
+import { fetchSchools } from '@/services/schoolService';
 import { useQuery } from '@tanstack/react-query';
 
 interface SchoolSectionProps {
