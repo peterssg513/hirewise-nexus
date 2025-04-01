@@ -37,12 +37,16 @@ export const EvaluationCard: React.FC<EvaluationCardProps> = ({ evaluation }) =>
     navigate(`/district-dashboard/evaluations/${evaluation.id}`);
   };
 
+  // Create display title
+  const displayTitle = evaluation.title || 
+    `${evaluation.service_type || 'Evaluation'} for ${evaluation.legal_name || 'Student'}`;
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-medium text-lg line-clamp-2">
-            {evaluation.title || `${evaluation.service_type || 'Evaluation'} for ${evaluation.legal_name || 'Student'}`}
+            {displayTitle}
           </h3>
           <Badge 
             variant="outline" 
@@ -71,10 +75,12 @@ export const EvaluationCard: React.FC<EvaluationCardProps> = ({ evaluation }) =>
       
       <CardContent className="py-2 flex-grow">
         <div className="text-sm space-y-3">
-          <div>
-            <p className="text-muted-foreground mb-1">Service Type:</p>
-            <p>{evaluation.service_type}</p>
-          </div>
+          {evaluation.service_type && (
+            <div>
+              <p className="text-muted-foreground mb-1">Service Type:</p>
+              <p>{evaluation.service_type}</p>
+            </div>
+          )}
 
           {evaluation.legal_name && (
             <div>

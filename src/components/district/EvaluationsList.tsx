@@ -56,6 +56,7 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
     <EvaluationsPage 
       districtId={districtId}
       evaluationCounts={evaluationCounts}
+      loading={loading}
     />
   );
 };

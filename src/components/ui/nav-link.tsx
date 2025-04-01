@@ -3,32 +3,34 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
-interface NavLinkProps extends React.ComponentPropsWithoutRef<typeof Link> {
+interface NavLinkProps {
+  to: string;
   children: React.ReactNode;
+  className?: string;
   activeClassName?: string;
   exact?: boolean;
 }
 
-export const NavLink: React.FC<NavLinkProps> = ({
+export const NavLink = ({
   to,
   children,
-  className,
-  activeClassName = 'text-psyched-darkBlue font-medium',
+  className = '',
+  activeClassName = 'text-primary font-medium',
   exact = false,
   ...props
-}) => {
+}: NavLinkProps) => {
   const location = useLocation();
   const isActive = exact 
     ? location.pathname === to
-    : location.pathname.startsWith(to.toString());
+    : location.pathname.startsWith(to);
 
   return (
     <Link
       to={to}
       className={cn(
-        'text-gray-600 hover:text-psyched-darkBlue transition-colors',
-        isActive && activeClassName,
-        className
+        'inline-flex items-center text-muted-foreground hover:text-foreground transition-colors',
+        className,
+        isActive && activeClassName
       )}
       {...props}
     >

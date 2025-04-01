@@ -21,11 +21,16 @@ import {
   EVALUATION_STATUS_OPTIONS,
   fetchEvaluationPaymentRate
 } from '@/services/evaluationPaymentService';
-import { createEvaluationRequest, EvaluationRequest } from '@/services/evaluationRequestService';
+import { 
+  createEvaluationRequest, 
+  EvaluationRequest, 
+  EvaluationRequestStatus 
+} from '@/services/evaluationRequestService';
 import { fetchSchools, School } from '@/services/schoolService';
 import { fetchStudents } from '@/services/studentService';
 import { STATES } from '@/services/stateSalaryService';
 import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const evaluationFormSchema = z.object({
   legal_name: z.string().optional(),
@@ -66,6 +71,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [schools, setSchools] = useState<School[]>([]);
   const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
+  const { toast } = useToast();
   
   const form = useForm<EvaluationFormValues>({
     resolver: zodResolver(evaluationFormSchema),
@@ -100,6 +106,11 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
         setSchools(schoolsData);
       } catch (error) {
         console.error('Failed to load schools:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load schools data',
+          variant: 'destructive'
+        });
       }
     };
 
@@ -112,12 +123,17 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
         })));
       } catch (error) {
         console.error('Failed to load students:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load student data',
+          variant: 'destructive'
+        });
       }
     };
 
     loadSchools();
     loadStudents();
-  }, [districtId]);
+  }, [districtId, toast]);
 
   const handleServiceTypeChange = async (serviceType: string) => {
     form.setValue('service_type', serviceType);
@@ -131,6 +147,11 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
         }
       } catch (error) {
         console.error('Failed to fetch payment rate:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch payment rate',
+          variant: 'destructive'
+        });
       }
     }
   };
@@ -147,6 +168,11 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
         }
       } catch (error) {
         console.error('Failed to fetch payment rate:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch payment rate',
+          variant: 'destructive'
+        });
       }
     }
   };
@@ -178,17 +204,27 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
         district_id: districtId,
         title: data.legal_name ? `Evaluation for ${data.legal_name}` : `New ${data.service_type || 'Evaluation'}`,
         description: data.other_relevant_info || `${data.service_type || 'Evaluation'} request`,
-        skills_required: [],
+        skills_required: data.skills_required || [],
         location: data.state || '',
         timeframe: data.date_of_birth ? `DOB: ${data.date_of_birth}` : '',
+        status: data.status as EvaluationRequestStatus || 'pending',
       };
       
       const newEvaluation = await createEvaluationRequest(evaluationData);
       onEvaluationCreated(newEvaluation);
       onOpenChange(false);
       form.reset();
-    } catch (error) {
+      toast({
+        title: 'Success',
+        description: 'Evaluation request created successfully',
+      });
+    } catch (error: any) {
       console.error('Failed to create evaluation request:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create evaluation request',
+        variant: 'destructive'
+      });
     } finally {
       setIsSubmitting(false);
     }

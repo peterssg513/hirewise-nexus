@@ -1,6 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
+
+// Consistent status types for evaluation requests
+export type EvaluationRequestStatus = 
+  'pending' | 'active' | 'completed' | 'canceled' | 'rejected' | 
+  'Open' | 'Offered' | 'Accepted' | 'Evaluation In Progress' | 'Closed';
 
 export type EvaluationRequest = {
   id: string;
@@ -12,11 +17,11 @@ export type EvaluationRequest = {
   skills_required: string[];
   location: string;
   timeframe: string;
-  service_type: string;
-  status: 'pending' | 'active' | 'completed' | 'canceled' | 'rejected' | 'Open' | 'Offered' | 'Accepted' | 'Evaluation In Progress' | 'Closed';
+  service_type?: string;
+  status: EvaluationRequestStatus;
   created_at: string;
   updated_at: string;
-  // Additional fields from the other interface
+  // Additional fields
   legal_name?: string;
   date_of_birth?: string;
   age?: number;
@@ -59,15 +64,34 @@ export const createEvaluationRequest = async (
   evaluationData: Partial<Omit<EvaluationRequest, 'id' | 'created_at' | 'updated_at'>>
 ): Promise<EvaluationRequest> => {
   try {
-    // Add default status as pending if not provided
+    // Make sure district_id is required
+    if (!evaluationData.district_id) {
+      throw new Error('District ID is required');
+    }
+    
+    // Add default values
     const newEvaluation = {
-      ...evaluationData,
-      status: evaluationData.status || 'pending',
+      district_id: evaluationData.district_id,
+      status: evaluationData.status || 'pending' as EvaluationRequestStatus,
       title: evaluationData.title || evaluationData.service_type || 'New Evaluation',
       description: evaluationData.description || `Evaluation request for ${evaluationData.legal_name || 'student'}`,
       skills_required: evaluationData.skills_required || [],
       location: evaluationData.location || '',
       timeframe: evaluationData.timeframe || '',
+      service_type: evaluationData.service_type || '',
+      // Include the rest of the fields
+      school_id: evaluationData.school_id,
+      student_id: evaluationData.student_id,
+      legal_name: evaluationData.legal_name,
+      date_of_birth: evaluationData.date_of_birth,
+      age: evaluationData.age,
+      grade: evaluationData.grade,
+      general_education_teacher: evaluationData.general_education_teacher,
+      special_education_teachers: evaluationData.special_education_teachers,
+      parents: evaluationData.parents,
+      other_relevant_info: evaluationData.other_relevant_info,
+      state: evaluationData.state,
+      payment_amount: evaluationData.payment_amount
     };
 
     const { data, error } = await supabase
