@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,12 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Job, createJob } from '@/services/jobService';
-import { STATES, WORK_LOCATIONS, WORK_TYPES } from '@/services/stateSalaryService';
+import { Job, createJob, JOB_TITLES, WORK_TYPES, DEFAULT_BENEFITS, TOP_LANGUAGES } from '@/services/jobService';
+import { STATES, WORK_LOCATIONS } from '@/services/stateSalaryService';
 import { useToast } from '@/hooks/use-toast';
 import { fetchSchools } from '@/services/schoolService';
 import { v4 as uuidv4 } from 'uuid';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Check, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface CreateJobDialogProps {
   open: boolean;
@@ -39,127 +41,6 @@ const jobFormSchema = z.object({
 
 type JobFormValues = z.infer<typeof jobFormSchema>;
 
-const JobBasicInfo = ({ register, errors }: any) => (
-  <>
-    <div className="grid gap-2">
-      <Label htmlFor="title">Job Title</Label>
-      <Input id="title" {...register("title")} placeholder="Job Title" />
-      {errors.title && (
-        <p className="text-sm text-red-500">{errors.title.message}</p>
-      )}
-    </div>
-    
-    <div className="grid gap-2">
-      <Label htmlFor="description">Job Description</Label>
-      <Textarea
-        id="description"
-        {...register("description")}
-        placeholder="Job Description"
-        rows={4}
-      />
-      {errors.description && (
-        <p className="text-sm text-red-500">{errors.description.message}</p>
-      )}
-    </div>
-  </>
-);
-
-const JobLocationInfo = ({ register, setValue }: any) => (
-  <>
-    <div className="grid grid-cols-2 gap-4">
-      <div className="grid gap-2">
-        <Label htmlFor="city">City</Label>
-        <Input id="city" {...register("city")} placeholder="City" />
-      </div>
-      
-      <div className="grid gap-2">
-        <Label htmlFor="state">State</Label>
-        <Select onValueChange={(value) => setValue("state", value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select state" />
-          </SelectTrigger>
-          <SelectContent>
-            {STATES.map((state) => (
-              <SelectItem key={state.code} value={state.code}>
-                {state.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-    
-    <div className="grid grid-cols-2 gap-4">
-      <div className="grid gap-2">
-        <Label htmlFor="country">Country</Label>
-        <Input id="country" value="USA" disabled placeholder="Country" />
-      </div>
-      
-      <div className="grid gap-2">
-        <Label htmlFor="work_location">Work Location</Label>
-        <Select onValueChange={(value) => setValue("work_location", value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select work location" />
-          </SelectTrigger>
-          <SelectContent>
-            {WORK_LOCATIONS.map((location) => (
-              <SelectItem key={location} value={location}>
-                {location}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  </>
-);
-
-const ListManager = ({ 
-  items, 
-  setItems, 
-  addItem, 
-  updateItem, 
-  removeItem, 
-  label, 
-  addButtonLabel 
-}: {
-  items: { id: string; text: string }[];
-  setItems: React.Dispatch<React.SetStateAction<{ id: string; text: string }[]>>;
-  addItem: () => void;
-  updateItem: (id: string, text: string) => void;
-  removeItem: (id: string) => void;
-  label: string;
-  addButtonLabel: string;
-}) => (
-  <div>
-    <Label>{label}</Label>
-    {items.map((item) => (
-      <div key={item.id} className="flex items-center space-x-2 mt-2">
-        <Input
-          type="text"
-          placeholder={label}
-          value={item.text}
-          onChange={(e) => updateItem(item.id, e.target.value)}
-          className="flex-1"
-        />
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => removeItem(item.id)}
-          disabled={items.length <= 1}
-        >
-          <Trash className="h-4 w-4" />
-        </Button>
-      </div>
-    ))}
-    <Button type="button" variant="secondary" size="sm" onClick={addItem} className="mt-2">
-      <Plus className="h-4 w-4 mr-2" />
-      {addButtonLabel}
-    </Button>
-  </div>
-);
-
 export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({ 
   open, 
   onOpenChange, 
@@ -171,9 +52,7 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
   const [qualifications, setQualifications] = useState<{ id: string; text: string }[]>([
     { id: uuidv4(), text: '' }
   ]);
-  const [benefits, setBenefits] = useState<{ id: string; text: string }[]>([
-    { id: uuidv4(), text: '' }
-  ]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const { toast } = useToast();
 
   const {
@@ -208,8 +87,12 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
 
     if (open) {
       loadSchools();
+      // Reset form when dialog opens
+      reset();
+      setQualifications([{ id: uuidv4(), text: '' }]);
+      setSelectedLanguages([]);
     }
-  }, [open, districtId]);
+  }, [open, districtId, reset]);
 
   const onSubmit = async (data: JobFormValues) => {
     try {
@@ -221,15 +104,13 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
         description: data.description,
         district_id: districtId,
         qualifications: qualifications.filter(q => q.text.trim() !== '').map(q => q.text),
-        benefits: benefits.filter(b => b.text.trim() !== '').map(b => b.text),
+        benefits: DEFAULT_BENEFITS, // Use the predefined benefits
+        languages_required: selectedLanguages,
       };
       
       const newJob = await createJob(jobData);
       onJobCreated(newJob);
       onOpenChange(false);
-      reset();
-      setQualifications([{ id: uuidv4(), text: '' }]);
-      setBenefits([{ id: uuidv4(), text: '' }]);
     } catch (error) {
       console.error('Failed to create job:', error);
       toast({
@@ -256,18 +137,12 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
     setQualifications(prev => prev.filter(q => q.id !== id));
   };
 
-  const addBenefit = () => {
-    setBenefits(prev => [...prev, { id: uuidv4(), text: '' }]);
-  };
-
-  const updateBenefit = (id: string, text: string) => {
-    setBenefits(prev =>
-      prev.map(b => (b.id === id ? { ...b, text } : b))
+  const toggleLanguage = (language: string) => {
+    setSelectedLanguages(prev => 
+      prev.includes(language) 
+        ? prev.filter(l => l !== language)
+        : [...prev, language]
     );
-  };
-
-  const removeBenefit = (id: string) => {
-    setBenefits(prev => prev.filter(b => b.id !== id));
   };
 
   return (
@@ -281,8 +156,83 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
         </DialogHeader>
         
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
-          <JobBasicInfo register={register} errors={errors} />
-          <JobLocationInfo register={register} setValue={setValue} />
+          <div className="grid gap-2">
+            <Label htmlFor="title">Job Title</Label>
+            <Select onValueChange={(value) => setValue("title", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select job title" />
+              </SelectTrigger>
+              <SelectContent>
+                {JOB_TITLES.map((title) => (
+                  <SelectItem key={title} value={title}>
+                    {title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.title && (
+              <p className="text-sm text-red-500">{errors.title.message}</p>
+            )}
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="description">Job Description</Label>
+            <Textarea
+              id="description"
+              {...register("description")}
+              placeholder="Job Description"
+              rows={4}
+            />
+            {errors.description && (
+              <p className="text-sm text-red-500">{errors.description.message}</p>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="city">City</Label>
+              <Input id="city" {...register("city")} placeholder="City" />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="state">State</Label>
+              <Select onValueChange={(value) => setValue("state", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATES.map((state) => (
+                    <SelectItem key={state.code} value={state.code}>
+                      {state.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="country">Country</Label>
+              <Input id="country" value="USA" disabled placeholder="Country" />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="work_location">Work Location</Label>
+              <Select onValueChange={(value) => setValue("work_location", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select work location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {WORK_LOCATIONS.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
@@ -319,25 +269,67 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
             </div>
           </div>
           
-          <ListManager
-            items={qualifications}
-            setItems={setQualifications}
-            addItem={addQualification}
-            updateItem={updateQualification}
-            removeItem={removeQualification}
-            label="Qualifications"
-            addButtonLabel="Add Qualification"
-          />
+          <div>
+            <Label>Languages Required</Label>
+            <div className="flex flex-wrap gap-2 mt-2 max-h-40 overflow-y-auto p-2 border rounded">
+              {TOP_LANGUAGES.map((language) => (
+                <div 
+                  key={language}
+                  onClick={() => toggleLanguage(language)}
+                  className={`px-3 py-1 rounded-full flex items-center cursor-pointer text-sm ${
+                    selectedLanguages.includes(language) 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                  }`}
+                >
+                  {selectedLanguages.includes(language) ? (
+                    <Check className="mr-1 h-3 w-3" />
+                  ) : null}
+                  {language}
+                </div>
+              ))}
+            </div>
+          </div>
           
-          <ListManager
-            items={benefits}
-            setItems={setBenefits}
-            addItem={addBenefit}
-            updateItem={updateBenefit}
-            removeItem={removeBenefit}
-            label="Benefits"
-            addButtonLabel="Add Benefit"
-          />
+          <div>
+            <Label>Qualifications</Label>
+            {qualifications.map((qualification, index) => (
+              <div key={qualification.id} className="flex items-center space-x-2 mt-2">
+                <Input
+                  type="text"
+                  placeholder="Qualification"
+                  value={qualification.text}
+                  onChange={(e) => updateQualification(qualification.id, e.target.value)}
+                  className="flex-1"
+                />
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => removeQualification(qualification.id)}
+                  disabled={qualifications.length <= 1}
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button type="button" variant="secondary" size="sm" onClick={addQualification} className="mt-2">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Qualification
+            </Button>
+          </div>
+          
+          <div>
+            <Label>Default Benefits (Included)</Label>
+            <div className="space-y-2 p-3 bg-gray-50 rounded border mt-2">
+              {DEFAULT_BENEFITS.map((benefit, index) => (
+                <div key={index} className="flex items-center">
+                  <Check className="h-4 w-4 mr-2 text-green-500" />
+                  <span className="text-sm">{benefit}</span>
+                </div>
+              ))}
+            </div>
+          </div>
           
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
