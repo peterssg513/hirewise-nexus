@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, Clock, Building, Briefcase, GraduationCap, Languages } from 'lucide-react';
+import { MapPin, Clock, Building, Briefcase, GraduationCap, Languages, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -89,6 +89,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, i
             <div className="flex items-center">
               <GraduationCap className="w-3 h-3 mr-1" />
               {job.qualifications.length} {job.qualifications.length === 1 ? 'qualification' : 'qualifications'}
+            </div>
+          )}
+          
+          {job.benefits && job.benefits.length > 0 && (
+            <div className="flex items-center col-span-2">
+              <Check className="w-3 h-3 mr-1 text-green-500" />
+              <span className="truncate">{job.benefits.length} benefits included</span>
             </div>
           )}
         </div>
