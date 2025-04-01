@@ -5,16 +5,18 @@ import { Search } from 'lucide-react';
 import { SearchInput } from './SearchInput';
 import { FilterSelect } from './FilterSelect';
 
-interface FilterOption {
+export interface FilterOption {
   value: string;
   label: string;
 }
 
-interface SearchFilterBarProps {
+export interface SearchFilterBarProps {
   placeholder?: string;
   filterOptions?: FilterOption[];
   onSearch: (searchTerm: string) => void;
   onFilter?: (filterValue: string) => void;
+  initialFilterValue?: string;
+  initialSearchTerm?: string;
 }
 
 export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
@@ -22,9 +24,11 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   filterOptions = [],
   onSearch,
   onFilter,
+  initialFilterValue = "all",
+  initialSearchTerm = "",
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterValue, setFilterValue] = useState("all");
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+  const [filterValue, setFilterValue] = useState(initialFilterValue);
 
   const handleSearch = () => {
     onSearch(searchTerm);

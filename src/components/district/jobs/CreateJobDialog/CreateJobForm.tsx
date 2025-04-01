@@ -17,13 +17,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   STATES, 
-  WORK_TYPES, 
   WORK_LOCATIONS,
   fetchAverageSalaryByState 
 } from '@/services/stateSalaryService';
-import { createJob, Job } from '@/services/jobService';
+import { createJob, Job, JOB_TITLES, WORK_TYPES, TOP_LANGUAGES } from '@/services/jobService';
 import { fetchSchools, School } from '@/services/schoolService';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Check, X } from 'lucide-react';
 
 const jobFormSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
@@ -38,6 +37,7 @@ const jobFormSchema = z.object({
   school_id: z.string().optional(),
   skills_required: z.string().array().optional(),
   qualifications: z.string().array().optional(),
+  languages_required: z.string().array().optional(),
 });
 
 export type JobFormValues = z.infer<typeof jobFormSchema>;
@@ -59,6 +59,7 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
   const [currentSkill, setCurrentSkill] = useState('');
   const [qualifications, setQualifications] = useState<string[]>([]);
   const [currentQualification, setCurrentQualification] = useState('');
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
@@ -75,6 +76,7 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
       school_id: '',
       skills_required: [],
       qualifications: [],
+      languages_required: [],
     },
   });
 
@@ -100,10 +102,11 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
       
       // Prepare job data
       const jobData = {
-        title: data.title, // Make sure title is specified and required
+        title: data.title,
         description: data.description,
         skills_required: skills,
         qualifications: qualifications,
+        languages_required: selectedLanguages,
         salary,
         district_id: districtId,
         state: data.state,
@@ -121,6 +124,7 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
       form.reset();
       setSkills([]);
       setQualifications([]);
+      setSelectedLanguages([]);
     } catch (error) {
       console.error('Failed to create job:', error);
     } finally {
@@ -165,6 +169,14 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
     }
   };
 
+  const toggleLanguage = (language: string) => {
+    setSelectedLanguages(prev => 
+      prev.includes(language) 
+        ? prev.filter(l => l !== language)
+        : [...prev, language]
+    );
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -176,7 +188,21 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
               <FormItem>
                 <FormLabel>Job Title*</FormLabel>
                 <FormControl>
-                  <Input placeholder="School Psychologist" {...field} />
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select job title" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {JOB_TITLES.map((title) => (
+                        <SelectItem key={title} value={title}>
+                          {title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -362,6 +388,28 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
           />
           
           <div>
+            <label className="block text-sm font-medium mb-1">Languages Required</label>
+            <div className="flex flex-wrap gap-2 mt-2 max-h-40 overflow-y-auto p-2 border rounded">
+              {TOP_LANGUAGES.map((language) => (
+                <div 
+                  key={language}
+                  onClick={() => toggleLanguage(language)}
+                  className={`px-3 py-1 rounded-full flex items-center cursor-pointer text-sm ${
+                    selectedLanguages.includes(language) 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                  }`}
+                >
+                  {selectedLanguages.includes(language) ? (
+                    <Check className="mr-1 h-3 w-3" />
+                  ) : null}
+                  {language}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div>
             <label className="block text-sm font-medium mb-1">Skills Required</label>
             <div className="flex mb-2">
               <Input
@@ -429,6 +477,22 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
                 ))}
               </div>
             )}
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Default Benefits (Included)</label>
+            <div className="space-y-2 p-3 bg-gray-50 rounded border">
+              {["Health, dental, and vision insurance",
+                "Paid Sick Time",
+                "Online resources, NASP approved webinars, therapy ideas and free CEUs",
+                "Health & Wellness Stipend",
+                "401(k)"].map((benefit, index) => (
+                <div key={index} className="flex items-center">
+                  <Check className="h-4 w-4 mr-2 text-green-500" />
+                  <span className="text-sm">{benefit}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
         

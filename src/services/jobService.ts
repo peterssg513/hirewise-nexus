@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Job {
@@ -20,6 +19,7 @@ export interface Job {
   qualifications?: string[];
   benefits?: string[];
   documents_required?: string[];
+  languages_required?: string[];
   status: string;
   created_at: string;
   updated_at: string;
@@ -41,6 +41,7 @@ export interface CreateJobParams {
   qualifications?: string[];
   benefits?: string[];
   documents_required?: string[];
+  languages_required?: string[];
 }
 
 export const JOB_TYPES = [
@@ -57,6 +58,54 @@ export const JOB_STATUSES = [
   "offered",
   "accepted",
   "closed"
+];
+
+export const JOB_TITLES = [
+  "School Psychologist",
+  "Bilingual School Psychologist",
+  "Early Intervention School Psychologist",
+  "Licensed Specialist in School Psychology (LSSP)",
+  "Educational Diagnostician",
+  "School Psychological Examiner",
+  "School Psychometrist",
+  "Consulting Psychologist"
+];
+
+export const WORK_TYPES = [
+  "Full Time", 
+  "Part Time", 
+  "As Needed"
+];
+
+export const DEFAULT_BENEFITS = [
+  "Health, dental, and vision insurance",
+  "Paid Sick Time",
+  "Online resources, NASP approved webinars, therapy ideas and free CEUs",
+  "Health & Wellness Stipend",
+  "401(k)"
+];
+
+export const TOP_LANGUAGES = [
+  "English",
+  "Spanish",
+  "Chinese (Mandarin/Cantonese)",
+  "Tagalog",
+  "Vietnamese",
+  "Arabic",
+  "French",
+  "Korean",
+  "Russian",
+  "German",
+  "Haitian Creole",
+  "Hindi",
+  "Portuguese",
+  "Italian",
+  "Polish",
+  "Urdu",
+  "Japanese",
+  "Persian (Farsi)",
+  "Gujarati",
+  "Bengali"
 ];
 
 /**
@@ -121,10 +170,11 @@ export const fetchJobById = async (jobId: string): Promise<Job | null> => {
  */
 export const createJob = async (jobData: CreateJobParams): Promise<Job> => {
   try {
-    // Set default status to 'pending' for admin approval
+    // Set default status to 'pending' for admin approval and include default benefits
     const jobWithDefaults = {
       ...jobData,
-      status: 'pending'
+      status: 'pending',
+      benefits: jobData.benefits || DEFAULT_BENEFITS
     };
     
     const { data, error } = await supabase

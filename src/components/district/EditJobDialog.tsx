@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Job, updateJob } from '@/services/jobService';
+import { Job, updateJob, JOB_TITLES, WORK_TYPES, DEFAULT_BENEFITS, TOP_LANGUAGES } from '@/services/jobService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Check } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -41,6 +42,7 @@ const jobFormSchema = z.object({
   country: z.string().optional(),
   job_type: z.string().optional(),
   school_id: z.string().optional(),
+  work_type: z.string().optional(),
 });
 
 type JobFormValues = z.infer<typeof jobFormSchema>;
@@ -50,6 +52,7 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [qualifications, setQualifications] = useState<{ id: string; text: string }[]>([]);
   const [documentsRequired, setDocumentsRequired] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
 
   const {
@@ -70,6 +73,7 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
       state: job.state || '',
       country: job.country || 'USA',
       job_type: job.job_type || '',
+      work_type: job.work_type || '',
       school_id: job.school_id || '',
     },
   });
@@ -85,11 +89,13 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
         state: job.state || '',
         country: job.country || 'USA',
         job_type: job.job_type || '',
+        work_type: job.work_type || '',
         school_id: job.school_id || '',
       });
       
       setQualifications(job.qualifications ? job.qualifications.map(text => ({ id: uuidv4(), text })) : []);
       setDocumentsRequired(job.documents_required || []);
+      setSelectedLanguages(job.languages_required || []);
     }
   }, [job, reset]);
 
@@ -119,7 +125,9 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
         ...data,
         salary: data.salary ? parseFloat(data.salary) : undefined,
         qualifications: qualifications.filter(q => q.text.trim() !== '').map(q => q.text),
-        documents_required: documentsRequired.filter(doc => doc.trim() !== '')
+        documents_required: documentsRequired.filter(doc => doc.trim() !== ''),
+        languages_required: selectedLanguages,
+        benefits: DEFAULT_BENEFITS
       };
       
       const updatedJob = await updateJob(job.id, jobData);
@@ -175,9 +183,17 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
     setValue("school_id", value);
   };
 
+  const toggleLanguage = (language: string) => {
+    setSelectedLanguages(prev => 
+      prev.includes(language) 
+        ? prev.filter(l => l !== language)
+        : [...prev, language]
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Job</DialogTitle>
           <DialogDescription>
@@ -187,7 +203,21 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="title">Job Title</Label>
-            <Input id="title" placeholder="Job Title" {...register('title')} />
+            <Select 
+              defaultValue={job.title}
+              onValueChange={(value) => setValue("title", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select job title" />
+              </SelectTrigger>
+              <SelectContent>
+                {JOB_TITLES.map((title) => (
+                  <SelectItem key={title} value={title}>
+                    {title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.title && (
               <p className="text-sm text-red-500">{errors.title.message}</p>
             )}
@@ -226,8 +256,22 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
             <Input id="country" placeholder="Country" {...register('country')} defaultValue="USA" />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="job_type">Job Type</Label>
-            <Input id="job_type" placeholder="Job Type" {...register('job_type')} />
+            <Label htmlFor="work_type">Work Type</Label>
+            <Select 
+              defaultValue={job.work_type || ''}
+              onValueChange={(value) => setValue("work_type", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select work type" />
+              </SelectTrigger>
+              <SelectContent>
+                {WORK_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="grid gap-2">
@@ -248,6 +292,28 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <Label>Languages Required</Label>
+            <div className="flex flex-wrap gap-2 mt-2 max-h-40 overflow-y-auto p-2 border rounded">
+              {TOP_LANGUAGES.map((language) => (
+                <div 
+                  key={language}
+                  onClick={() => toggleLanguage(language)}
+                  className={`px-3 py-1 rounded-full flex items-center cursor-pointer text-sm ${
+                    selectedLanguages.includes(language) 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                  }`}
+                >
+                  {selectedLanguages.includes(language) ? (
+                    <Check className="mr-1 h-3 w-3" />
+                  ) : null}
+                  {language}
+                </div>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -292,6 +358,18 @@ export const EditJobDialog: React.FC<EditJobDialogProps> = ({ open, onOpenChange
               <Plus className="h-4 w-4 mr-2" />
               Add Document
             </Button>
+          </div>
+          
+          <div>
+            <Label>Default Benefits (Included)</Label>
+            <div className="space-y-2 p-3 bg-gray-50 rounded border mt-2">
+              {DEFAULT_BENEFITS.map((benefit, index) => (
+                <div key={index} className="flex items-center">
+                  <Check className="h-4 w-4 mr-2 text-green-500" />
+                  <span className="text-sm">{benefit}</span>
+                </div>
+              ))}
+            </div>
           </div>
         
           <DialogFooter>
