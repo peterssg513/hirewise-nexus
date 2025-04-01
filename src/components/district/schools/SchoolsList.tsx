@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { School, fetchSchools, deleteSchool } from '@/services/schoolService';
+
+import React, { useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { fetchSchools, School } from '@/services/schoolService';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, School as SchoolIcon, Filter } from 'lucide-react';
-import { CreateSchoolDialog } from '../CreateSchoolDialog';
-import { EditSchoolDialog } from '../EditSchoolDialog';
-import { SearchFilterBar } from '../search/SearchFilterBar';
-import { SchoolCard } from './SchoolCard';
-import { EmptyState } from '@/components/common/EmptyState';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
+import { EmptyState } from '@/components/common/EmptyState';
+import { SearchFilterBar } from '@/components/district/search/SearchFilterBar';
+import { SchoolCard } from './SchoolCard';
+import { CreateSchoolDialog } from '../CreateSchoolDialog';
 
 interface SchoolsListProps {
   districtId: string;
@@ -18,31 +17,26 @@ interface SchoolsListProps {
 export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
   const [schools, setSchools] = useState<School[]>([]);
   const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
-  const [editingSchool, setEditingSchool] = useState<School | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
-  const [schoolToDelete, setSchoolToDelete] = useState<School | null>(null);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
   const { toast } = useToast();
-
+  
   useEffect(() => {
     loadSchools();
   }, [districtId]);
-
-  useEffect(() => {
-    setFilteredSchools(schools);
-  }, [schools]);
-
+  
   const loadSchools = async () => {
     try {
       setLoading(true);
       const schoolsData = await fetchSchools(districtId);
       setSchools(schoolsData);
+      setFilteredSchools(schoolsData);
     } catch (error) {
-      console.error('Failed to load schools:', error);
+      console.error('Error loading schools:', error);
       toast({
-        title: 'Error loading schools',
+        title: 'Error',
         description: 'Failed to load schools. Please try again later.',
         variant: 'destructive',
       });
@@ -50,145 +44,123 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
       setLoading(false);
     }
   };
-
+  
   const handleSchoolCreated = (newSchool: School) => {
-    setSchools(prev => [...prev, newSchool]);
+    setSchools(prev => [newSchool, ...prev]);
+    setFilteredSchools(prev => [newSchool, ...prev]);
     toast({
-      title: 'School created',
-      description: `${newSchool.name} has been created successfully.`,
+      title: 'Success',
+      description: 'School created successfully',
     });
   };
-
+  
   const handleSchoolUpdated = (updatedSchool: School) => {
-    setSchools(prev => prev.map(school => 
+    const updatedSchools = schools.map(school => 
       school.id === updatedSchool.id ? updatedSchool : school
-    ));
+    );
+    setSchools(updatedSchools);
+    setFilteredSchools(updatedSchools.filter(school => applyFilters(school)));
     toast({
-      title: 'School updated',
-      description: `${updatedSchool.name} has been updated successfully.`,
+      title: 'Success',
+      description: 'School updated successfully',
     });
   };
-
-  const confirmDeleteSchool = (school: School) => {
-    setSchoolToDelete(school);
-    setDeleteDialogOpen(true);
+  
+  const handleSchoolDeleted = (deletedSchoolId: string) => {
+    const updatedSchools = schools.filter(school => school.id !== deletedSchoolId);
+    setSchools(updatedSchools);
+    setFilteredSchools(updatedSchools.filter(school => applyFilters(school)));
+    toast({
+      title: 'Success',
+      description: 'School deleted successfully',
+    });
   };
-
-  const handleDeleteSchool = async () => {
-    if (!schoolToDelete) return;
-    
-    try {
-      setIsDeleting(true);
-      await deleteSchool(schoolToDelete.id);
-      setSchools(prev => prev.filter(school => school.id !== schoolToDelete.id));
-      toast({
-        title: 'School deleted',
-        description: `${schoolToDelete.name} has been deleted successfully.`,
-      });
-    } catch (error) {
-      console.error('Failed to delete school:', error);
-      toast({
-        title: 'Error deleting school',
-        description: 'Failed to delete school. Please try again later.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setSchoolToDelete(null);
-    }
-  };
-
-  const handleSearch = (searchTerm: string) => {
-    if (!searchTerm.trim()) {
-      setFilteredSchools(schools);
-      return;
+  
+  const applyFilters = (school: School) => {
+    // Apply search term filter
+    if (searchTerm && !school.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
     }
     
-    const lowerCaseSearch = searchTerm.toLowerCase();
-    const filtered = schools.filter(school => 
-      school.name.toLowerCase().includes(lowerCaseSearch) || 
-      (school.city && school.city.toLowerCase().includes(lowerCaseSearch)) ||
-      (school.state && school.state.toLowerCase().includes(lowerCaseSearch)) ||
-      (school.zip_code && school.zip_code.toLowerCase().includes(lowerCaseSearch))
-    );
+    // Apply grade filter if any grades are selected
+    if (selectedGrades.length > 0) {
+      // This assumes schools have a grades property that is an array of strings
+      const schoolGrades = school.grades || [];
+      const hasMatchingGrade = selectedGrades.some(grade => 
+        schoolGrades.includes(grade)
+      );
+      if (!hasMatchingGrade) {
+        return false;
+      }
+    }
     
+    return true;
+  };
+  
+  useEffect(() => {
+    // Apply filters whenever search term or selected grades change
+    const filtered = schools.filter(applyFilters);
     setFilteredSchools(filtered);
+  }, [searchTerm, selectedGrades, schools]);
+  
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
   };
+  
+  const handleFilter = (filter: Record<string, string[]>) => {
+    if (filter.grades) {
+      setSelectedGrades(filter.grades);
+    } else {
+      setSelectedGrades([]);
+    }
+  };
+  
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Schools</h2>
-        <Button 
-          onClick={() => setCreateDialogOpen(true)}
-          className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-        >
-          <Plus className="mr-2 h-4 w-4" /> Add School
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row justify-between gap-4 md:items-center">
+        <SearchFilterBar 
+          placeholder="Search schools..." 
+          onSearch={handleSearch}
+          onFilter={handleFilter}
+        />
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="md:w-auto w-full">
+          <Plus className="mr-1 h-4 w-4" /> Add School
         </Button>
       </div>
-
-      <SearchFilterBar 
-        placeholder="Search schools by name, location..."
-        onSearch={handleSearch}
-      />
-
-      {loading ? (
-        <LoadingSpinner />
+      
+      {filteredSchools.length === 0 ? (
+        <EmptyState 
+          title="No Schools Found" 
+          description={searchTerm || selectedGrades.length > 0 ? 
+            "No schools match your search criteria. Try adjusting your filters." : 
+            "You haven't added any schools yet."
+          }
+          actionLabel={!searchTerm && selectedGrades.length === 0 ? "Add Your First School" : undefined}
+          onAction={!searchTerm && selectedGrades.length === 0 ? () => setIsCreateDialogOpen(true) : undefined}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredSchools.length === 0 ? (
-            <EmptyState
-              icon={<Filter className="h-10 w-10" />}
-              title="No schools found"
-              description="No schools match your criteria. Try adjusting your filters or create your first school."
-              actionLabel="Add School"
-              onAction={() => setCreateDialogOpen(true)}
+          {filteredSchools.map((school) => (
+            <SchoolCard 
+              key={school.id} 
+              school={school} 
+              onSchoolUpdated={handleSchoolUpdated}
+              onSchoolDeleted={handleSchoolDeleted}
             />
-          ) : (
-            filteredSchools.map((school) => (
-              <SchoolCard
-                key={school.id}
-                school={school}
-                onEdit={setEditingSchool}
-                onDelete={confirmDeleteSchool}
-              />
-            ))
-          )}
+          ))}
         </div>
       )}
-
+      
       <CreateSchoolDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
         districtId={districtId}
         onSchoolCreated={handleSchoolCreated}
       />
-
-      {editingSchool && (
-        <EditSchoolDialog
-          open={!!editingSchool}
-          onOpenChange={(isOpen) => !isOpen && setEditingSchool(null)}
-          school={editingSchool}
-          onSchoolUpdated={handleSchoolUpdated}
-        />
-      )}
-
-      {schoolToDelete && (
-        <ConfirmDeleteDialog
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          onConfirm={handleDeleteSchool}
-          title="Are you sure?"
-          description={
-            <>
-              This will permanently delete the school{' '}
-              <span className="font-semibold">{schoolToDelete.name}</span> and may affect related records. This action cannot be undone.
-            </>
-          }
-          isDeleting={isDeleting}
-        />
-      )}
-    </>
+    </div>
   );
 };
