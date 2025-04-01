@@ -83,11 +83,9 @@ export const EvaluationsPage: React.FC<EvaluationsPageProps> = ({
     // Filter based on search term
     const term = searchTerm.toLowerCase();
     const filtered = evaluations.filter(evaluation => 
-      (evaluation.legal_name && evaluation.legal_name.toLowerCase().includes(term)) ||
-      (evaluation.service_type && evaluation.service_type.toLowerCase().includes(term)) ||
-      (evaluation.grade && evaluation.grade.toLowerCase().includes(term)) ||
-      (evaluation.general_education_teacher && evaluation.general_education_teacher.toLowerCase().includes(term)) ||
-      (evaluation.schools?.name && evaluation.schools.name.toLowerCase().includes(term))
+      (evaluation.title && evaluation.title.toLowerCase().includes(term)) ||
+      (evaluation.description && evaluation.description.toLowerCase().includes(term)) ||
+      (evaluation.service_type && evaluation.service_type.toLowerCase().includes(term))
     );
     
     setFilteredEvaluations(filtered);

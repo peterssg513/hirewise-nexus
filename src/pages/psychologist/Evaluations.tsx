@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, FileText, Info, Search, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Evaluation, fetchAvailableEvaluations, applyForEvaluation } from '@/services/evaluationService';
+import { Evaluation, fetchActiveEvaluations, applyToEvaluation } from '@/services/evaluationService';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -22,7 +22,7 @@ const Evaluations = () => {
     const fetchEvaluations = async () => {
       try {
         setLoading(true);
-        const data = await fetchAvailableEvaluations();
+        const data = await fetchActiveEvaluations();
         setEvaluations(data || []);
       } catch (error: any) {
         console.error('Error fetching evaluations:', error);
@@ -51,7 +51,7 @@ const Evaluations = () => {
     
     try {
       setApplying(evaluationId);
-      await applyForEvaluation(evaluationId);
+      await applyToEvaluation(evaluationId);
 
       toast({
         title: 'Application submitted',

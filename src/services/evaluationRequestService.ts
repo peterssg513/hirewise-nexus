@@ -33,6 +33,15 @@ export type EvaluationApplication = {
   updated_at: string;
 };
 
+export const SERVICE_TYPES = [
+  'Initial Evaluation',
+  'Triennial Evaluation',
+  'Functional Behavior Assessment',
+  'Behavior Support Plan',
+  'Psychoeducational Assessment',
+  'Other'
+];
+
 // Create evaluation request
 export const createEvaluationRequest = async (
   evaluationData: Omit<EvaluationRequest, 'id' | 'created_at' | 'updated_at' | 'status'>
@@ -95,7 +104,7 @@ export const deleteEvaluationRequest = async (id: string): Promise<void> => {
 };
 
 // Fetch district's evaluation requests
-export const fetchDistrictEvaluationRequests = async (districtId: string): Promise<EvaluationRequest[]> => {
+export const fetchEvaluationRequests = async (districtId: string): Promise<EvaluationRequest[]> => {
   try {
     const { data, error } = await supabase
       .from('evaluation_postings')

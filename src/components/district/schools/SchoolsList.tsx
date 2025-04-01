@@ -82,37 +82,21 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
       return false;
     }
     
-    // Apply grade filter if any grades are selected
-    if (selectedGrades.length > 0) {
-      // This assumes schools have a grades property that is an array of strings
-      const schoolGrades = school.grades || [];
-      const hasMatchingGrade = selectedGrades.some(grade => 
-        schoolGrades.includes(grade)
-      );
-      if (!hasMatchingGrade) {
-        return false;
-      }
-    }
-    
     return true;
   };
   
   useEffect(() => {
-    // Apply filters whenever search term or selected grades change
+    // Apply filters whenever search term changes
     const filtered = schools.filter(applyFilters);
     setFilteredSchools(filtered);
-  }, [searchTerm, selectedGrades, schools]);
+  }, [searchTerm, schools]);
   
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
   
-  const handleFilter = (filter: Record<string, string[]>) => {
-    if (filter.grades) {
-      setSelectedGrades(filter.grades);
-    } else {
-      setSelectedGrades([]);
-    }
+  const handleFilter = (filter: string) => {
+    // No-op for now since we're not using filters in this component
   };
   
   if (loading) {
@@ -135,12 +119,12 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
       {filteredSchools.length === 0 ? (
         <EmptyState 
           title="No Schools Found" 
-          description={searchTerm || selectedGrades.length > 0 ? 
+          description={searchTerm ? 
             "No schools match your search criteria. Try adjusting your filters." : 
             "You haven't added any schools yet."
           }
-          actionLabel={!searchTerm && selectedGrades.length === 0 ? "Add Your First School" : undefined}
-          onAction={!searchTerm && selectedGrades.length === 0 ? () => setIsCreateDialogOpen(true) : undefined}
+          actionLabel={!searchTerm ? "Add Your First School" : undefined}
+          onAction={!searchTerm ? () => setIsCreateDialogOpen(true) : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -148,8 +132,6 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
             <SchoolCard 
               key={school.id} 
               school={school} 
-              onSchoolUpdated={handleSchoolUpdated}
-              onSchoolDeleted={handleSchoolDeleted}
             />
           ))}
         </div>
