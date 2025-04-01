@@ -14,9 +14,10 @@ interface JobDetailsDialogProps {
   onClose: () => void;
   onApply: (jobId: string) => void;
   isApplying: boolean;
+  hasApplied?: boolean;
 }
 
-export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({ job, isOpen, onClose, onApply, isApplying }) => {
+export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({ job, isOpen, onClose, onApply, isApplying, hasApplied = false }) => {
   if (!job) return null;
   
   const formatDate = (dateString: string) => {
@@ -160,13 +161,13 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({ job, isOpen,
             Cancel
           </Button>
           <Button 
-            variant="success"
+            variant={hasApplied ? "outline" : "success"}
             onClick={() => onApply(job.id)} 
-            disabled={isApplying}
+            disabled={isApplying || hasApplied}
             className="px-6"
           >
             <CheckCircle2 className="w-4 h-4 mr-2" />
-            {isApplying ? 'Applying...' : 'Apply Now'}
+            {hasApplied ? "Already Applied" : isApplying ? "Applying..." : "Apply Now"}
           </Button>
         </DialogFooter>
       </DialogContent>

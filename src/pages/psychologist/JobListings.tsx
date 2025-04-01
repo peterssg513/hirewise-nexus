@@ -12,6 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BriefcaseBusiness, ClipboardList } from 'lucide-react';
 import MyApplications from '@/components/psychologist/jobs/MyApplications';
 
+interface Application {
+  id: string;
+  job_id: string;
+  status: string;
+}
+
 const JobListings = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,6 +25,28 @@ const JobListings = () => {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [activeTab, setActiveTab] = useState("jobs");
+
+  // Fetch user's applications to check if they've applied to jobs
+  const { 
+    data: userApplications,
+    isLoading: isLoadingApplications 
+  } = useQuery({
+    queryKey: ['user-applications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('id, job_id, status')
+      
+      if (error) throw error;
+      return data as Application[];
+    }
+  });
+  
+  // Create a Set of job IDs that the user has already applied to
+  const appliedJobIds = React.useMemo(() => {
+    if (!userApplications) return new Set<string>();
+    return new Set(userApplications.map(app => app.job_id));
+  }, [userApplications]);
 
   // Fetch active jobs with district information - ensure we select all needed fields
   const {
@@ -101,6 +129,16 @@ const JobListings = () => {
   // Apply for job
   const handleApplyForJob = async (jobId: string) => {
     if (isApplying) return; // Prevent multiple clicks
+    
+    // Check if user has already applied for this job
+    if (appliedJobIds.has(jobId)) {
+      toast({
+        title: "Already applied",
+        description: "You have already applied for this job. Check the 'My Applications' tab to view status.",
+        variant: "default"
+      });
+      return;
+    }
 
     setIsApplying(true);
     try {
@@ -128,11 +166,21 @@ const JobListings = () => {
       refetch();
     } catch (error: any) {
       console.error('Error applying for job:', error);
-      toast({
-        title: "Error submitting application",
-        description: error.message || "An error occurred while submitting your application.",
-        variant: "destructive"
-      });
+      
+      // Check for the specific "already applied" error message
+      if (error.message?.includes("already applied")) {
+        toast({
+          title: "Already applied",
+          description: "You have already applied for this job. Check the 'My Applications' tab to view status.",
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "Error submitting application",
+          description: error.message || "An error occurred while submitting your application.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsApplying(false);
     }
@@ -168,6 +216,8 @@ const JobListings = () => {
         </div>
       </div>;
   }
+  
+  const isLoading = isLoading || isLoadingApplications;
   
   return (
     <div className="space-y-6">
@@ -209,7 +259,8 @@ const JobListings = () => {
                   job={job} 
                   onViewDetails={setSelectedJob} 
                   onApply={handleApplyForJob} 
-                  isApplying={isApplying && selectedJob?.id === job.id} 
+                  isApplying={isApplying && selectedJob?.id === job.id}
+                  hasApplied={appliedJobIds.has(job.id)}
                 />
               ))
             )}
@@ -226,7 +277,8 @@ const JobListings = () => {
         isOpen={!!selectedJob} 
         onClose={() => setSelectedJob(null)} 
         onApply={handleApplyForJob} 
-        isApplying={isApplying} 
+        isApplying={isApplying}
+        hasApplied={selectedJob ? appliedJobIds.has(selectedJob.id) : false}
       />
     </div>
   );

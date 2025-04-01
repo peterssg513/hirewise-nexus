@@ -2,39 +2,40 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
-import { Building, Calendar, MapPin, Briefcase, CheckCircle, Clock, FileText } from 'lucide-react';
 import { format } from 'date-fns';
+import { Building, Calendar, ClipboardCheck, Clock, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface Application {
   id: string;
   status: string;
   created_at: string;
+  updated_at: string;
   job: {
     id: string;
     title: string;
     description: string;
-    work_type: string;
-    work_location: string;
     location: string;
-    district: {
+    work_type: string;
+    districts: {
+      id: string;
       name: string;
       location: string;
     };
   };
-  has_evaluation: boolean;
-  evaluation_id?: string;
+  evaluations: {
+    id: string;
+    status: string;
+  }[] | null;
 }
 
-const MyApplications = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-
+const MyApplications: React.FC = () => {
+  const navigate = useNavigate();
+  
   const { data: applications, isLoading, error } = useQuery({
     queryKey: ['my-applications'],
     queryFn: async () => {
@@ -44,58 +45,30 @@ const MyApplications = () => {
           id,
           status,
           created_at,
-          jobs (
+          updated_at,
+          job:jobs (
             id,
             title,
             description,
-            work_type,
-            work_location,
             location,
+            work_type,
             districts (
+              id,
               name,
               location
             )
           ),
           evaluations (
-            id
+            id,
+            status
           )
         `)
         .order('created_at', { ascending: false });
-
+      
       if (error) throw error;
-
-      return data.map(app => ({
-        id: app.id,
-        status: app.status,
-        created_at: app.created_at,
-        job: {
-          id: app.jobs.id,
-          title: app.jobs.title,
-          description: app.jobs.description,
-          work_type: app.jobs.work_type,
-          work_location: app.jobs.work_location,
-          location: app.jobs.location,
-          district: {
-            name: app.jobs.districts?.name || 'Unknown District',
-            location: app.jobs.districts?.location || ''
-          }
-        },
-        has_evaluation: app.evaluations && app.evaluations.length > 0,
-        evaluation_id: app.evaluations && app.evaluations.length > 0 ? app.evaluations[0].id : undefined
-      }));
+      return data as Application[];
     }
   });
-
-  const renderStatus = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'approved':
-        return <Badge className="bg-green-600">Approved</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive">Rejected</Badge>;
-      default:
-        return <Badge variant="outline" className="text-amber-600 border-amber-600">Pending</Badge>;
-    }
-  };
 
   const formatDate = (dateString: string) => {
     try {
@@ -105,122 +78,192 @@ const MyApplications = () => {
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-green-100 text-green-700 border-green-200">Approved</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-700 border-red-200">Rejected</Badge>;
+      case 'accepted':
+        return <Badge className="bg-purple-100 text-purple-700 border-purple-200">Accepted</Badge>;
+      case 'offered':
+        return <Badge className="bg-blue-100 text-blue-700 border-blue-200">Offered</Badge>;
+      default:
+        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">Under Review</Badge>;
+    }
+  };
+  
+  const handleViewEvaluation = (evaluationId: string) => {
+    navigate(`/psychologist-dashboard/evaluation/${evaluationId}`);
+  };
+
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map(i => (
-          <Card key={i} className="bg-gray-50/50 animate-pulse">
-            <CardContent className="py-4">
-              <div className="h-5 bg-gray-200 rounded w-1/3 mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-              <div className="h-10 bg-gray-200 rounded w-1/2"></div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">My Applications</h2>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/4 mb-3"></div>
+                <div className="h-10 bg-gray-200 rounded w-full mt-4"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="py-6 text-center">
-          <p className="text-red-500">Error loading your applications</p>
-          <Button 
-            onClick={() => window.location.reload()} 
-            className="mt-2"
-            variant="outline"
-          >
-            Try Again
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!applications || applications.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-6 text-center">
-          <p className="text-gray-500">You haven't applied to any jobs yet.</p>
-          <Button 
-            onClick={() => window.location.reload()} 
-            className="mt-2 bg-psyched-lightBlue hover:bg-psyched-lightBlue/90"
-          >
-            Browse Job Listings
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">My Applications</h2>
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-red-500">Error loading applications</h3>
+              <p className="text-muted-foreground">{(error as Error).message}</p>
+              <Button className="mt-4" onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {applications.map(application => (
-        <Card key={application.id} className="overflow-hidden border-l-4" 
-              style={{ borderLeftColor: application.status === 'approved' ? '#10b981' : application.status === 'rejected' ? '#ef4444' : '#f59e0b' }}>
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-lg">{application.job.title}</CardTitle>
-                <CardDescription className="flex items-center text-sm">
-                  <Building className="h-4 w-4 mr-1.5" />
-                  {application.job.district.name}
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                {renderStatus(application.status)}
-                <div className="text-xs text-gray-500 flex items-center">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  {formatDate(application.created_at)}
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="pb-3">
-            {/* Job brief */}
-            <p className="text-sm line-clamp-2 text-gray-700 mb-3">
-              {application.job.description}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">My Applications</h2>
+      </div>
+
+      {applications && applications.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <ClipboardCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Applications Yet</h3>
+            <p className="text-muted-foreground mb-4">
+              You haven't applied for any jobs yet. Browse available positions to get started.
             </p>
-            
-            {/* Job details */}
-            <div className="flex flex-wrap text-sm text-gray-600 mb-3 gap-y-1">
-              {application.job.location && (
-                <div className="flex items-center mr-4">
-                  <MapPin className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
-                  <span>{application.job.location}</span>
-                </div>
-              )}
-              
-              {application.job.work_type && (
-                <div className="flex items-center mr-4">
-                  <Briefcase className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
-                  <span>{application.job.work_type}</span>
-                </div>
-              )}
-            </div>
+            <Button 
+              onClick={() => navigate('/psychologist-dashboard/jobs')}
+              className="bg-psyched-lightBlue hover:bg-psyched-lightBlue/90"
+            >
+              Browse Jobs
+            </Button>
           </CardContent>
-          
-          <CardFooter className="flex justify-between items-center pt-2 border-t bg-gray-50">
-            <div className="flex items-center text-sm text-gray-500">
-              <Clock className="h-3.5 w-3.5 mr-1.5" />
-              <span>Applied {formatDate(application.created_at)}</span>
-            </div>
-            
-            {application.has_evaluation && (
-              <Button
-                variant="success"
-                className="font-medium bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => window.location.href = `/psychologist-dashboard/evaluation/${application.evaluation_id}`}
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Go to Evaluation
-              </Button>
-            )}
-          </CardFooter>
         </Card>
-      ))}
+      ) : (
+        <div className="space-y-4">
+          {applications?.map(application => {
+            const hasEvaluation = application.evaluations && application.evaluations.length > 0;
+            const evaluationId = hasEvaluation ? application.evaluations[0].id : null;
+            
+            return (
+              <Card key={application.id} className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="p-5">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold text-lg">{application.job.title}</h3>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Building className="h-3.5 w-3.5 mr-1.5" />
+                          {application.job.districts.name}
+                        </div>
+                      </div>
+                      {getStatusBadge(application.status)}
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+                      {application.job.description}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                        Applied: {formatDate(application.created_at)}
+                      </div>
+                      
+                      {application.job.location && (
+                        <div className="flex items-center">
+                          <Building className="h-3.5 w-3.5 mr-1.5" />
+                          {application.job.location}
+                        </div>
+                      )}
+                      
+                      {application.status === 'approved' && !hasEvaluation && (
+                        <div className="flex items-center">
+                          <Clock className="h-3.5 w-3.5 mr-1.5" />
+                          Waiting for evaluation assignment
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {hasEvaluation && (
+                    <>
+                      <Separator />
+                      <div className="p-4 bg-blue-50">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center text-blue-700">
+                            <FileText className="h-4 w-4 mr-2" />
+                            <span className="font-medium">Evaluation assigned</span>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            onClick={() => evaluationId && handleViewEvaluation(evaluationId)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            View Evaluation
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {(application.status === 'offered') && (
+                    <>
+                      <Separator />
+                      <div className="p-4 bg-green-50">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center text-green-700">
+                            <ClipboardCheck className="h-4 w-4 mr-2" />
+                            <span className="font-medium">You've been offered this position!</span>
+                          </div>
+                          <div className="space-x-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              className="border-red-500 text-red-500 hover:bg-red-50"
+                            >
+                              Decline
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              Accept Offer
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

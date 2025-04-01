@@ -32,9 +32,10 @@ interface JobCardProps {
   onViewDetails: (job: Job) => void;
   onApply: (jobId: string) => void;
   isApplying: boolean;
+  hasApplied?: boolean;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, isApplying }) => {
+export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, isApplying, hasApplied = false }) => {
   // Format the date to a readable format
   const formatDate = (dateString: string) => {
     try {
@@ -132,13 +133,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, i
           View Details
         </Button>
         <Button 
-          variant="success"
+          variant={hasApplied ? "outline" : "success"}
           className="flex-1 font-medium"
           onClick={() => onApply(job.id)}
-          disabled={isApplying}
+          disabled={isApplying || hasApplied}
         >
           <CheckCircle2 className="w-4 h-4 mr-2" />
-          Apply Now
+          {hasApplied ? "Applied" : "Apply Now"}
         </Button>
       </CardFooter>
     </Card>
