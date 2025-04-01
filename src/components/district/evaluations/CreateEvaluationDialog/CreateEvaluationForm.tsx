@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import { EvaluationRequest, createEvaluationRequest } from '@/services/evaluationRequestService';
+import { EvaluationRequest, createEvaluationRequest, EvaluationRequestStatus } from '@/services/evaluationRequestService';
 import { StudentSection } from './sections/StudentSection';
 import { SchoolSection } from './sections/SchoolSection';
 import { ServiceSection } from './sections/ServiceSection';
@@ -42,7 +42,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       parents: '',
       other_relevant_info: '',
       service_type: '',
-      status: 'Open',
+      status: 'Open' as EvaluationRequestStatus,
       state: '',
       payment_amount: '',
       title: '',
@@ -53,40 +53,56 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
     },
   });
 
+  // Prepare evaluation data for submission
+  const prepareEvaluationData = (data: EvaluationFormValues) => {
+    // Convert age from string to number if present
+    return {
+      ...data,
+      age: data.age ? parseInt(data.age, 10) : undefined,
+      district_id: districtId,
+      title: data.legal_name ? `Evaluation for ${data.legal_name}` : `New ${data.service_type || 'Evaluation'}`,
+      description: data.other_relevant_info || `${data.service_type || 'Evaluation'} request`,
+      skills_required: data.skills_required || [],
+      location: data.state || '',
+      timeframe: data.date_of_birth ? `DOB: ${data.date_of_birth}` : '',
+      status: (data.status as EvaluationRequestStatus) || 'Open'
+    };
+  };
+
   const onSubmit = async (data: EvaluationFormValues) => {
     try {
       setIsSubmitting(true);
       
-      // Convert age from string to number if present
-      const evaluationData = {
-        ...data,
-        age: data.age ? parseInt(data.age, 10) : undefined,
-        district_id: districtId,
-        title: data.legal_name ? `Evaluation for ${data.legal_name}` : `New ${data.service_type || 'Evaluation'}`,
-        description: data.other_relevant_info || `${data.service_type || 'Evaluation'} request`,
-        skills_required: data.skills_required || [],
-        location: data.state || '',
-        timeframe: data.date_of_birth ? `DOB: ${data.date_of_birth}` : '',
-      };
-      
+      const evaluationData = prepareEvaluationData(data);
       const newEvaluation = await createEvaluationRequest(evaluationData);
-      onEvaluationCreated(newEvaluation);
-      onOpenChange(false);
-      form.reset();
-      toast({
-        title: 'Success',
-        description: 'Evaluation request created successfully',
-      });
+      
+      // Handle successful submission
+      handleSuccessfulSubmission(newEvaluation);
     } catch (error: any) {
-      console.error('Failed to create evaluation request:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create evaluation request',
-        variant: 'destructive'
-      });
+      // Handle errors
+      handleSubmissionError(error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSuccessfulSubmission = (evaluation: EvaluationRequest) => {
+    onEvaluationCreated(evaluation);
+    onOpenChange(false);
+    form.reset();
+    toast({
+      title: 'Success',
+      description: 'Evaluation request created successfully',
+    });
+  };
+
+  const handleSubmissionError = (error: any) => {
+    console.error('Failed to create evaluation request:', error);
+    toast({
+      title: 'Error',
+      description: error.message || 'Failed to create evaluation request',
+      variant: 'destructive'
+    });
   };
 
   return (

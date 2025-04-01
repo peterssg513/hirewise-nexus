@@ -19,11 +19,11 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Evaluation Request</DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-xl font-semibold text-psyched-darkBlue">Create New Evaluation Request</DialogTitle>
           <DialogDescription>
-            Fill out the form below to create a new evaluation request.
+            Fill out the form below to create a new evaluation request for a student.
           </DialogDescription>
         </DialogHeader>
         
