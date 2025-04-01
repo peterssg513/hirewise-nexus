@@ -38,7 +38,6 @@ const renderStatusBadge = (status: string) => {
   }
 };
 
-// Add the rest of the Applications component
 const Applications = () => {
   const { user } = useAuth();
   const navigate = useNavigate();

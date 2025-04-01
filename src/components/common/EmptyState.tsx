@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
@@ -8,8 +8,6 @@ interface EmptyStateProps {
   description: string;
   actionLabel?: string;
   onAction?: () => void;
-  // Legacy support for action prop
-  action?: React.ReactNode;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -17,20 +15,16 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   actionLabel,
-  onAction,
-  action,
+  onAction
 }) => {
   return (
-    <div className="col-span-full text-center py-8">
-      {icon && <div className="mx-auto h-12 w-12 text-gray-400">{icon}</div>}
-      <h3 className="mt-2 text-sm font-semibold text-gray-900">{title}</h3>
-      <p className="mt-1 text-sm text-gray-500">{description}</p>
+    <div className="flex flex-col items-center justify-center text-center py-12 px-4 border border-dashed rounded-lg bg-slate-50">
+      {icon && <div className="text-slate-400 mb-4">{icon}</div>}
+      <h3 className="text-lg font-medium text-slate-800 mb-2">{title}</h3>
+      <p className="text-slate-500 max-w-md mb-6">{description}</p>
       {actionLabel && onAction && (
-        <div className="mt-6">
-          <Button onClick={onAction}>{actionLabel}</Button>
-        </div>
+        <Button onClick={onAction}>{actionLabel}</Button>
       )}
-      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 };

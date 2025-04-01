@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -25,7 +26,6 @@ const evaluationFormSchema = z.object({
   age: z.string().optional(),
   grade: z.string().optional(),
   school_id: z.string().optional(),
-  student_id: z.string().optional(),
   general_education_teacher: z.string().optional(),
   special_education_teachers: z.string().optional(),
   parents: z.string().optional(),
@@ -35,11 +35,11 @@ const evaluationFormSchema = z.object({
 
 type EvaluationFormValues = z.infer<typeof evaluationFormSchema>;
 
-export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
-  open,
-  onOpenChange,
-  evaluation,
-  onEvaluationUpdated
+export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({ 
+  open, 
+  onOpenChange, 
+  evaluation, 
+  onEvaluationUpdated 
 }) => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
@@ -54,64 +54,65 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
   } = useForm<EvaluationFormValues>({
     resolver: zodResolver(evaluationFormSchema),
     defaultValues: {
-      legal_name: '',
-      date_of_birth: '',
-      age: '',
-      grade: '',
-      school_id: '',
-      student_id: '',
-      general_education_teacher: '',
-      special_education_teachers: '',
-      parents: '',
-      other_relevant_info: '',
-      service_type: '',
+      legal_name: evaluation.legal_name || '',
+      date_of_birth: evaluation.date_of_birth ? new Date(evaluation.date_of_birth).toISOString().split('T')[0] : '',
+      age: evaluation.age ? String(evaluation.age) : '',
+      grade: evaluation.grade || '',
+      school_id: evaluation.school_id || '',
+      general_education_teacher: evaluation.general_education_teacher || '',
+      special_education_teachers: evaluation.special_education_teachers || '',
+      parents: evaluation.parents || '',
+      other_relevant_info: evaluation.other_relevant_info || '',
+      service_type: evaluation.service_type || '',
     },
   });
 
   useEffect(() => {
-    const loadSchools = async () => {
-      try {
-        const schoolsData = await fetchSchools(evaluation.district_id);
-        setSchools(schoolsData.map(school => ({ id: school.id, name: school.name })));
-      } catch (error) {
-        console.error('Failed to load schools:', error);
-      }
-    };
-
     if (open) {
-      loadSchools();
-    }
-  }, [open, evaluation.district_id]);
-
-  useEffect(() => {
-    if (evaluation) {
       reset({
         legal_name: evaluation.legal_name || '',
-        date_of_birth: evaluation.date_of_birth || '',
-        age: evaluation.age ? evaluation.age.toString() : '',
+        date_of_birth: evaluation.date_of_birth ? new Date(evaluation.date_of_birth).toISOString().split('T')[0] : '',
+        age: evaluation.age ? String(evaluation.age) : '',
         grade: evaluation.grade || '',
         school_id: evaluation.school_id || '',
-        student_id: evaluation.student_id || '',
         general_education_teacher: evaluation.general_education_teacher || '',
         special_education_teachers: evaluation.special_education_teachers || '',
         parents: evaluation.parents || '',
         other_relevant_info: evaluation.other_relevant_info || '',
         service_type: evaluation.service_type || '',
       });
+
+      const loadSchools = async () => {
+        try {
+          if (evaluation.district_id) {
+            const schoolsData = await fetchSchools(evaluation.district_id);
+            setSchools(schoolsData.map(school => ({ id: school.id, name: school.name })));
+          }
+        } catch (error) {
+          console.error('Failed to load schools:', error);
+        }
+      };
+
+      loadSchools();
     }
-  }, [evaluation, reset]);
+  }, [open, evaluation, reset]);
 
   const onSubmit = async (data: EvaluationFormValues) => {
     try {
       setIsSubmitting(true);
       
-      const evaluationData: Partial<EvaluationRequest> = {
+      // Convert age from string to number if present
+      const evaluationData = {
         ...data,
-        age: data.age ? parseInt(data.age, 10) : undefined
+        age: data.age ? parseInt(data.age, 10) : undefined,
       };
       
       const updatedEvaluation = await updateEvaluationRequest(evaluation.id, evaluationData);
       onEvaluationUpdated(updatedEvaluation);
+      toast({
+        title: 'Success',
+        description: 'Evaluation request updated successfully.',
+      });
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to update evaluation request:', error);
@@ -130,24 +131,21 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>Edit Evaluation Request</DialogTitle>
-          <DialogDescription>
-            Update the details for this evaluation request.
-          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="service_type">Service Type</Label>
             <Select 
-              defaultValue={evaluation.service_type || "none"} 
-              onValueChange={(value) => setValue("service_type", value)}
+              onValueChange={(value) => setValue("service_type", value)} 
+              defaultValue={evaluation.service_type}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select service type" />
               </SelectTrigger>
               <SelectContent>
                 {SERVICE_TYPES.map((type) => (
-                  <SelectItem key={type} value={type || "unknown-service"}>
+                  <SelectItem key={type} value={type}>
                     {type}
                   </SelectItem>
                 ))}
@@ -181,16 +179,15 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
             <div className="grid gap-2">
               <Label htmlFor="school_id">School</Label>
               <Select 
-                defaultValue={evaluation.school_id || "none"} 
                 onValueChange={(value) => setValue("school_id", value)}
+                defaultValue={evaluation.school_id}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a school" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No school selected</SelectItem>
                   {schools.map((school) => (
-                    <SelectItem key={school.id} value={school.id || "unknown-school"}>
+                    <SelectItem key={school.id} value={school.id}>
                       {school.name}
                     </SelectItem>
                   ))}
@@ -219,7 +216,10 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
             <Textarea {...register("other_relevant_info")} placeholder="Any additional information about the student..." />
           </div>
           
-          <div className="flex justify-end">
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Updating..." : "Update Evaluation"}
             </Button>

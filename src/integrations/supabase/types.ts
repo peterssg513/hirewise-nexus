@@ -163,6 +163,61 @@ export type Database = {
         }
         Relationships: []
       }
+      evaluation_applications: {
+        Row: {
+          created_at: string
+          documents_urls: string[] | null
+          evaluation_id: string
+          id: string
+          notes: string | null
+          psychologist_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          documents_urls?: string[] | null
+          evaluation_id: string
+          id?: string
+          notes?: string | null
+          psychologist_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          documents_urls?: string[] | null
+          evaluation_id?: string
+          id?: string
+          notes?: string | null
+          psychologist_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_applications_evaluation_id_fkey"
+            columns: ["evaluation_id"]
+            isOneToOne: false
+            referencedRelation: "active_evaluations_with_district"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluation_applications_evaluation_id_fkey"
+            columns: ["evaluation_id"]
+            isOneToOne: false
+            referencedRelation: "evaluation_postings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluation_applications_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "psychologists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evaluation_payment_rates: {
         Row: {
           created_at: string
@@ -189,6 +244,73 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      evaluation_postings: {
+        Row: {
+          created_at: string
+          description: string
+          district_id: string
+          id: string
+          location: string | null
+          school_id: string | null
+          service_type: string | null
+          skills_required: string[] | null
+          status: string | null
+          timeframe: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          district_id: string
+          id?: string
+          location?: string | null
+          school_id?: string | null
+          service_type?: string | null
+          skills_required?: string[] | null
+          status?: string | null
+          timeframe?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          district_id?: string
+          id?: string
+          location?: string | null
+          school_id?: string | null
+          service_type?: string | null
+          skills_required?: string[] | null
+          status?: string | null
+          timeframe?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_postings_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "active_jobs_with_district"
+            referencedColumns: ["district_id"]
+          },
+          {
+            foreignKeyName: "evaluation_postings_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluation_postings_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       evaluation_requests: {
         Row: {
@@ -714,6 +836,38 @@ export type Database = {
       }
     }
     Views: {
+      active_evaluations_with_district: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          district_id: string | null
+          district_location: string | null
+          district_name: string | null
+          id: string | null
+          location: string | null
+          service_type: string | null
+          skills_required: string[] | null
+          status: string | null
+          timeframe: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_postings_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "active_jobs_with_district"
+            referencedColumns: ["district_id"]
+          },
+          {
+            foreignKeyName: "evaluation_postings_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       active_jobs_with_district: {
         Row: {
           created_at: string | null
@@ -736,6 +890,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      apply_to_evaluation: {
+        Args: {
+          _evaluation_id: string
+          _documents_urls?: string[]
+          _notes?: string
+        }
+        Returns: string
+      }
       apply_to_job: {
         Args: {
           _job_id: string
@@ -755,6 +917,18 @@ export type Database = {
           district_id: string
         }
         Returns: undefined
+      }
+      approve_evaluation: {
+        Args: {
+          evaluation_id: string
+        }
+        Returns: undefined
+      }
+      approve_evaluation_application: {
+        Args: {
+          application_id: string
+        }
+        Returns: string
       }
       approve_job: {
         Args: {

@@ -12,6 +12,17 @@ export interface Evaluation {
   status: string;
   district_id: string;
   created_at: string;
+  service_type?: string;
+}
+
+export interface EvaluationApplication {
+  id: string;
+  evaluation_id: string;
+  status: string;
+  created_at: string;
+  documents_urls?: string[];
+  notes?: string;
+  evaluation?: Evaluation;
 }
 
 /**
@@ -20,7 +31,7 @@ export interface Evaluation {
 export const fetchAvailableEvaluations = async (): Promise<Evaluation[]> => {
   try {
     const { data, error } = await supabase
-      .from('active_jobs_with_district')
+      .from('active_evaluations_with_district')
       .select('*')
       .eq('status', 'active');
 
@@ -41,8 +52,8 @@ export const applyForEvaluation = async (
   notes: string = ''
 ): Promise<string> => {
   try {
-    const { data, error } = await supabase.rpc('apply_to_job', {
-      _job_id: evaluationId,
+    const { data, error } = await supabase.rpc('apply_to_evaluation', {
+      _evaluation_id: evaluationId,
       _documents_urls: documentsUrls,
       _notes: notes
     });
@@ -58,35 +69,47 @@ export const applyForEvaluation = async (
 /**
  * Fetch evaluations a psychologist has applied for
  */
-export const fetchPsychologistEvaluations = async (psychologistId: string): Promise<any[]> => {
+export const fetchPsychologistEvaluationApplications = async (): Promise<EvaluationApplication[]> => {
   try {
     const { data, error } = await supabase
-      .from('applications')
+      .from('evaluation_applications')
       .select(`
         id,
+        evaluation_id,
         status,
         created_at,
         documents_urls,
         notes,
-        jobs!inner (
+        evaluation:evaluation_id(
           id,
           title,
           description,
           location,
           timeframe,
-          districts (
-            id,
+          district_id,
+          district:district_id(
             name,
             location
           )
         )
       `)
-      .eq('psychologist_id', psychologistId);
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Transform the data to a more convenient format
+    const transformedData = data.map((app) => ({
+      ...app,
+      evaluation: app.evaluation ? {
+        ...app.evaluation,
+        district_name: app.evaluation.district?.name || 'Unknown District',
+        district_location: app.evaluation.district?.location || ''
+      } : undefined
+    }));
+    
+    return transformedData || [];
   } catch (error) {
-    console.error('Error fetching psychologist evaluations:', error);
+    console.error('Error fetching psychologist evaluation applications:', error);
     throw error;
   }
 };
