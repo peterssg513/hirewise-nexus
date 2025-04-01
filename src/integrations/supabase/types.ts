@@ -331,6 +331,7 @@ export type Database = {
           documents_required: string[] | null
           id: string
           job_type: string | null
+          languages_required: string[] | null
           location: string | null
           qualifications: string[] | null
           salary: number | null
@@ -354,6 +355,7 @@ export type Database = {
           documents_required?: string[] | null
           id?: string
           job_type?: string | null
+          languages_required?: string[] | null
           location?: string | null
           qualifications?: string[] | null
           salary?: number | null
@@ -377,6 +379,7 @@ export type Database = {
           documents_required?: string[] | null
           id?: string
           job_type?: string | null
+          languages_required?: string[] | null
           location?: string | null
           qualifications?: string[] | null
           salary?: number | null

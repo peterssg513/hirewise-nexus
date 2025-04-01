@@ -108,6 +108,7 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
         languages_required: selectedLanguages,
       };
       
+      console.log("Submitting job data:", jobData);
       const newJob = await createJob(jobData);
       onJobCreated(newJob);
       onOpenChange(false);
