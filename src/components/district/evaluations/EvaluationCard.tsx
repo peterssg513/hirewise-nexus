@@ -17,12 +17,16 @@ export const EvaluationCard: React.FC<EvaluationCardProps> = ({ evaluation }) =>
   const getBadgeColorByStatus = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pending':
+      case 'open':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'active':
+      case 'offered':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'completed':
+      case 'closed':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'canceled':
+      case 'rejected':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -37,7 +41,9 @@ export const EvaluationCard: React.FC<EvaluationCardProps> = ({ evaluation }) =>
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-medium text-lg line-clamp-2">{evaluation.title}</h3>
+          <h3 className="font-medium text-lg line-clamp-2">
+            {evaluation.title || `${evaluation.service_type || 'Evaluation'} for ${evaluation.legal_name || 'Student'}`}
+          </h3>
           <Badge 
             variant="outline" 
             className={`${getBadgeColorByStatus(evaluation.status)} ml-2 whitespace-nowrap`}
@@ -69,6 +75,13 @@ export const EvaluationCard: React.FC<EvaluationCardProps> = ({ evaluation }) =>
             <p className="text-muted-foreground mb-1">Service Type:</p>
             <p>{evaluation.service_type}</p>
           </div>
+
+          {evaluation.legal_name && (
+            <div>
+              <p className="text-muted-foreground mb-1">Student Name:</p>
+              <p>{evaluation.legal_name}</p>
+            </div>
+          )}
 
           {evaluation.skills_required?.length > 0 && (
             <div>

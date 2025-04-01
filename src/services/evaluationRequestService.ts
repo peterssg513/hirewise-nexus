@@ -8,13 +8,25 @@ export type EvaluationRequest = {
   description: string;
   district_id: string;
   school_id?: string;
+  student_id?: string;
   skills_required: string[];
   location: string;
   timeframe: string;
   service_type: string;
-  status: 'pending' | 'active' | 'completed' | 'canceled' | 'rejected';
+  status: 'pending' | 'active' | 'completed' | 'canceled' | 'rejected' | 'Open' | 'Offered' | 'Accepted' | 'Evaluation In Progress' | 'Closed';
   created_at: string;
   updated_at: string;
+  // Additional fields from the other interface
+  legal_name?: string;
+  date_of_birth?: string;
+  age?: number;
+  grade?: string;
+  general_education_teacher?: string;
+  special_education_teachers?: string;
+  parents?: string;
+  other_relevant_info?: string;
+  state?: string;
+  payment_amount?: string;
 };
 
 export type EvaluationApplication = {
@@ -44,13 +56,18 @@ export const SERVICE_TYPES = [
 
 // Create evaluation request
 export const createEvaluationRequest = async (
-  evaluationData: Omit<EvaluationRequest, 'id' | 'created_at' | 'updated_at' | 'status'>
+  evaluationData: Partial<Omit<EvaluationRequest, 'id' | 'created_at' | 'updated_at'>>
 ): Promise<EvaluationRequest> => {
   try {
-    // Add default status as pending
+    // Add default status as pending if not provided
     const newEvaluation = {
       ...evaluationData,
-      status: 'pending'
+      status: evaluationData.status || 'pending',
+      title: evaluationData.title || evaluationData.service_type || 'New Evaluation',
+      description: evaluationData.description || `Evaluation request for ${evaluationData.legal_name || 'student'}`,
+      skills_required: evaluationData.skills_required || [],
+      location: evaluationData.location || '',
+      timeframe: evaluationData.timeframe || '',
     };
 
     const { data, error } = await supabase

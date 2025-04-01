@@ -22,6 +22,8 @@ interface CreateEvaluationDialogProps {
 }
 
 const evaluationFormSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
   legal_name: z.string().optional(),
   date_of_birth: z.string().optional(),
   age: z.string().optional(),
@@ -33,6 +35,9 @@ const evaluationFormSchema = z.object({
   parents: z.string().optional(),
   other_relevant_info: z.string().optional(),
   service_type: z.string().optional(),
+  location: z.string().optional(),
+  timeframe: z.string().optional(),
+  skills_required: z.array(z.string()).optional(),
 });
 
 type EvaluationFormValues = z.infer<typeof evaluationFormSchema>;
@@ -57,6 +62,8 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
   } = useForm<EvaluationFormValues>({
     resolver: zodResolver(evaluationFormSchema),
     defaultValues: {
+      title: '',
+      description: '',
       legal_name: '',
       date_of_birth: '',
       age: '',
@@ -68,6 +75,9 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
       parents: '',
       other_relevant_info: '',
       service_type: '',
+      location: '',
+      timeframe: '',
+      skills_required: [],
     },
   });
 
@@ -107,7 +117,12 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
       const evaluationData = {
         ...data,
         age: data.age ? parseInt(data.age, 10) : undefined,
-        district_id: districtId
+        district_id: districtId,
+        title: data.title || `Evaluation for ${data.legal_name || 'Student'}`,
+        description: data.description || `${data.service_type || 'Evaluation'} request`,
+        skills_required: data.skills_required || [],
+        location: data.location || '',
+        timeframe: data.timeframe || '',
       };
       
       const newEvaluation = await createEvaluationRequest(evaluationData);
@@ -173,8 +188,30 @@ export const CreateEvaluationDialog: React.FC<CreateEvaluationDialogProps> = ({
           </div>
           
           <div className="grid gap-2">
+            <Label htmlFor="title">Title</Label>
+            <Input {...register("title")} placeholder="Evaluation title" />
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea {...register("description")} placeholder="Brief description of the evaluation" />
+          </div>
+          
+          <div className="grid gap-2">
             <Label htmlFor="legal_name">Legal Name</Label>
             <Input {...register("legal_name")} placeholder="Student's full legal name" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="location">Location</Label>
+              <Input {...register("location")} placeholder="Evaluation location" />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="timeframe">Timeframe</Label>
+              <Input {...register("timeframe")} placeholder="When needed by" />
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">

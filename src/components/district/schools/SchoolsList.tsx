@@ -98,6 +98,18 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
   const handleFilter = (filter: string) => {
     // No-op for now since we're not using filters in this component
   };
+
+  const handleEditSchool = (school: School) => {
+    // Placeholder for edit functionality
+    console.log('Edit school:', school);
+    // You would typically open an edit dialog here
+  };
+
+  const handleDeleteSchool = (school: School) => {
+    // Placeholder for delete functionality
+    console.log('Delete school:', school);
+    // You would typically open a confirmation dialog here
+  };
   
   if (loading) {
     return <LoadingSpinner />;
@@ -132,6 +144,8 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
             <SchoolCard 
               key={school.id} 
               school={school} 
+              onEdit={handleEditSchool}
+              onDelete={handleDeleteSchool}
             />
           ))}
         </div>

@@ -43,6 +43,11 @@ const evaluationFormSchema = z.object({
   status: z.string().optional(),
   state: z.string().optional(),
   payment_amount: z.string().optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  location: z.string().optional(),
+  timeframe: z.string().optional(),
+  skills_required: z.array(z.string()).optional(),
 });
 
 export type EvaluationFormValues = z.infer<typeof evaluationFormSchema>;
@@ -80,6 +85,11 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       status: 'Open',
       state: '',
       payment_amount: '',
+      title: '',
+      description: '',
+      location: '',
+      timeframe: '',
+      skills_required: [],
     },
   });
 
@@ -165,7 +175,12 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       const evaluationData = {
         ...data,
         age: data.age ? parseInt(data.age, 10) : undefined,
-        district_id: districtId
+        district_id: districtId,
+        title: data.legal_name ? `Evaluation for ${data.legal_name}` : `New ${data.service_type || 'Evaluation'}`,
+        description: data.other_relevant_info || `${data.service_type || 'Evaluation'} request`,
+        skills_required: [],
+        location: data.state || '',
+        timeframe: data.date_of_birth ? `DOB: ${data.date_of_birth}` : '',
       };
       
       const newEvaluation = await createEvaluationRequest(evaluationData);

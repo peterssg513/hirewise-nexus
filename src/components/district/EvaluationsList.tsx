@@ -28,11 +28,11 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({ districtId }) 
         
         // Count evaluations by status
         const counts = {
-          open: evaluations.filter(e => e.status === 'Open').length,
-          offered: evaluations.filter(e => e.status === 'Offered').length,
+          open: evaluations.filter(e => e.status === 'pending' || e.status === 'Open').length,
+          offered: evaluations.filter(e => e.status === 'active' || e.status === 'Offered').length,
           accepted: evaluations.filter(e => e.status === 'Accepted').length,
           inProgress: evaluations.filter(e => e.status === 'Evaluation In Progress').length,
-          closed: evaluations.filter(e => e.status === 'Closed').length,
+          closed: evaluations.filter(e => e.status === 'completed' || e.status === 'Closed').length,
           total: evaluations.length
         };
         

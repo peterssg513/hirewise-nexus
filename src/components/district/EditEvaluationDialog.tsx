@@ -21,6 +21,8 @@ interface EditEvaluationDialogProps {
 }
 
 const evaluationFormSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
   legal_name: z.string().optional(),
   date_of_birth: z.string().optional(),
   age: z.string().optional(),
@@ -31,6 +33,8 @@ const evaluationFormSchema = z.object({
   parents: z.string().optional(),
   other_relevant_info: z.string().optional(),
   service_type: z.string().optional(),
+  location: z.string().optional(),
+  timeframe: z.string().optional(),
 });
 
 type EvaluationFormValues = z.infer<typeof evaluationFormSchema>;
@@ -54,6 +58,8 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
   } = useForm<EvaluationFormValues>({
     resolver: zodResolver(evaluationFormSchema),
     defaultValues: {
+      title: evaluation.title || '',
+      description: evaluation.description || '',
       legal_name: evaluation.legal_name || '',
       date_of_birth: evaluation.date_of_birth ? new Date(evaluation.date_of_birth).toISOString().split('T')[0] : '',
       age: evaluation.age ? String(evaluation.age) : '',
@@ -64,12 +70,16 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
       parents: evaluation.parents || '',
       other_relevant_info: evaluation.other_relevant_info || '',
       service_type: evaluation.service_type || '',
+      location: evaluation.location || '',
+      timeframe: evaluation.timeframe || '',
     },
   });
 
   useEffect(() => {
     if (open) {
       reset({
+        title: evaluation.title || '',
+        description: evaluation.description || '',
         legal_name: evaluation.legal_name || '',
         date_of_birth: evaluation.date_of_birth ? new Date(evaluation.date_of_birth).toISOString().split('T')[0] : '',
         age: evaluation.age ? String(evaluation.age) : '',
@@ -80,6 +90,8 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
         parents: evaluation.parents || '',
         other_relevant_info: evaluation.other_relevant_info || '',
         service_type: evaluation.service_type || '',
+        location: evaluation.location || '',
+        timeframe: evaluation.timeframe || '',
       });
 
       const loadSchools = async () => {
@@ -135,6 +147,16 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
         
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           <div className="grid gap-2">
+            <Label htmlFor="title">Title</Label>
+            <Input {...register("title")} placeholder="Evaluation title" />
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea {...register("description")} placeholder="Description" />
+          </div>
+          
+          <div className="grid gap-2">
             <Label htmlFor="service_type">Service Type</Label>
             <Select 
               onValueChange={(value) => setValue("service_type", value)} 
@@ -167,6 +189,18 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
             <div className="grid gap-2">
               <Label htmlFor="age">Age</Label>
               <Input {...register("age")} type="number" />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="location">Location</Label>
+              <Input {...register("location")} placeholder="Evaluation location" />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="timeframe">Timeframe</Label>
+              <Input {...register("timeframe")} placeholder="When needed by" />
             </div>
           </div>
           
