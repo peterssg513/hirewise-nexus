@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { Building, MapPin, Clock, Briefcase, Check, Languages, GraduationCap, Calendar } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Job } from './JobCard';
 import { Separator } from '@/components/ui/separator';
+import { Job } from '@/components/psychologist/jobs/JobCard';
+import { MapPin, Building, Briefcase, Clock, CheckCircle2, GraduationCap, Languages, School } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface JobDetailsDialogProps {
   job: Job | null;
@@ -15,190 +16,159 @@ interface JobDetailsDialogProps {
   isApplying: boolean;
 }
 
-export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
-  job,
-  isOpen,
-  onClose,
-  onApply,
-  isApplying
-}) => {
+export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({ job, isOpen, onClose, onApply, isApplying }) => {
   if (!job) return null;
   
   const formatDate = (dateString: string) => {
     try {
-      const date = new Date(dateString);
-      return new Intl.DateTimeFormat('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }).format(date);
-    } catch (e) {
-      return 'Date not available';
+      return format(new Date(dateString), 'MMMM d, yyyy');
+    } catch {
+      return 'Recently posted';
     }
   };
-  
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <DialogTitle className="text-2xl font-bold">{job.title}</DialogTitle>
-              <DialogDescription className="flex items-center text-base">
-                <Building className="h-4 w-4 mr-1.5" />
-                {job.district_name}
-              </DialogDescription>
-            </div>
-            <Badge className="bg-green-100 text-green-700 border-green-200">
-              Active
-            </Badge>
-          </div>
+          <DialogTitle className="text-xl font-semibold">{job.title}</DialogTitle>
+          <DialogDescription className="flex items-center mt-1">
+            <Building className="h-4 w-4 mr-1.5" />
+            {job.district_name}
+          </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6">
-          {/* Job details grid */}
-          <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-md">
-            {/* Location */}
+        <div className="space-y-5 py-4">
+          {/* Location and Job Type */}
+          <div className="flex flex-wrap gap-4">
             {job.location && (
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-gray-600" />
-                <div>
-                  <div className="text-xs font-medium text-gray-500">Location</div>
-                  <div className="text-sm font-medium">{job.location}</div>
-                </div>
+              <div className="flex items-center text-sm">
+                <MapPin className="h-4 w-4 mr-1.5 text-gray-500" />
+                <span>{job.location}</span>
               </div>
             )}
             
-            {/* Work Type */}
             {job.work_type && (
-              <div className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-gray-600" />
-                <div>
-                  <div className="text-xs font-medium text-gray-500">Work Type</div>
-                  <div className="text-sm font-medium">{job.work_type}</div>
-                </div>
+              <div className="flex items-center text-sm">
+                <Briefcase className="h-4 w-4 mr-1.5 text-gray-500" />
+                <span>{job.work_type}</span>
               </div>
             )}
             
-            {/* Work Location */}
             {job.work_location && (
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-gray-600" />
-                <div>
-                  <div className="text-xs font-medium text-gray-500">Work Location</div>
-                  <div className="text-sm font-medium">{job.work_location}</div>
-                </div>
+              <div className="flex items-center text-sm">
+                <School className="h-4 w-4 mr-1.5 text-gray-500" />
+                <span>{job.work_location}</span>
               </div>
             )}
             
-            {/* Timeframe */}
             {job.timeframe && (
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-gray-600" />
-                <div>
-                  <div className="text-xs font-medium text-gray-500">Timeframe</div>
-                  <div className="text-sm font-medium">{job.timeframe}</div>
-                </div>
+              <div className="flex items-center text-sm">
+                <Clock className="h-4 w-4 mr-1.5 text-gray-500" />
+                <span>{job.timeframe}</span>
               </div>
             )}
             
-            {/* Posted Date */}
-            <div className="flex items-center gap-2 col-span-2">
-              <Calendar className="h-5 w-5 text-gray-600" />
-              <div>
-                <div className="text-xs font-medium text-gray-500">Posted</div>
-                <div className="text-sm font-medium">{formatDate(job.created_at)}</div>
-              </div>
+            <div className="flex items-center text-sm ml-auto">
+              <Badge className="bg-green-100 text-green-700 border-green-200">
+                Posted {formatDate(job.created_at)}
+              </Badge>
             </div>
           </div>
           
-          {/* About this position */}
+          <Separator />
+          
+          {/* Description */}
           <div>
-            <h3 className="text-lg font-semibold mb-2">About this position</h3>
-            <p className="text-gray-700 whitespace-pre-line">{job.description}</p>
+            <h3 className="text-sm font-medium mb-2">Job Description</h3>
+            <div className="text-sm text-gray-700 whitespace-pre-wrap">
+              {job.description}
+            </div>
           </div>
           
           {/* Required Skills */}
           {job.skills_required && job.skills_required.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Required Skills</h3>
-              <div className="flex flex-wrap gap-2">
-                {job.skills_required.map((skill, index) => (
-                  <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-100 py-1">
-                    {skill}
-                  </Badge>
-                ))}
+            <>
+              <Separator />
+              <div>
+                <h3 className="text-sm font-medium mb-2">Required Skills</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {job.skills_required.map((skill, index) => (
+                    <Badge key={index} variant="outline" className="bg-blue-50 border-blue-100">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
+            </>
           )}
-          
-          <Separator />
           
           {/* Qualifications */}
           {job.qualifications && job.qualifications.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
-                <GraduationCap className="w-5 h-5 mr-2 text-gray-700" />
-                Qualifications
-              </h3>
-              <ul className="space-y-2">
-                {job.qualifications.map((qual, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="w-5 h-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>{qual}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <>
+              <Separator />
+              <div>
+                <div className="flex items-center mb-2">
+                  <GraduationCap className="h-4 w-4 mr-1.5 text-gray-500" />
+                  <h3 className="text-sm font-medium">Qualifications</h3>
+                </div>
+                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1 pl-1">
+                  {job.qualifications.map((qualification, index) => (
+                    <li key={index}>{qualification}</li>
+                  ))}
+                </ul>
+              </div>
+            </>
           )}
           
-          {/* Required Languages */}
+          {/* Languages */}
           {job.languages_required && job.languages_required.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
-                <Languages className="w-5 h-5 mr-2 text-gray-700" />
-                Required Languages
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {job.languages_required.map((language, index) => (
-                  <Badge key={index} variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 py-1">
-                    {language}
-                  </Badge>
-                ))}
+            <>
+              <Separator />
+              <div>
+                <div className="flex items-center mb-2">
+                  <Languages className="h-4 w-4 mr-1.5 text-gray-500" />
+                  <h3 className="text-sm font-medium">Languages</h3>
+                </div>
+                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1 pl-1">
+                  {job.languages_required.map((language, index) => (
+                    <li key={index}>{language}</li>
+                  ))}
+                </ul>
               </div>
-            </div>
+            </>
           )}
           
           {/* Benefits */}
           {job.benefits && job.benefits.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
-                <Check className="w-5 h-5 mr-2 text-green-500" />
-                Benefits
-              </h3>
-              <ul className="space-y-2">
-                {job.benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="w-5 h-5 mr-2 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <>
+              <Separator />
+              <div>
+                <h3 className="text-sm font-medium mb-2">Benefits</h3>
+                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1 pl-1">
+                  {job.benefits.map((benefit, index) => (
+                    <li key={index}>{benefit}</li>
+                  ))}
+                </ul>
+              </div>
+            </>
           )}
-          
-          <DialogFooter className="pt-4">
-            <Button 
-              variant="success"
-              onClick={() => onApply(job.id)} 
-              disabled={isApplying}
-              className="px-8 py-2 text-base font-medium"
-              size="lg"
-            >
-              {isApplying ? "Submitting..." : "Apply Now"}
-            </Button>
-          </DialogFooter>
         </div>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} className="mr-2">
+            Cancel
+          </Button>
+          <Button 
+            variant="success"
+            onClick={() => onApply(job.id)} 
+            disabled={isApplying}
+            className="px-6"
+          >
+            <CheckCircle2 className="w-4 h-4 mr-2" />
+            {isApplying ? 'Applying...' : 'Apply Now'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

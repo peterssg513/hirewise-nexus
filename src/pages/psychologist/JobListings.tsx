@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,14 +8,17 @@ import { JobDetailsDialog } from '@/components/psychologist/jobs/JobDetailsDialo
 import { JobsFilter } from '@/components/psychologist/jobs/JobsFilter';
 import { JobsSkeletonLoader } from '@/components/psychologist/jobs/JobsSkeletonLoader';
 import { NoJobsFound } from '@/components/psychologist/jobs/NoJobsFound';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BriefcaseBusiness, ClipboardList } from 'lucide-react';
+import MyApplications from '@/components/psychologist/jobs/MyApplications';
+
 const JobListings = () => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isApplying, setIsApplying] = useState(false);
+  const [activeTab, setActiveTab] = useState("jobs");
 
   // Fetch active jobs with district information - ensure we select all needed fields
   const {
@@ -75,14 +79,21 @@ const JobListings = () => {
         state: job.state || '',
         country: job.country || 'USA'
       }));
-    }
+    },
+    enabled: activeTab === "jobs"
   });
 
   // Filter jobs based on search and skills
   const filteredJobs = React.useMemo(() => {
     return jobs?.filter(job => {
-      const matchesSearch = searchQuery === '' || job.title.toLowerCase().includes(searchQuery.toLowerCase()) || job.description.toLowerCase().includes(searchQuery.toLowerCase()) || job.district_name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesSkills = selectedSkills.length === 0 || job.skills_required && selectedSkills.every(skill => job.skills_required.includes(skill));
+      const matchesSearch = searchQuery === '' || 
+        job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        job.description.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (job.district_name && job.district_name.toLowerCase().includes(searchQuery.toLowerCase()));
+        
+      const matchesSkills = selectedSkills.length === 0 || 
+        (job.skills_required && selectedSkills.every(skill => job.skills_required.includes(skill)));
+        
       return matchesSearch && matchesSkills;
     });
   }, [jobs, searchQuery, selectedSkills]);
@@ -109,6 +120,9 @@ const JobListings = () => {
 
       // Close the dialog if open
       setSelectedJob(null);
+      
+      // Switch to the Applications tab to show the user their application
+      setActiveTab("applications");
 
       // Refresh jobs list to update applied status if needed
       refetch();
@@ -135,11 +149,14 @@ const JobListings = () => {
     });
     return Array.from(skillsSet);
   }, [jobs]);
+  
   const clearFilters = () => {
     setSelectedSkills([]);
     setSearchQuery('');
   };
+  
   const hasFilters = selectedSkills.length > 0 || searchQuery !== '';
+  
   if (error) {
     return <div className="flex justify-center items-center h-64">
         <div className="text-center">
@@ -151,19 +168,68 @@ const JobListings = () => {
         </div>
       </div>;
   }
-  return <div className="space-y-6">
+  
+  return (
+    <div className="space-y-6">
       <div>
-        
-        
+        <h1 className="text-2xl font-bold mb-2">Job Opportunities</h1>
+        <p className="text-muted-foreground">Browse and apply for school psychologist positions</p>
       </div>
       
-      <JobsFilter searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedSkills={selectedSkills} setSelectedSkills={setSelectedSkills} allSkills={allSkills} />
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 w-full md:w-[400px] mb-4">
+          <TabsTrigger value="jobs" className="flex items-center gap-2">
+            <BriefcaseBusiness className="h-4 w-4" />
+            <span>Available Jobs</span>
+          </TabsTrigger>
+          <TabsTrigger value="applications" className="flex items-center gap-2">
+            <ClipboardList className="h-4 w-4" />
+            <span>My Applications</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="jobs" className="space-y-6">
+          <JobsFilter 
+            searchQuery={searchQuery} 
+            setSearchQuery={setSearchQuery} 
+            selectedSkills={selectedSkills} 
+            setSelectedSkills={setSelectedSkills} 
+            allSkills={allSkills} 
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {isLoading ? (
+              <JobsSkeletonLoader />
+            ) : filteredJobs?.length === 0 ? (
+              <NoJobsFound hasFilters={hasFilters} onClearFilters={clearFilters} />
+            ) : (
+              filteredJobs?.map(job => (
+                <JobCard 
+                  key={job.id} 
+                  job={job} 
+                  onViewDetails={setSelectedJob} 
+                  onApply={handleApplyForJob} 
+                  isApplying={isApplying && selectedJob?.id === job.id} 
+                />
+              ))
+            )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="applications">
+          <MyApplications />
+        </TabsContent>
+      </Tabs>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {isLoading ? <JobsSkeletonLoader /> : filteredJobs?.length === 0 ? <NoJobsFound hasFilters={hasFilters} onClearFilters={clearFilters} /> : filteredJobs?.map(job => <JobCard key={job.id} job={job} onViewDetails={setSelectedJob} onApply={handleApplyForJob} isApplying={isApplying && selectedJob?.id === job.id} />)}
-      </div>
-      
-      <JobDetailsDialog job={selectedJob} isOpen={!!selectedJob} onClose={() => setSelectedJob(null)} onApply={handleApplyForJob} isApplying={isApplying} />
-    </div>;
+      <JobDetailsDialog 
+        job={selectedJob} 
+        isOpen={!!selectedJob} 
+        onClose={() => setSelectedJob(null)} 
+        onApply={handleApplyForJob} 
+        isApplying={isApplying} 
+      />
+    </div>
+  );
 };
+
 export default JobListings;

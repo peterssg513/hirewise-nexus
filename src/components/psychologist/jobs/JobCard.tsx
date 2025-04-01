@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { MapPin, Clock, Building, Briefcase, Languages, GraduationCap, Eye, Check } from 'lucide-react';
+import { MapPin, Clock, Building, Briefcase, Languages, GraduationCap, Eye, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
 
 export interface Job {
   id: string;
@@ -34,6 +35,15 @@ interface JobCardProps {
 }
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, isApplying }) => {
+  // Format the date to a readable format
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy');
+    } catch {
+      return 'Recently posted';
+    }
+  };
+
   return (
     <Card className="overflow-hidden border-l-4 hover:shadow-md transition-shadow" 
           style={{ borderLeftColor: '#10b981' }}>
@@ -47,7 +57,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, i
             </CardDescription>
           </div>
           <Badge className="bg-green-100 text-green-700 border-green-200">
-            Active
+            {formatDate(job.created_at)}
           </Badge>
         </div>
       </CardHeader>
@@ -73,6 +83,14 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, i
             <div className="flex items-center mr-4">
               <Briefcase className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
               <span>{job.work_type}</span>
+            </div>
+          )}
+          
+          {/* Timeframe */}
+          {job.timeframe && (
+            <div className="flex items-center">
+              <Clock className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
+              <span>{job.timeframe}</span>
             </div>
           )}
         </div>
@@ -119,7 +137,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, i
           onClick={() => onApply(job.id)}
           disabled={isApplying}
         >
-          <Check className="w-4 h-4 mr-2" />
+          <CheckCircle2 className="w-4 h-4 mr-2" />
           Apply Now
         </Button>
       </CardFooter>
