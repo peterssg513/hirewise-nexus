@@ -245,9 +245,6 @@ export const fetchJobApplications = async (jobId: string): Promise<any[]> => {
         psychologists:psychologists!inner(
           id,
           user_id,
-          profiles:profiles!inner(
-            name
-          ),
           experience_years,
           certifications,
           specialties,
@@ -256,7 +253,12 @@ export const fetchJobApplications = async (jobId: string): Promise<any[]> => {
           desired_locations,
           city,
           state,
-          open_to_relocation
+          open_to_relocation,
+          profiles:profiles!inner(
+            name,
+            email,
+            profile_picture_url
+          )
         )
       `)
       .eq('job_id', jobId)
