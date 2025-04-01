@@ -1,71 +1,72 @@
 
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { fetchDistrictProfile } from '@/services/districtProfileService';
-import { useToast } from '@/hooks/use-toast';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import React, { useState, useEffect } from 'react';
+import DistrictNavigation from '@/components/district/DistrictNavigation';
 import { EvaluationsPage } from '@/components/district/evaluations/EvaluationsPage';
+import { useAuth } from '@/contexts/AuthContext';
+import { fetchEvaluationRequests } from '@/services/evaluationRequestService';
+import { useToast } from '@/hooks/use-toast';
 
 const DistrictEvaluations = () => {
-  const [districtId, setDistrictId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const { toast } = useToast();
-  
+  const [loading, setLoading] = useState(true);
+  const [evaluationCounts, setEvaluationCounts] = useState({
+    open: 0,
+    offered: 0,
+    accepted: 0,
+    inProgress: 0,
+    closed: 0,
+    total: 0
+  });
+
   useEffect(() => {
-    const loadDistrictData = async () => {
-      if (!user) return;
+    const loadEvaluationCounts = async () => {
+      if (!profile?.id) return;
       
       try {
         setLoading(true);
-        const districtProfile = await fetchDistrictProfile(user.id);
+        const evaluations = await fetchEvaluationRequests(profile.id);
         
-        if (districtProfile) {
-          setDistrictId(districtProfile.id);
-        } else {
-          toast({
-            title: "Error loading district profile",
-            description: "Could not find your district profile. Please contact support.",
-            variant: "destructive",
-          });
-        }
+        // Count evaluations by status
+        const counts = {
+          open: evaluations.filter(e => e.status === 'pending' || e.status === 'Open').length,
+          offered: evaluations.filter(e => e.status === 'active' || e.status === 'Offered').length,
+          accepted: evaluations.filter(e => e.status === 'Accepted').length,
+          inProgress: evaluations.filter(e => e.status === 'Evaluation In Progress').length,
+          closed: evaluations.filter(e => e.status === 'completed' || e.status === 'Closed').length,
+          total: evaluations.length
+        };
+        
+        setEvaluationCounts(counts);
       } catch (error) {
-        console.error('Error fetching district data:', error);
+        console.error('Error loading evaluation counts:', error);
         toast({
-          title: "Error loading district data",
-          description: "Failed to load district information. Please try again later.",
-          variant: "destructive",
+          title: 'Error',
+          description: 'Failed to load evaluation data',
+          variant: 'destructive',
         });
       } finally {
         setLoading(false);
       }
     };
-    
-    loadDistrictData();
-  }, [user, toast]);
-  
-  if (loading) {
-    return <LoadingSpinner />;
+
+    loadEvaluationCounts();
+  }, [profile?.id, toast]);
+
+  if (!profile?.id) {
+    return <div>Loading profile...</div>;
   }
-  
-  if (!districtId) {
-    return (
-      <div className="flex flex-col items-center justify-center h-96">
-        <h2 className="text-xl font-bold mb-4">District Profile Not Found</h2>
-        <p className="text-muted-foreground">
-          We couldn't find your district profile. Please contact support for assistance.
-        </p>
-      </div>
-    );
-  }
-  
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">District Evaluations</h1>
+    <div>
+      <DistrictNavigation />
+      <div className="mt-4">
+        <EvaluationsPage 
+          districtId={profile.id} 
+          evaluationCounts={evaluationCounts}
+          loading={loading}
+        />
       </div>
-      
-      <EvaluationsPage districtId={districtId} />
     </div>
   );
 };

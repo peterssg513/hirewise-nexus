@@ -75,7 +75,7 @@ const Evaluations = () => {
   const filteredEvaluations = evaluations.filter(evaluation => 
     evaluation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     evaluation.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    evaluation.district_name.toLowerCase().includes(searchTerm.toLowerCase())
+    (evaluation.district_name && evaluation.district_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   if (loading) {

@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EvaluationCard } from './EvaluationCard';
 import { CreateEvaluationDialog } from './CreateEvaluationDialog';
 import { Button } from '@/components/ui/button';
@@ -60,6 +59,10 @@ export const EvaluationsPage: React.FC<EvaluationsPageProps> = ({
     refetch();
   };
 
+  const handleCreateEvaluation = () => {
+    setCreateDialogOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -109,14 +112,8 @@ export const EvaluationsPage: React.FC<EvaluationsPageProps> = ({
             <EmptyState
               title="No evaluations found"
               description={`No evaluation requests match the current filter.`}
-              action={
-                <Button 
-                  variant="outline" 
-                  onClick={() => setCreateDialogOpen(true)}
-                >
-                  Create New Evaluation
-                </Button>
-              }
+              actionLabel="Create New Evaluation"
+              onAction={handleCreateEvaluation}
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
