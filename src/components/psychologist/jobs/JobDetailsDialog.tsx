@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Building, MapPin, Clock, Briefcase, Check, Languages, GraduationCap, Calendar } from 'lucide-react';
+import { Building, MapPin, Clock, Briefcase, Check, Languages, GraduationCap, Calendar, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,8 @@ interface JobDetailsDialogProps {
   onClose: () => void;
   onApply: (jobId: string) => void;
   isApplying: boolean;
+  hasApplied?: boolean;
+  applicationStatus?: string;
 }
 
 export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
@@ -20,7 +22,9 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
   isOpen,
   onClose,
   onApply,
-  isApplying
+  isApplying,
+  hasApplied = false,
+  applicationStatus
 }) => {
   if (!job) return null;
   
@@ -37,6 +41,39 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
     }
   };
   
+  const renderApplicationStatusBadge = () => {
+    if (!hasApplied || !applicationStatus) return null;
+    
+    const getStatusColor = () => {
+      switch (applicationStatus) {
+        case 'approved': return 'bg-green-100 text-green-700 border-green-200';
+        case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
+        case 'offered': return 'bg-blue-100 text-blue-700 border-blue-200';
+        case 'accepted': return 'bg-purple-100 text-purple-700 border-purple-200';
+        default: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+      }
+    };
+    
+    return (
+      <Badge className={`${getStatusColor()} ml-2`}>
+        {applicationStatus.charAt(0).toUpperCase() + applicationStatus.slice(1)}
+      </Badge>
+    );
+  };
+
+  const getApplicationButtonText = () => {
+    if (hasApplied) {
+      switch (applicationStatus) {
+        case 'approved': return 'Application Approved';
+        case 'rejected': return 'Application Rejected';
+        case 'offered': return 'Job Offered';
+        case 'accepted': return 'Job Accepted';
+        default: return 'Application Submitted';
+      }
+    }
+    return isApplying ? "Submitting..." : "Apply Now";
+  };
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
@@ -49,9 +86,12 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
                 {job.district_name}
               </DialogDescription>
             </div>
-            <Badge className="bg-green-100 text-green-700 border-green-200">
-              Active
-            </Badge>
+            <div className="flex items-center">
+              <Badge className="bg-green-100 text-green-700 border-green-200">
+                Active
+              </Badge>
+              {renderApplicationStatusBadge()}
+            </div>
           </div>
         </DialogHeader>
         
@@ -189,13 +229,23 @@ export const JobDetailsDialog: React.FC<JobDetailsDialogProps> = ({
           
           <DialogFooter className="pt-4">
             <Button 
-              variant="success"
-              onClick={() => onApply(job.id)} 
-              disabled={isApplying}
-              className="px-8 py-2 text-base font-medium"
+              variant={hasApplied ? "outline" : "success"}
+              onClick={() => !hasApplied && onApply(job.id)} 
+              disabled={isApplying || hasApplied}
+              className={`px-8 py-2 text-base font-medium ${hasApplied ? 'cursor-not-allowed' : ''}`}
               size="lg"
             >
-              {isApplying ? "Submitting..." : "Apply Now"}
+              {hasApplied && applicationStatus === 'approved' ? (
+                <><Check className="w-4 h-4 mr-2 text-green-500" />{getApplicationButtonText()}</>
+              ) : hasApplied && applicationStatus === 'rejected' ? (
+                <><AlertCircle className="w-4 h-4 mr-2 text-red-500" />{getApplicationButtonText()}</>
+              ) : hasApplied ? (
+                <><Check className="w-4 h-4 mr-2" />{getApplicationButtonText()}</>
+              ) : isApplying ? (
+                "Submitting..."
+              ) : (
+                <>Apply Now</>
+              )}
             </Button>
           </DialogFooter>
         </div>

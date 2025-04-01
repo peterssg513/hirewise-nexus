@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, Clock, Building, Briefcase, Languages, GraduationCap, Eye, Check } from 'lucide-react';
+import { MapPin, Clock, Building, Briefcase, Languages, GraduationCap, Eye, Check, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,9 +31,18 @@ interface JobCardProps {
   onViewDetails: (job: Job) => void;
   onApply: (jobId: string) => void;
   isApplying: boolean;
+  hasApplied?: boolean;
+  applicationStatus?: string;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, isApplying }) => {
+export const JobCard: React.FC<JobCardProps> = ({ 
+  job, 
+  onViewDetails, 
+  onApply, 
+  isApplying,
+  hasApplied = false,
+  applicationStatus
+}) => {
   return (
     <Card className="overflow-hidden border-l-4 hover:shadow-md transition-shadow" 
           style={{ borderLeftColor: '#10b981' }}>
@@ -113,15 +122,32 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onApply, i
           <Eye className="w-4 h-4 mr-2" />
           View Details
         </Button>
-        <Button 
-          variant="success"
-          className="flex-1 font-medium"
-          onClick={() => onApply(job.id)}
-          disabled={isApplying}
-        >
-          <Check className="w-4 h-4 mr-2" />
-          Apply Now
-        </Button>
+        
+        {hasApplied ? (
+          <Button 
+            variant="outline"
+            className="flex-1 font-medium bg-gray-50 text-gray-700"
+            disabled={true}
+          >
+            {applicationStatus === 'approved' ? (
+              <><Check className="w-4 h-4 mr-2 text-green-500" />Approved</>
+            ) : applicationStatus === 'rejected' ? (
+              <><AlertCircle className="w-4 h-4 mr-2 text-red-500" />Rejected</>
+            ) : (
+              <><Check className="w-4 h-4 mr-2 text-blue-500" />Applied</>
+            )}
+          </Button>
+        ) : (
+          <Button 
+            variant="success"
+            className="flex-1 font-medium"
+            onClick={() => onApply(job.id)}
+            disabled={isApplying}
+          >
+            <Check className="w-4 h-4 mr-2" />
+            Apply Now
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
