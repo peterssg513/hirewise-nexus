@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,45 +7,14 @@ import { JobDetailsDialog } from '@/components/psychologist/jobs/JobDetailsDialo
 import { JobsFilter } from '@/components/psychologist/jobs/JobsFilter';
 import { JobsSkeletonLoader } from '@/components/psychologist/jobs/JobsSkeletonLoader';
 import { NoJobsFound } from '@/components/psychologist/jobs/NoJobsFound';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BriefcaseBusiness, ClipboardList } from 'lucide-react';
-import MyApplications from '@/components/psychologist/jobs/MyApplications';
-
-interface Application {
-  id: string;
-  job_id: string;
-  status: string;
-}
-
 const JobListings = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isApplying, setIsApplying] = useState(false);
-  const [activeTab, setActiveTab] = useState("jobs");
-
-  // Fetch user's applications to check if they've applied to jobs
-  const { 
-    data: userApplications,
-    isLoading: isLoadingApplications 
-  } = useQuery({
-    queryKey: ['user-applications'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('applications')
-        .select('id, job_id, status')
-      
-      if (error) throw error;
-      return data as Application[];
-    }
-  });
-  
-  // Create a Set of job IDs that the user has already applied to
-  const appliedJobIds = React.useMemo(() => {
-    if (!userApplications) return new Set<string>();
-    return new Set(userApplications.map(app => app.job_id));
-  }, [userApplications]);
 
   // Fetch active jobs with district information - ensure we select all needed fields
   const {
@@ -107,21 +75,14 @@ const JobListings = () => {
         state: job.state || '',
         country: job.country || 'USA'
       }));
-    },
-    enabled: activeTab === "jobs"
+    }
   });
 
   // Filter jobs based on search and skills
   const filteredJobs = React.useMemo(() => {
     return jobs?.filter(job => {
-      const matchesSearch = searchQuery === '' || 
-        job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        job.description.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        (job.district_name && job.district_name.toLowerCase().includes(searchQuery.toLowerCase()));
-        
-      const matchesSkills = selectedSkills.length === 0 || 
-        (job.skills_required && selectedSkills.every(skill => job.skills_required.includes(skill)));
-        
+      const matchesSearch = searchQuery === '' || job.title.toLowerCase().includes(searchQuery.toLowerCase()) || job.description.toLowerCase().includes(searchQuery.toLowerCase()) || job.district_name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSkills = selectedSkills.length === 0 || job.skills_required && selectedSkills.every(skill => job.skills_required.includes(skill));
       return matchesSearch && matchesSkills;
     });
   }, [jobs, searchQuery, selectedSkills]);
@@ -129,16 +90,6 @@ const JobListings = () => {
   // Apply for job
   const handleApplyForJob = async (jobId: string) => {
     if (isApplying) return; // Prevent multiple clicks
-    
-    // Check if user has already applied for this job
-    if (appliedJobIds.has(jobId)) {
-      toast({
-        title: "Already applied",
-        description: "You have already applied for this job. Check the 'My Applications' tab to view status.",
-        variant: "default"
-      });
-      return;
-    }
 
     setIsApplying(true);
     try {
@@ -158,29 +109,16 @@ const JobListings = () => {
 
       // Close the dialog if open
       setSelectedJob(null);
-      
-      // Switch to the Applications tab to show the user their application
-      setActiveTab("applications");
 
       // Refresh jobs list to update applied status if needed
       refetch();
     } catch (error: any) {
       console.error('Error applying for job:', error);
-      
-      // Check for the specific "already applied" error message
-      if (error.message?.includes("already applied")) {
-        toast({
-          title: "Already applied",
-          description: "You have already applied for this job. Check the 'My Applications' tab to view status.",
-          variant: "default"
-        });
-      } else {
-        toast({
-          title: "Error submitting application",
-          description: error.message || "An error occurred while submitting your application.",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Error submitting application",
+        description: error.message || "An error occurred while submitting your application.",
+        variant: "destructive"
+      });
     } finally {
       setIsApplying(false);
     }
@@ -197,14 +135,11 @@ const JobListings = () => {
     });
     return Array.from(skillsSet);
   }, [jobs]);
-  
   const clearFilters = () => {
     setSelectedSkills([]);
     setSearchQuery('');
   };
-  
   const hasFilters = selectedSkills.length > 0 || searchQuery !== '';
-  
   if (error) {
     return <div className="flex justify-center items-center h-64">
         <div className="text-center">
@@ -216,72 +151,19 @@ const JobListings = () => {
         </div>
       </div>;
   }
-  
-  const isLoading = isLoading || isLoadingApplications;
-  
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold mb-2">Job Opportunities</h1>
-        <p className="text-muted-foreground">Browse and apply for school psychologist positions</p>
+        
+        
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-2 w-full md:w-[400px] mb-4">
-          <TabsTrigger value="jobs" className="flex items-center gap-2">
-            <BriefcaseBusiness className="h-4 w-4" />
-            <span>Available Jobs</span>
-          </TabsTrigger>
-          <TabsTrigger value="applications" className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4" />
-            <span>My Applications</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="jobs" className="space-y-6">
-          <JobsFilter 
-            searchQuery={searchQuery} 
-            setSearchQuery={setSearchQuery} 
-            selectedSkills={selectedSkills} 
-            setSelectedSkills={setSelectedSkills} 
-            allSkills={allSkills} 
-          />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {isLoading ? (
-              <JobsSkeletonLoader />
-            ) : filteredJobs?.length === 0 ? (
-              <NoJobsFound hasFilters={hasFilters} onClearFilters={clearFilters} />
-            ) : (
-              filteredJobs?.map(job => (
-                <JobCard 
-                  key={job.id} 
-                  job={job} 
-                  onViewDetails={setSelectedJob} 
-                  onApply={handleApplyForJob} 
-                  isApplying={isApplying && selectedJob?.id === job.id}
-                  hasApplied={appliedJobIds.has(job.id)}
-                />
-              ))
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="applications">
-          <MyApplications />
-        </TabsContent>
-      </Tabs>
+      <JobsFilter searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedSkills={selectedSkills} setSelectedSkills={setSelectedSkills} allSkills={allSkills} />
       
-      <JobDetailsDialog 
-        job={selectedJob} 
-        isOpen={!!selectedJob} 
-        onClose={() => setSelectedJob(null)} 
-        onApply={handleApplyForJob} 
-        isApplying={isApplying}
-        hasApplied={selectedJob ? appliedJobIds.has(selectedJob.id) : false}
-      />
-    </div>
-  );
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {isLoading ? <JobsSkeletonLoader /> : filteredJobs?.length === 0 ? <NoJobsFound hasFilters={hasFilters} onClearFilters={clearFilters} /> : filteredJobs?.map(job => <JobCard key={job.id} job={job} onViewDetails={setSelectedJob} onApply={handleApplyForJob} isApplying={isApplying && selectedJob?.id === job.id} />)}
+      </div>
+      
+      <JobDetailsDialog job={selectedJob} isOpen={!!selectedJob} onClose={() => setSelectedJob(null)} onApply={handleApplyForJob} isApplying={isApplying} />
+    </div>;
 };
-
 export default JobListings;

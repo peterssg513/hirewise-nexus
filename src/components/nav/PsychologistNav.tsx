@@ -9,7 +9,7 @@ export const PsychologistNav = () => {
   const navItems = [
     { path: '/psychologist-dashboard', label: 'Dashboard' },
     { path: '/psychologist-dashboard/jobs', label: 'Jobs' },
-    { path: '/psychologist-dashboard/applications', label: 'Applications' },
+    { path: '/psychologist-dashboard/evaluations', label: 'Evaluations' },
     { path: '/psychologist-dashboard/profile', label: 'Profile' },
   ];
 
