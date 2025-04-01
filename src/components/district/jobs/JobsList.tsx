@@ -9,10 +9,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { JobDetailsDialog } from '@/components/district/jobs/JobDetailsDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Job, fetchJobs, deleteJob } from '@/services/jobService';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { WORK_LOCATIONS, WORK_TYPES } from '@/services/stateSalaryService';
+import { JobsFilter } from '@/components/district/jobs/JobsFilter';
 
 interface JobsListProps {
   districtId: string;
@@ -140,57 +137,16 @@ export const JobsList: React.FC<JobsListProps> = ({ districtId }) => {
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search jobs..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        
-        <div className="flex flex-wrap gap-2">
-          <Select value={statusFilter || ''} onValueChange={(value) => setStatusFilter(value || null)}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="offered">Offered</SelectItem>
-              <SelectItem value="accepted">Accepted</SelectItem>
-              <SelectItem value="closed">Closed</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Select value={locationFilter || ''} onValueChange={(value) => setLocationFilter(value || null)}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Work Location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Locations</SelectItem>
-              {WORK_LOCATIONS.map(location => (
-                <SelectItem key={location} value={location}>{location}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={jobTypeFilter || ''} onValueChange={(value) => setJobTypeFilter(value || null)}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Work Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Types</SelectItem>
-              {WORK_TYPES.map(type => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <JobsFilter
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        locationFilter={locationFilter}
+        setLocationFilter={setLocationFilter}
+        jobTypeFilter={jobTypeFilter}
+        setJobTypeFilter={setJobTypeFilter}
+      />
       
       {filteredJobs.length === 0 ? (
         <EmptyState

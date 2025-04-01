@@ -39,7 +39,7 @@ export const JobsFilter: React.FC<JobsFilterProps> = ({
       </div>
       
       <div className="flex flex-wrap gap-2">
-        <Select value={statusFilter || ''} onValueChange={(value) => setStatusFilter(value || null)}>
+        <Select value={statusFilter || 'all'} onValueChange={(value) => setStatusFilter(value === 'all' ? null : value)}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -52,7 +52,7 @@ export const JobsFilter: React.FC<JobsFilterProps> = ({
           </SelectContent>
         </Select>
         
-        <Select value={locationFilter || ''} onValueChange={(value) => setLocationFilter(value || null)}>
+        <Select value={locationFilter || 'all'} onValueChange={(value) => setLocationFilter(value === 'all' ? null : value)}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Work Location" />
           </SelectTrigger>
@@ -64,7 +64,7 @@ export const JobsFilter: React.FC<JobsFilterProps> = ({
           </SelectContent>
         </Select>
         
-        <Select value={jobTypeFilter || ''} onValueChange={(value) => setJobTypeFilter(value || null)}>
+        <Select value={jobTypeFilter || 'all'} onValueChange={(value) => setJobTypeFilter(value === 'all' ? null : value)}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Work Type" />
           </SelectTrigger>
