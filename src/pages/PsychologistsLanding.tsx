@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -132,7 +131,8 @@ const PsychologistsLanding = () => {
       role: "Administration",
       organization: "Denver Public Schools",
       quote: "PsychedHire was the difference between scrambling and succeeding. Their speed and quality changed everything. We went from imminent staffing gaps to having over 100 professionals across our psychological service lines.",
-      bgColor: "bg-psyched-lightBlue/20"
+      bgColor: "bg-psyched-lightBlue/20",
+      slug: "denver-public-schools"
     },
     {
       initials: "KC",
@@ -140,7 +140,8 @@ const PsychologistsLanding = () => {
       role: "Special Education Department",
       organization: "Kansas City Public Schools",
       quote: "Thanks to PsychedHire, we scaled faster than we ever imagined — and with the right people. We achieved 542% staffing growth in just 4 years, going from 14 staff to over 90 specialized professionals.",
-      bgColor: "bg-psyched-orange/20"
+      bgColor: "bg-psyched-orange/20",
+      slug: "kansas-city-public-schools"
     }
   ];
 
