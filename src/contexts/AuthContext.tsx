@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   isAuthenticated: boolean;
-  isLoading: boolean; // Make sure this property exists
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string, role: Role) => Promise<void>;
   logout: () => Promise<void>;
@@ -26,13 +26,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Handle redirect after authentication changes
   useEffect(() => {
     // Only attempt navigation if we have loaded the profile and we're not on an auth page
-    if (!isLoading && profile && !location.pathname.includes('/login') && !location.pathname.includes('/register') && !location.pathname.includes('/psychologist-signup') && !location.pathname.includes('/admin-secret-auth')) {
+    if (!isLoading && profile && !location.pathname.includes('/login') && !location.pathname.includes('/register') && !location.pathname.includes('/psychologist-signup') && !location.pathname.includes('/district-signup') && !location.pathname.includes('/admin-secret-auth')) {
       const role = profile.role;
       if (role && location.pathname === '/') {
         if (role === 'admin') {
           navigate('/admin-dashboard');
-        } else {
-          navigate(`/${role}-dashboard`);
+        } else if (role === 'district') {
+          navigate('/district-dashboard');
+        } else if (role === 'psychologist') {
+          navigate('/psychologist-dashboard');
         }
       }
     }
@@ -47,8 +49,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (profile.role) {
           if (profile.role === 'admin') {
             navigate('/admin-dashboard');
-          } else {
-            navigate(`/${profile.role}-dashboard`);
+          } else if (profile.role === 'district') {
+            navigate('/district-dashboard');
+          } else if (profile.role === 'psychologist') {
+            navigate('/psychologist-dashboard');
           }
         }
       }

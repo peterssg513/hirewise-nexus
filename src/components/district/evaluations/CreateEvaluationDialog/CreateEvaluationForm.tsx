@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { evaluationFormSchema, EvaluationFormValues } from './schema';
 import { Form } from '@/components/ui/form';
+import { useQuery } from '@tanstack/react-query';
+import { fetchSchoolById } from '@/services/schoolService';
 
 export interface CreateEvaluationFormProps {
   districtId: string;
@@ -43,7 +45,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       parents: '',
       other_relevant_info: '',
       service_type: '',
-      status: 'Open' as EvaluationRequestStatus,
+      status: 'pending' as EvaluationRequestStatus,
       state: '',
       payment_amount: '',
       title: '',
@@ -53,6 +55,32 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       skills_required: [],
     },
   });
+
+  // Watch for school_id changes to update location information
+  const selectedSchoolId = form.watch('school_id');
+  
+  const { data: schoolData } = useQuery({
+    queryKey: ['school', selectedSchoolId],
+    queryFn: () => fetchSchoolById(selectedSchoolId),
+    enabled: !!selectedSchoolId,
+  });
+
+  // Update location info when school changes
+  useEffect(() => {
+    if (schoolData) {
+      form.setValue('state', schoolData.state || '');
+      
+      // Update location with city/state information
+      const locationParts = [];
+      if (schoolData.city) locationParts.push(schoolData.city);
+      if (schoolData.state) locationParts.push(schoolData.state);
+      const locationString = locationParts.join(', ');
+      
+      if (locationString) {
+        form.setValue('location', locationString);
+      }
+    }
+  }, [schoolData, form]);
 
   // Prepare evaluation data for submission
   const prepareEvaluationData = (data: EvaluationFormValues) => {
@@ -64,9 +92,9 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       title: data.legal_name ? `Evaluation for ${data.legal_name}` : `New ${data.service_type || 'Evaluation'}`,
       description: data.other_relevant_info || `${data.service_type || 'Evaluation'} request`,
       skills_required: data.skills_required || [],
-      location: data.state || '',
+      location: data.location || (data.state || ''),
       timeframe: data.date_of_birth ? `DOB: ${data.date_of_birth}` : '',
-      status: (data.status as EvaluationRequestStatus) || 'Open'
+      status: 'pending' // All new evaluations start as pending for admin approval
     };
   };
 
@@ -93,7 +121,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
     form.reset();
     toast({
       title: 'Success',
-      description: 'Evaluation request created successfully',
+      description: 'Evaluation request created and pending admin approval',
     });
   };
 

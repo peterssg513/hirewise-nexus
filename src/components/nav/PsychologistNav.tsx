@@ -33,15 +33,6 @@ export const PsychologistNav = () => {
           <ClipboardList className="h-5 w-5" />
         </span>
       </NavLink>
-      <NavLink to="/psychologist-dashboard/applications">
-        <span className="hidden md:flex items-center">
-          <FileText className="mr-1 h-4 w-4" />
-          Applications
-        </span>
-        <span className="md:hidden">
-          <FileText className="h-5 w-5" />
-        </span>
-      </NavLink>
       <NavLink to="/psychologist-dashboard/profile">
         <span className="hidden md:flex items-center">
           <UserCircle className="mr-1 h-4 w-4" />

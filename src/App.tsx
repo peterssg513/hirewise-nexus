@@ -30,6 +30,7 @@ import AdminJobs from './pages/admin/AdminJobs';
 import AdminEvaluations from './pages/admin/AdminEvaluations';
 import AdminSchools from './pages/admin/AdminSchools';
 import Approvals from './pages/admin/Approvals';
+import Unauthorized from './pages/Unauthorized';
 
 // Success stories pages
 import SuccessStories from './pages/SuccessStories';
@@ -61,6 +62,7 @@ function App() {
         <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="/psychologist-signup" element={<PsychologistSignup />} />
         <Route path="/district-signup" element={<DistrictSignup />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
         
         {/* Success Stories Routes */}
         <Route path="/success-stories" element={<SuccessStories />} />
@@ -100,7 +102,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DistrictHome />} />
+          <Route index element={<DistrictDashboard />} />
           <Route path="jobs" element={<DistrictJobs />} />
           <Route path="schools" element={<DistrictSchools />} />
           <Route path="students" element={<DistrictStudents />} />
