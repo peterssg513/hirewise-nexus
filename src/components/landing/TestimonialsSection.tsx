@@ -1,7 +1,9 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
-import { Quote, Star } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Quote, Star, ArrowRight } from 'lucide-react';
 
 interface TestimonialProps {
   initials: string;
@@ -10,6 +12,7 @@ interface TestimonialProps {
   organization: string;
   quote: string;
   bgColor: string;
+  slug: string;
 }
 
 interface TestimonialsSectionProps {
@@ -54,10 +57,17 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ title, subtit
                     <p className="italic text-gray-700 mb-6">
                       "{testimonial.quote}"
                     </p>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-amber-500 fill-amber-500" />
-                      ))}
+                    <div className="flex items-center justify-between">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 text-amber-500 fill-amber-500" />
+                        ))}
+                      </div>
+                      <Link to={`/success-stories/${testimonial.slug}`}>
+                        <Button variant="link" className="p-0 h-auto text-psyched-lightBlue hover:text-psyched-darkBlue flex items-center gap-1">
+                          Read full case study <ArrowRight size={16} />
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Carousel,
   CarouselContent,
@@ -8,7 +9,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
-import { Quote, Star } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Quote, Star, ArrowRight } from 'lucide-react';
 
 interface Testimonial {
   id: number;
@@ -17,7 +19,7 @@ interface Testimonial {
   role: string;
   organization: string;
   rating: number;
-  image?: string;
+  slug: string;
 }
 
 const testimonials: Testimonial[] = [
@@ -27,7 +29,8 @@ const testimonials: Testimonial[] = [
     author: "Leadership Team",
     role: "Administration",
     organization: "Denver Public Schools",
-    rating: 5
+    rating: 5,
+    slug: "denver-public-schools"
   },
   {
     id: 2,
@@ -35,24 +38,9 @@ const testimonials: Testimonial[] = [
     author: "District Office",
     role: "Special Education Department",
     organization: "Kansas City Public Schools",
-    rating: 5
-  },
-  {
-    id: 3,
-    quote: "The platform's evaluation and reporting features have dramatically reduced our administrative workload while improving compliance. We've been able to clear our evaluation backlog and provide timely services to students. PsychedHire! truly understands the needs of school psychologists.",
-    author: "Jennifer Williams",
-    role: "Special Education Director",
-    organization: "NYC DOE",
-    rating: 5
-  },
-  {
-    id: 4,
-    quote: "I was skeptical at first, but PsychedHire! has exceeded all my expectations. The quality of candidates I've found through the platform is outstanding, and the streamlined application process makes it easy to find the right opportunities that match my schedule and expertise.",
-    author: "David Thompson",
-    role: "School Psychologist",
-    organization: "Atlanta Public Schools",
-    rating: 5
-  },
+    rating: 5,
+    slug: "kansas-city-public-schools"
+  }
 ];
 
 const TestimonialCarousel = () => {
@@ -97,13 +85,20 @@ const TestimonialCarousel = () => {
                           "{testimonial.quote}"
                         </p>
                         
-                        <div className="mt-auto pt-4 border-t border-gray-100">
-                          <p className="font-semibold text-psyched-darkBlue">
-                            {testimonial.author}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {testimonial.role}, {testimonial.organization}
-                          </p>
+                        <div className="mt-auto">
+                          <div className="pt-4 border-t border-gray-100">
+                            <p className="font-semibold text-psyched-darkBlue">
+                              {testimonial.author}
+                            </p>
+                            <p className="text-sm text-gray-600 mb-4">
+                              {testimonial.role}, {testimonial.organization}
+                            </p>
+                            <Link to={`/success-stories/${testimonial.slug}`}>
+                              <Button variant="link" className="p-0 h-auto text-psyched-lightBlue hover:text-psyched-darkBlue flex items-center gap-1">
+                                Read full case study <ArrowRight size={16} />
+                              </Button>
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -115,6 +110,14 @@ const TestimonialCarousel = () => {
           <CarouselPrevious className="sm:-left-8 md:-left-12 -translate-y-1/2" />
           <CarouselNext className="sm:-right-8 md:-right-12 -translate-y-1/2" />
         </Carousel>
+        
+        <div className="text-center mt-12">
+          <Link to="/success-stories">
+            <Button className="bg-psyched-lightBlue text-white hover:bg-psyched-darkBlue">
+              View All Success Stories
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );

@@ -1,7 +1,9 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, School, TrendingDown, Clock, Users } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { FileText, School, TrendingUp, Clock, Users, ArrowRight } from 'lucide-react';
 
 const CaseStudies = () => {
   return (
@@ -17,7 +19,7 @@ const CaseStudies = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card className="overflow-hidden shadow-lg border-none hover:shadow-xl transition-shadow">
             <div className="h-3 bg-psyched-yellow"></div>
             <CardContent className="p-6">
@@ -28,7 +30,7 @@ const CaseStudies = () => {
               <p className="text-gray-600 mb-4">
                 Denver Public Schools transformed urgent staffing gaps into a comprehensive team of over 100 psychology professionals in just three academic years.
               </p>
-              <div className="flex flex-col gap-2 mt-6">
+              <div className="flex flex-col gap-2 mt-6 mb-6">
                 <div className="flex items-center">
                   <Clock className="text-psyched-darkBlue h-5 w-5 mr-2" />
                   <span className="font-medium">Rapid response solution</span>
@@ -42,6 +44,11 @@ const CaseStudies = () => {
                   <span className="font-medium">Long-term staffing partnership</span>
                 </div>
               </div>
+              <Link to="/success-stories/denver-public-schools">
+                <Button className="w-full bg-psyched-yellow text-psyched-darkBlue hover:bg-psyched-orange">
+                  Read Full Case Study <ArrowRight className="ml-2" size={16} />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
           
@@ -55,9 +62,9 @@ const CaseStudies = () => {
               <p className="text-gray-600 mb-4">
                 KCKPS achieved 542% staffing growth in just 4 years, expanding from 14 to over 90 specialized staff and completing 1,500+ evaluations.
               </p>
-              <div className="flex flex-col gap-2 mt-6">
+              <div className="flex flex-col gap-2 mt-6 mb-6">
                 <div className="flex items-center">
-                  <TrendingDown className="text-psyched-darkBlue h-5 w-5 mr-2" />
+                  <TrendingUp className="text-psyched-darkBlue h-5 w-5 mr-2" />
                   <span className="font-medium">542% staffing growth</span>
                 </div>
                 <div className="flex items-center">
@@ -69,33 +76,11 @@ const CaseStudies = () => {
                   <span className="font-medium">Exclusive psychology partner</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="overflow-hidden shadow-lg border-none hover:shadow-xl transition-shadow">
-            <div className="h-3 bg-psyched-orange"></div>
-            <CardContent className="p-6">
-              <div className="flex items-center mb-4">
-                <School className="text-psyched-orange h-8 w-8 mr-3" />
-                <h3 className="text-xl font-semibold text-psyched-darkBlue">NYC DOE Experience</h3>
-              </div>
-              <p className="text-gray-600 mb-4">
-                NYC Department of Education reported a 60% reduction in administrative work and 40% more time spent directly with students.
-              </p>
-              <div className="flex flex-col gap-2 mt-6">
-                <div className="flex items-center">
-                  <Clock className="text-psyched-darkBlue h-5 w-5 mr-2" />
-                  <span className="font-medium">60% admin work reduction</span>
-                </div>
-                <div className="flex items-center">
-                  <TrendingDown className="text-psyched-darkBlue h-5 w-5 mr-2" />
-                  <span className="font-medium">40% more student contact time</span>
-                </div>
-                <div className="flex items-center">
-                  <FileText className="text-psyched-darkBlue h-5 w-5 mr-2" />
-                  <span className="font-medium">33% report completion improvement</span>
-                </div>
-              </div>
+              <Link to="/success-stories/kansas-city-public-schools">
+                <Button className="w-full bg-psyched-lightBlue text-white hover:bg-psyched-darkBlue">
+                  Read Full Case Study <ArrowRight className="ml-2" size={16} />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>

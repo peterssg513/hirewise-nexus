@@ -31,6 +31,11 @@ import AdminEvaluations from './pages/admin/AdminEvaluations';
 import AdminSchools from './pages/admin/AdminSchools';
 import Approvals from './pages/admin/Approvals';
 
+// Success stories pages
+import SuccessStories from './pages/SuccessStories';
+import DenverPublicSchools from './pages/case-studies/DenverPublicSchools';
+import KansasCityPublicSchools from './pages/case-studies/KansasCityPublicSchools';
+
 // District pages
 import DistrictHome from './pages/district/DistrictHome';
 import DistrictJobs from './pages/district/DistrictJobs';
@@ -55,6 +60,11 @@ function App() {
         <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="/psychologist-signup" element={<PsychologistSignup />} />
         <Route path="/district-signup" element={<DistrictSignup />} />
+        
+        {/* Success Stories Routes */}
+        <Route path="/success-stories" element={<SuccessStories />} />
+        <Route path="/success-stories/denver-public-schools" element={<DenverPublicSchools />} />
+        <Route path="/success-stories/kansas-city-public-schools" element={<KansasCityPublicSchools />} />
 
         {/* Admin Auth Routes - Non-guessable URL */}
         <Route path={`/${ADMIN_AUTH_PATH}`} element={<AdminAuth />} />
