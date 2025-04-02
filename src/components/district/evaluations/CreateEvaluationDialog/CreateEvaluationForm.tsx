@@ -94,7 +94,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       skills_required: data.skills_required || [],
       location: data.location || (data.state || ''),
       timeframe: data.date_of_birth ? `DOB: ${data.date_of_birth}` : '',
-      status: 'pending' // All new evaluations start as pending for admin approval
+      status: 'pending' as EvaluationRequestStatus // Explicitly cast to EvaluationRequestStatus
     };
   };
 
