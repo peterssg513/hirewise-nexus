@@ -7,7 +7,6 @@ import { EvaluationRequest, createEvaluationRequest, EvaluationRequestStatus } f
 import { StudentSection } from './sections/StudentSection';
 import { SchoolSection } from './sections/SchoolSection';
 import { ServiceSection } from './sections/ServiceSection';
-import { ContactSection } from './sections/ContactSection';
 import { AdditionalInfoSection } from './sections/AdditionalInfoSection';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -34,15 +33,10 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
     resolver: zodResolver(evaluationFormSchema),
     defaultValues: {
       legal_name: '',
-      date_of_birth: '',
       age: '',
       grade: '',
       district_id: districtId,
       school_id: '',
-      student_id: '',
-      general_education_teacher: '',
-      special_education_teachers: '',
-      parents: '',
       other_relevant_info: '',
       service_type: '',
       status: 'pending' as EvaluationRequestStatus,
@@ -93,8 +87,8 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       description: data.other_relevant_info || `${data.service_type || 'Evaluation'} request`,
       skills_required: data.skills_required || [],
       location: data.location || (data.state || ''),
-      timeframe: data.date_of_birth ? `DOB: ${data.date_of_birth}` : '',
-      status: 'pending' as EvaluationRequestStatus // Explicitly cast to EvaluationRequestStatus
+      timeframe: '',
+      status: 'pending' as EvaluationRequestStatus 
     };
   };
 
@@ -140,7 +134,6 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
         <StudentSection form={form} />
         <SchoolSection form={form} districtId={districtId} />
         <ServiceSection form={form} />
-        <ContactSection form={form} />
         <AdditionalInfoSection form={form} />
         
         <div className="flex justify-end pt-4">

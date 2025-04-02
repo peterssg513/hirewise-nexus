@@ -42,7 +42,6 @@ import MidwesternRegionalDistrict from './pages/case-studies/MidwesternRegionalD
 import DistrictHome from './pages/district/DistrictHome';
 import DistrictJobs from './pages/district/DistrictJobs';
 import DistrictSchools from './pages/district/DistrictSchools';
-import DistrictStudents from './pages/district/DistrictStudents';
 import DistrictEvaluations from './pages/district/DistrictEvaluations';
 import DistrictSettings from './pages/district/DistrictSettings';
 
@@ -105,7 +104,6 @@ function App() {
           <Route index element={<DistrictDashboard />} />
           <Route path="jobs" element={<DistrictJobs />} />
           <Route path="schools" element={<DistrictSchools />} />
-          <Route path="students" element={<DistrictStudents />} />
           <Route path="evaluations" element={<DistrictEvaluations />} />
           <Route path="settings" element={<DistrictSettings />} />
         </Route>

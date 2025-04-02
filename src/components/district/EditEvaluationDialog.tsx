@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { EvaluationRequest, SERVICE_TYPES, updateEvaluationRequest } from '@/services/evaluationRequestService';
 import { useToast } from '@/hooks/use-toast';
 import { fetchSchools } from '@/services/schoolService';
+import { GRADE_LEVELS } from '@/services/evaluationPaymentService';
 
 interface EditEvaluationDialogProps {
   open: boolean;
@@ -24,17 +25,12 @@ const evaluationFormSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
   legal_name: z.string().optional(),
-  date_of_birth: z.string().optional(),
   age: z.string().optional(),
   grade: z.string().optional(),
   school_id: z.string().optional(),
-  general_education_teacher: z.string().optional(),
-  special_education_teachers: z.string().optional(),
-  parents: z.string().optional(),
   other_relevant_info: z.string().optional(),
   service_type: z.string().optional(),
   location: z.string().optional(),
-  timeframe: z.string().optional(),
 });
 
 type EvaluationFormValues = z.infer<typeof evaluationFormSchema>;
@@ -61,17 +57,12 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
       title: evaluation.title || '',
       description: evaluation.description || '',
       legal_name: evaluation.legal_name || '',
-      date_of_birth: evaluation.date_of_birth ? new Date(evaluation.date_of_birth).toISOString().split('T')[0] : '',
       age: evaluation.age ? String(evaluation.age) : '',
       grade: evaluation.grade || '',
       school_id: evaluation.school_id || '',
-      general_education_teacher: evaluation.general_education_teacher || '',
-      special_education_teachers: evaluation.special_education_teachers || '',
-      parents: evaluation.parents || '',
       other_relevant_info: evaluation.other_relevant_info || '',
       service_type: evaluation.service_type || '',
       location: evaluation.location || '',
-      timeframe: evaluation.timeframe || '',
     },
   });
 
@@ -81,17 +72,12 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
         title: evaluation.title || '',
         description: evaluation.description || '',
         legal_name: evaluation.legal_name || '',
-        date_of_birth: evaluation.date_of_birth ? new Date(evaluation.date_of_birth).toISOString().split('T')[0] : '',
         age: evaluation.age ? String(evaluation.age) : '',
         grade: evaluation.grade || '',
         school_id: evaluation.school_id || '',
-        general_education_teacher: evaluation.general_education_teacher || '',
-        special_education_teachers: evaluation.special_education_teachers || '',
-        parents: evaluation.parents || '',
         other_relevant_info: evaluation.other_relevant_info || '',
         service_type: evaluation.service_type || '',
         location: evaluation.location || '',
-        timeframe: evaluation.timeframe || '',
       });
 
       const loadSchools = async () => {
@@ -182,47 +168,23 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
           
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="date_of_birth">Date of Birth</Label>
-              <Input {...register("date_of_birth")} type="date" />
-            </div>
-            
-            <div className="grid gap-2">
               <Label htmlFor="age">Age</Label>
-              <Input {...register("age")} type="number" />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="location">Location</Label>
-              <Input {...register("location")} placeholder="Evaluation location" />
+              <Input {...register("age")} type="number" placeholder="Student age" />
             </div>
             
-            <div className="grid gap-2">
-              <Label htmlFor="timeframe">Timeframe</Label>
-              <Input {...register("timeframe")} placeholder="When needed by" />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="grade">Grade</Label>
-              <Input {...register("grade")} placeholder="Current grade" />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="school_id">School</Label>
               <Select 
-                onValueChange={(value) => setValue("school_id", value)}
-                defaultValue={evaluation.school_id}
+                onValueChange={(value) => setValue("grade", value)}
+                defaultValue={evaluation.grade}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a school" />
+                  <SelectValue placeholder="Select grade" />
                 </SelectTrigger>
                 <SelectContent>
-                  {schools.map((school) => (
-                    <SelectItem key={school.id} value={school.id}>
-                      {school.name}
+                  {GRADE_LEVELS.map((grade) => (
+                    <SelectItem key={grade} value={grade}>
+                      {grade}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -231,22 +193,31 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
           </div>
           
           <div className="grid gap-2">
-            <Label htmlFor="general_education_teacher">General Education Teacher</Label>
-            <Input {...register("general_education_teacher")} placeholder="Teacher name, subject, email" />
+            <Label htmlFor="location">Location</Label>
+            <Input {...register("location")} placeholder="Evaluation location" />
           </div>
           
           <div className="grid gap-2">
-            <Label htmlFor="special_education_teachers">Special Education Teachers/Interventionist</Label>
-            <Input {...register("special_education_teachers")} placeholder="Teacher name, services, email" />
+            <Label htmlFor="school_id">School</Label>
+            <Select 
+              onValueChange={(value) => setValue("school_id", value)}
+              defaultValue={evaluation.school_id}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a school" />
+              </SelectTrigger>
+              <SelectContent>
+                {schools.map((school) => (
+                  <SelectItem key={school.id} value={school.id}>
+                    {school.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="grid gap-2">
-            <Label htmlFor="parents">Parents/Guardians</Label>
-            <Input {...register("parents")} placeholder="Parent/Guardian names" />
-          </div>
-          
-          <div className="grid gap-2">
-            <Label htmlFor="other_relevant_info">Other Relevant Information</Label>
+            <Label htmlFor="other_relevant_info">Additional Information</Label>
             <Textarea {...register("other_relevant_info")} placeholder="Any additional information about the student..." />
           </div>
           

@@ -36,20 +36,6 @@ export const StudentSection: React.FC<StudentSectionProps> = ({ form }) => {
             </FormItem>
           )}
         />
-        
-        <FormField
-          control={form.control}
-          name="date_of_birth"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date of Birth</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -58,7 +44,7 @@ export const StudentSection: React.FC<StudentSectionProps> = ({ form }) => {
           name="age"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Age</FormLabel>
+              <FormLabel>Student Age</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
@@ -78,7 +64,7 @@ export const StudentSection: React.FC<StudentSectionProps> = ({ form }) => {
           name="grade"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Grade</FormLabel>
+              <FormLabel>Student Grade</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
@@ -101,15 +87,15 @@ export const StudentSection: React.FC<StudentSectionProps> = ({ form }) => {
           )}
         />
       </div>
-      
+
       <FormField
         control={form.control}
-        name="student_id"
+        name="other_relevant_info"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Student ID (Optional)</FormLabel>
+            <FormLabel>Additional Information</FormLabel>
             <FormControl>
-              <Input placeholder="Enter student ID number" {...field} />
+              <Input placeholder="Enter any additional information about the student" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
