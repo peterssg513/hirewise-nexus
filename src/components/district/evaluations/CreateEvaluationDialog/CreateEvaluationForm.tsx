@@ -69,6 +69,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
   // Update location info when school changes
   useEffect(() => {
     if (schoolData) {
+      console.log("Selected school data:", schoolData);
       form.setValue('state', schoolData.state || '');
       
       // Update location with city/state information

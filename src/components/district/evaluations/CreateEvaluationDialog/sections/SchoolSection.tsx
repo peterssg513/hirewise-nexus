@@ -30,8 +30,10 @@ export const SchoolSection: React.FC<SchoolSectionProps> = ({ form, districtId }
     queryFn: () => fetchSchools(districtId),
     enabled: !!districtId,
     retry: 2,
-    onError: (err) => {
-      console.error("Error fetching schools:", err);
+    meta: {
+      onError: (err: Error) => {
+        console.error("Error fetching schools:", err);
+      }
     }
   });
   
