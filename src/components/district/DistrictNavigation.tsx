@@ -1,10 +1,12 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Briefcase, School, Users, FileText, Settings, AlertTriangle } from 'lucide-react';
+import { Briefcase, School, FileText, Settings, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+
 const DistrictNavigation = () => {
   const location = useLocation();
   const {
@@ -12,6 +14,7 @@ const DistrictNavigation = () => {
   } = useAuth();
   const [districtStatus, setDistrictStatus] = useState('approved');
   const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const checkDistrictStatus = async () => {
       if (!profile?.id) return;
@@ -67,26 +70,32 @@ const DistrictNavigation = () => {
         </CardContent>
       </Card>;
   }
+  
   return <div className="mb-6 overflow-x-auto flex gap-2 md:gap-4 pb-2">
       <Button variant={location.pathname.endsWith('/district-dashboard') || location.pathname.endsWith('/district-dashboard/jobs') ? "default" : "outline"} asChild className="whitespace-nowrap">
-        
+        <Link to="/district-dashboard">
+          <Briefcase className="mr-2 h-4 w-4" /> Jobs
+        </Link>
       </Button>
       
       <Button variant={location.pathname.includes('/district-dashboard/schools') ? "default" : "outline"} asChild className="whitespace-nowrap">
-        
-      </Button>
-      
-      <Button variant={location.pathname.includes('/district-dashboard/students') ? "default" : "outline"} asChild className="whitespace-nowrap">
-        
+        <Link to="/district-dashboard/schools">
+          <School className="mr-2 h-4 w-4" /> Schools
+        </Link>
       </Button>
       
       <Button variant={location.pathname.includes('/district-dashboard/evaluations') ? "default" : "outline"} asChild className="whitespace-nowrap">
-        
+        <Link to="/district-dashboard/evaluations">
+          <FileText className="mr-2 h-4 w-4" /> Evaluations
+        </Link>
       </Button>
       
       <Button variant={location.pathname.includes('/district-dashboard/settings') ? "default" : "outline"} asChild className="whitespace-nowrap">
-        
+        <Link to="/district-dashboard/settings">
+          <Settings className="mr-2 h-4 w-4" /> Settings
+        </Link>
       </Button>
     </div>;
 };
+
 export default DistrictNavigation;
