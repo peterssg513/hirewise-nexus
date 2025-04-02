@@ -1,19 +1,21 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Job, CreateJobParams, createJob } from '@/services/jobService';
+import { Job, CreateJobParams, createJob, JOB_TITLES, WORK_TYPES, DEFAULT_BENEFITS, TOP_LANGUAGES } from '@/services/jobService';
 import { fetchSchools } from '@/services/schoolService';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Loader2 } from 'lucide-react';
+import { Check, Loader2, Plus, Trash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { jobFormSchema } from './schema';
 import { JobFormValues } from './types';
+import { STATES, WORK_LOCATIONS } from '@/services/stateSalaryService';
+import { v4 as uuidv4 } from 'uuid';
 
 interface CreateJobFormProps {
   districtId: string;
@@ -27,6 +29,10 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
   onOpenChange
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [qualifications, setQualifications] = useState<{ id: string; text: string }[]>([
+    { id: uuidv4(), text: '' }
+  ]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const { toast } = useToast();
   
   const { data: schools = [] } = useQuery({
@@ -67,9 +73,9 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
         country: data.country || 'USA',
         work_location: data.work_location || undefined,
         work_type: data.work_type || undefined,
-        qualifications: data.qualifications || [],
-        benefits: data.benefits || [],
-        languages_required: data.languages_required || []
+        qualifications: qualifications.filter(q => q.text.trim() !== '').map(q => q.text),
+        benefits: DEFAULT_BENEFITS,
+        languages_required: selectedLanguages
       };
       
       const newJob = await createJob(jobData);
@@ -91,6 +97,28 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const addQualification = () => {
+    setQualifications(prev => [...prev, { id: uuidv4(), text: '' }]);
+  };
+
+  const updateQualification = (id: string, text: string) => {
+    setQualifications(prev =>
+      prev.map(q => (q.id === id ? { ...q, text } : q))
+    );
+  };
+
+  const removeQualification = (id: string) => {
+    setQualifications(prev => prev.filter(q => q.id !== id));
+  };
+
+  const toggleLanguage = (language: string) => {
+    setSelectedLanguages(prev => 
+      prev.includes(language) 
+        ? prev.filter(l => l !== language)
+        : [...prev, language]
+    );
   };
   
   return (
@@ -346,7 +374,14 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
         {/* Submit Button */}
         <div className="flex justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Job"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Job"
+            )}
           </Button>
         </div>
       </form>
