@@ -56,7 +56,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
   const { data: schoolData } = useQuery({
     queryKey: ['school', selectedSchoolId],
     queryFn: () => fetchSchoolById(selectedSchoolId),
-    enabled: !!selectedSchoolId,
+    enabled: !!selectedSchoolId && selectedSchoolId !== '',
   });
 
   // Update location info when school changes
@@ -77,7 +77,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
   }, [schoolData, form]);
 
   // Prepare evaluation data for submission
-  const prepareEvaluationData = (data: EvaluationFormValues) => {
+  const prepareEvaluationData = (data: EvaluationFormValues): Partial<EvaluationRequest> => {
     // Convert age from string to number if present
     return {
       ...data,
@@ -87,7 +87,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       description: data.other_relevant_info || `${data.service_type || 'Evaluation'} request`,
       skills_required: data.skills_required || [],
       location: data.location || (data.state || ''),
-      timeframe: '',
+      timeframe: data.timeframe || '',
       status: 'pending' as EvaluationRequestStatus 
     };
   };
@@ -97,7 +97,10 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       setIsSubmitting(true);
       
       const evaluationData = prepareEvaluationData(data);
+      console.log("Submitting evaluation data:", evaluationData);
+      
       const newEvaluation = await createEvaluationRequest(evaluationData);
+      console.log("Created evaluation:", newEvaluation);
       
       // Handle successful submission
       handleSuccessfulSubmission(newEvaluation);

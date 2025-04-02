@@ -1,26 +1,19 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import { 
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
+import { Job, CreateJobParams, createJob } from '@/services/jobService';
+import { fetchSchools } from '@/services/schoolService';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Job, createJob, JOB_TITLES, WORK_TYPES, DEFAULT_BENEFITS, TOP_LANGUAGES } from '@/services/jobService';
-import { STATES, WORK_LOCATIONS } from '@/services/stateSalaryService';
+import { Switch } from '@/components/ui/switch';
+import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { fetchSchools } from '@/services/schoolService';
-import { v4 as uuidv4 } from 'uuid';
-import { Plus, Trash, Check } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { jobFormSchema } from './schema';
+import { JobFormValues } from './types';
 
 interface CreateJobFormProps {
   districtId: string;
@@ -28,115 +21,78 @@ interface CreateJobFormProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const jobFormSchema = z.object({
-  title: z.string().min(2, {
-    message: "Job title must be at least 2 characters.",
-  }),
-  description: z.string().min(10, {
-    message: "Description must be at least 10 characters.",
-  }),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  country: z.string().default("USA"),
-  work_location: z.string().optional(),
-  work_type: z.string().optional(),
-  school_id: z.string().optional(),
-});
-
-type JobFormValues = z.infer<typeof jobFormSchema>;
-
 export const CreateJobForm: React.FC<CreateJobFormProps> = ({ 
   districtId, 
   onJobCreated,
   onOpenChange
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
-  const [qualifications, setQualifications] = useState<{ id: string; text: string }[]>([
-    { id: uuidv4(), text: '' }
-  ]);
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-
+  
+  const { data: schools = [] } = useQuery({
+    queryKey: ['schools', districtId],
+    queryFn: () => fetchSchools(districtId),
+    enabled: !!districtId
+  });
+  
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: {
       title: '',
       description: '',
+      district_id: districtId,
+      school_id: '',
       city: '',
       state: '',
       country: 'USA',
-      work_location: '',
-      work_type: '',
-      school_id: '',
-    },
+      work_location: 'On-site',
+      work_type: 'Full-time',
+      qualifications: [],
+      benefits: [],
+      languages_required: []
+    }
   });
-
-  useEffect(() => {
-    const loadSchools = async () => {
-      try {
-        const schoolsData = await fetchSchools(districtId);
-        setSchools(schoolsData.map(school => ({ id: school.id, name: school.name })));
-      } catch (error) {
-        console.error('Failed to load schools:', error);
-      }
-    };
-
-    loadSchools();
-  }, [districtId]);
-
+  
   const onSubmit = async (data: JobFormValues) => {
     try {
       setIsSubmitting(true);
       
-      const jobData = {
-        ...data,
+      const jobData: CreateJobParams = {
+        title: data.title,
+        description: data.description,
         district_id: districtId,
-        qualifications: qualifications.filter(q => q.text.trim() !== '').map(q => q.text),
-        benefits: DEFAULT_BENEFITS,
-        languages_required: selectedLanguages,
+        school_id: data.school_id || undefined,
+        city: data.city || undefined,
+        state: data.state || undefined,
+        country: data.country || 'USA',
+        work_location: data.work_location || undefined,
+        work_type: data.work_type || undefined,
+        qualifications: data.qualifications || [],
+        benefits: data.benefits || [],
+        languages_required: data.languages_required || []
       };
       
       const newJob = await createJob(jobData);
+      
+      toast({
+        title: 'Success',
+        description: 'Job created and pending admin approval',
+      });
+      
       onJobCreated(newJob);
       onOpenChange(false);
-      form.reset();
-      setQualifications([{ id: uuidv4(), text: '' }]);
-      setSelectedLanguages([]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create job:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create job. Please try again.',
-        variant: 'destructive',
+        description: error.message || 'Failed to create job',
+        variant: 'destructive'
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const addQualification = () => {
-    setQualifications(prev => [...prev, { id: uuidv4(), text: '' }]);
-  };
-
-  const updateQualification = (id: string, text: string) => {
-    setQualifications(prev =>
-      prev.map(q => (q.id === id ? { ...q, text } : q))
-    );
-  };
-
-  const removeQualification = (id: string) => {
-    setQualifications(prev => prev.filter(q => q.id !== id));
-  };
-
-  const toggleLanguage = (language: string) => {
-    setSelectedLanguages(prev => 
-      prev.includes(language) 
-        ? prev.filter(l => l !== language)
-        : [...prev, language]
-    );
-  };
-
+  
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
