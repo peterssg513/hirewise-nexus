@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, School, TrendingDown, Clock } from 'lucide-react';
+import { FileText, School, TrendingDown, Clock, Users } from 'lucide-react';
 
 const CaseStudies = () => {
   return (
@@ -23,23 +23,23 @@ const CaseStudies = () => {
             <CardContent className="p-6">
               <div className="flex items-center mb-4">
                 <School className="text-psyched-orange h-8 w-8 mr-3" />
-                <h3 className="text-xl font-semibold text-psyched-darkBlue">Chicago Success Story</h3>
+                <h3 className="text-xl font-semibold text-psyched-darkBlue">Denver Public Schools</h3>
               </div>
               <p className="text-gray-600 mb-4">
-                Chicago Public Schools reduced their psychologist hiring time by 75% and cleared a 3-month evaluation backlog in just 4 weeks.
+                Denver Public Schools transformed urgent staffing gaps into a comprehensive team of over 100 psychology professionals in just three academic years.
               </p>
               <div className="flex flex-col gap-2 mt-6">
                 <div className="flex items-center">
                   <Clock className="text-psyched-darkBlue h-5 w-5 mr-2" />
-                  <span className="font-medium">75% faster hiring process</span>
+                  <span className="font-medium">Rapid response solution</span>
                 </div>
                 <div className="flex items-center">
-                  <TrendingDown className="text-psyched-darkBlue h-5 w-5 mr-2" />
-                  <span className="font-medium">87% backlog reduction</span>
+                  <Users className="text-psyched-darkBlue h-5 w-5 mr-2" />
+                  <span className="font-medium">100+ professionals placed</span>
                 </div>
                 <div className="flex items-center">
                   <FileText className="text-psyched-darkBlue h-5 w-5 mr-2" />
-                  <span className="font-medium">92% compliance rate improvement</span>
+                  <span className="font-medium">Long-term staffing partnership</span>
                 </div>
               </div>
             </CardContent>
@@ -50,23 +50,23 @@ const CaseStudies = () => {
             <CardContent className="p-6">
               <div className="flex items-center mb-4">
                 <School className="text-psyched-orange h-8 w-8 mr-3" />
-                <h3 className="text-xl font-semibold text-psyched-darkBlue">Los Angeles Unified</h3>
+                <h3 className="text-xl font-semibold text-psyched-darkBlue">Kansas City Public Schools</h3>
               </div>
               <p className="text-gray-600 mb-4">
-                LAUSD connected with 35 qualified psychologists in their first month, filling all open positions with perfect skill-matching.
+                KCKPS achieved 542% staffing growth in just 4 years, expanding from 14 to over 90 specialized staff and completing 1,500+ evaluations.
               </p>
               <div className="flex flex-col gap-2 mt-6">
                 <div className="flex items-center">
-                  <Clock className="text-psyched-darkBlue h-5 w-5 mr-2" />
-                  <span className="font-medium">100% position fill rate</span>
-                </div>
-                <div className="flex items-center">
                   <TrendingDown className="text-psyched-darkBlue h-5 w-5 mr-2" />
-                  <span className="font-medium">53% cost reduction</span>
+                  <span className="font-medium">542% staffing growth</span>
                 </div>
                 <div className="flex items-center">
                   <FileText className="text-psyched-darkBlue h-5 w-5 mr-2" />
-                  <span className="font-medium">95% satisfaction score</span>
+                  <span className="font-medium">1,500+ evaluations completed</span>
+                </div>
+                <div className="flex items-center">
+                  <Users className="text-psyched-darkBlue h-5 w-5 mr-2" />
+                  <span className="font-medium">Exclusive psychology partner</span>
                 </div>
               </div>
             </CardContent>

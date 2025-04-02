@@ -23,18 +23,18 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     id: 1,
-    quote: "PsychedHire! has transformed how we find qualified school psychologists. We've reduced our hiring time by 75% and improved the quality of our matches. The platform's intuitive design makes posting jobs and reviewing applicants incredibly efficient.",
-    author: "Sarah Johnson",
-    role: "HR Director",
-    organization: "Chicago Public Schools",
+    quote: "PsychedHire was the difference between scrambling and succeeding. Their speed and quality changed everything. We went from imminent staffing gaps to having over 100 professionals across our psychological service lines.",
+    author: "Leadership Team",
+    role: "Administration",
+    organization: "Denver Public Schools",
     rating: 5
   },
   {
     id: 2,
-    quote: "As a school psychologist, I've found incredible opportunities through PsychedHire! that align perfectly with my expertise and availability. The AI-assisted report writing tool has cut my administrative work in half, allowing me to spend more quality time with students.",
-    author: "Michael Rodriguez",
-    role: "School Psychologist",
-    organization: "Los Angeles Unified",
+    quote: "Thanks to PsychedHire, we scaled faster than we ever imagined — and with the right people. We achieved 542% staffing growth in just 4 years, going from 14 staff to over 90 specialized professionals.",
+    author: "District Office",
+    role: "Special Education Department",
+    organization: "Kansas City Public Schools",
     rating: 5
   },
   {

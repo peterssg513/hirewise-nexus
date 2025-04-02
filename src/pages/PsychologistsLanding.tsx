@@ -127,19 +127,19 @@ const PsychologistsLanding = () => {
 
   const testimonials = [
     {
-      initials: "EC",
-      name: "Dr. Elizabeth Chen",
-      role: "School Psychologist",
-      organization: "8 years experience",
-      quote: "PsychedHire! has transformed my career. I can find jobs that perfectly match my expertise and work schedule. The report-writing assistance saves me hours on each evaluation, allowing me to focus on what truly matters: helping students.",
+      initials: "DPS",
+      name: "Leadership Team",
+      role: "Administration",
+      organization: "Denver Public Schools",
+      quote: "PsychedHire was the difference between scrambling and succeeding. Their speed and quality changed everything. We went from imminent staffing gaps to having over 100 professionals across our psychological service lines.",
       bgColor: "bg-psyched-lightBlue/20"
     },
     {
-      initials: "JW",
-      name: "James Wilson, Ed.S.",
-      role: "School Psychologist",
-      organization: "5 years experience",
-      quote: "I love the flexibility PsychedHire! offers. I can take on evaluations that fit my schedule, and the platform makes it easy to manage documentation and reporting. It's revolutionized how I approach my practice as a school psychologist.",
+      initials: "KC",
+      name: "District Office",
+      role: "Special Education Department",
+      organization: "Kansas City Public Schools",
+      quote: "Thanks to PsychedHire, we scaled faster than we ever imagined — and with the right people. We achieved 542% staffing growth in just 4 years, going from 14 staff to over 90 specialized professionals.",
       bgColor: "bg-psyched-orange/20"
     }
   ];
@@ -283,9 +283,9 @@ const PsychologistsLanding = () => {
       />
       
       <TestimonialsSection 
-        title="What School Psychologists Say"
-        subtitle="Hear from professionals who have transformed their careers with PsychedHire!"
-        badge="Testimonials"
+        title="What Districts Say About Our Psychologists"
+        subtitle="Hear from the districts who have transformed their staffing with PsychedHire!"
+        badge="Success Stories"
         testimonials={testimonials}
       />
       
