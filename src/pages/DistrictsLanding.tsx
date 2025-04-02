@@ -141,6 +141,15 @@ const DistrictsLanding = () => {
       quote: "Thanks to PsychedHire, we scaled faster than we ever imagined — and with the right people. We achieved 542% staffing growth in just 4 years, going from 14 staff to over 90 specialized professionals.",
       bgColor: "bg-psyched-yellow/20",
       slug: "kansas-city-public-schools"
+    },
+    {
+      initials: "MRD",
+      name: "Consortium Leaders",
+      role: "Regional Administration",
+      organization: "Midwestern Regional District",
+      quote: "We went from scattered coverage to a fully scaled, coordinated system in just a few years - thanks to PsychedHire.",
+      bgColor: "bg-psyched-lightBlue/20",
+      slug: "midwestern-regional-district"
     }
   ];
 

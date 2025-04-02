@@ -40,6 +40,15 @@ const testimonials: Testimonial[] = [
     organization: "Kansas City Public Schools",
     rating: 5,
     slug: "kansas-city-public-schools"
+  },
+  {
+    id: 3,
+    quote: "We went from scattered coverage to a fully scaled, coordinated system in just a few years - thanks to PsychedHire.",
+    author: "Consortium Leaders",
+    role: "Regional Administration",
+    organization: "Midwestern Regional District",
+    rating: 5,
+    slug: "midwestern-regional-district"
   }
 ];
 
