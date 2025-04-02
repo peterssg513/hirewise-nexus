@@ -35,6 +35,7 @@ import Approvals from './pages/admin/Approvals';
 import SuccessStories from './pages/SuccessStories';
 import DenverPublicSchools from './pages/case-studies/DenverPublicSchools';
 import KansasCityPublicSchools from './pages/case-studies/KansasCityPublicSchools';
+import MidwesternRegionalDistrict from './pages/case-studies/MidwesternRegionalDistrict';
 
 // District pages
 import DistrictHome from './pages/district/DistrictHome';
@@ -65,6 +66,7 @@ function App() {
         <Route path="/success-stories" element={<SuccessStories />} />
         <Route path="/success-stories/denver-public-schools" element={<DenverPublicSchools />} />
         <Route path="/success-stories/kansas-city-public-schools" element={<KansasCityPublicSchools />} />
+        <Route path="/success-stories/midwestern-regional-district" element={<MidwesternRegionalDistrict />} />
 
         {/* Admin Auth Routes - Non-guessable URL */}
         <Route path={`/${ADMIN_AUTH_PATH}`} element={<AdminAuth />} />
