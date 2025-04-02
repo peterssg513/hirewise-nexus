@@ -112,6 +112,9 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
       const newJob = await createJob(jobData);
       onJobCreated(newJob);
       onOpenChange(false);
+      reset();
+      setQualifications([{ id: uuidv4(), text: '' }]);
+      setSelectedLanguages([]);
     } catch (error) {
       console.error('Failed to create job:', error);
       toast({
