@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +15,7 @@ import { EvaluationsList } from '@/components/district/EvaluationsList';
 import { DistrictProfile } from '@/components/district/DistrictProfile';
 import { DistrictOverview } from '@/components/district/DistrictOverview';
 import { CheckCircle, Clock, Calendar, MapPin } from 'lucide-react';
+
 const DistrictDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [district, setDistrict] = useState<any>(null);
@@ -30,6 +32,7 @@ const DistrictDashboard = () => {
   const {
     toast
   } = useToast();
+  
   useEffect(() => {
     const loadDashboardData = async () => {
       if (!user) return;
@@ -38,9 +41,11 @@ const DistrictDashboard = () => {
         const districtProfile = await fetchDistrictProfile(user.id);
         if (districtProfile) {
           setDistrict(districtProfile);
+          console.log("Loaded district profile:", districtProfile);
 
           // Get jobs count
           const jobs = await fetchJobs(districtProfile.id);
+          console.log("Loaded jobs:", jobs);
           const activeCount = jobs.filter(job => job.status === 'active').length;
           const pendingCount = jobs.filter(job => job.status === 'pending').length;
           setJobsCount({
@@ -51,6 +56,7 @@ const DistrictDashboard = () => {
 
           // Get schools count
           const schools = await fetchSchools(districtProfile.id);
+          console.log("Loaded schools:", schools);
           setSchoolsCount(schools.length);
         } else {
           toast({
@@ -70,14 +76,18 @@ const DistrictDashboard = () => {
         setLoading(false);
       }
     };
+    
     loadDashboardData();
   }, [user, toast]);
+  
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
+  
   if (loading) {
     return <LoadingSpinner />;
   }
+  
   if (!district) {
     return <div className="flex flex-col items-center justify-center h-96">
         <h2 className="text-xl font-bold mb-4">District Profile Not Found</h2>
@@ -86,7 +96,9 @@ const DistrictDashboard = () => {
         </p>
       </div>;
   }
-  return <div className="space-y-6">
+  
+  return (
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">District Dashboard</h1>
       </div>
@@ -94,10 +106,12 @@ const DistrictDashboard = () => {
       <DistrictNavigation />
       
       {/* District Profile Card at the top */}
-      <Card>
-        <CardHeader>
-          
-          
+      <Card className="mb-6">
+        <CardHeader className="pb-4">
+          <CardTitle>District Profile</CardTitle>
+          <CardDescription>
+            Your district information and contact details
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <DistrictProfile district={district} />
@@ -105,6 +119,13 @@ const DistrictDashboard = () => {
       </Card>
       
       <Tabs defaultValue="dashboard" onValueChange={handleTabChange}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="jobs">Jobs</TabsTrigger>
+          <TabsTrigger value="schools">Schools</TabsTrigger>
+          <TabsTrigger value="evaluations">Evaluations</TabsTrigger>
+        </TabsList>
+        
         <TabsContent value="dashboard" className="space-y-4">
           <DistrictOverview district={district} jobsCount={jobsCount} schoolsCount={schoolsCount} />
         </TabsContent>
@@ -120,11 +141,9 @@ const DistrictDashboard = () => {
         <TabsContent value="evaluations">
           <EvaluationsList districtId={district.id} />
         </TabsContent>
-
-        <TabsContent value="profile">
-          <DistrictProfile district={district} />
-        </TabsContent>
       </Tabs>
-    </div>;
+    </div>
+  );
 };
+
 export default DistrictDashboard;

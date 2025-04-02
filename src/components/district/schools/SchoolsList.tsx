@@ -9,45 +9,47 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { SearchFilterBar } from '@/components/district/search/SearchFilterBar';
 import { SchoolCard } from './SchoolCard';
 import { CreateSchoolDialog } from '../CreateSchoolDialog';
+import { useQuery } from '@tanstack/react-query';
 
 interface SchoolsListProps {
   districtId: string;
 }
 
 export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
-  const [schools, setSchools] = useState<School[]>([]);
   const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
   const { toast } = useToast();
   
-  useEffect(() => {
-    loadSchools();
-  }, [districtId]);
+  const { 
+    data: schools = [], 
+    isLoading: loading,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['schools', districtId],
+    queryFn: () => fetchSchools(districtId),
+    enabled: !!districtId
+  });
   
-  const loadSchools = async () => {
-    try {
-      setLoading(true);
-      const schoolsData = await fetchSchools(districtId);
-      setSchools(schoolsData);
-      setFilteredSchools(schoolsData);
-    } catch (error) {
-      console.error('Error loading schools:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load schools. Please try again later.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Log schools data for debugging
+  useEffect(() => {
+    console.log('SchoolsList - District ID:', districtId);
+    console.log('SchoolsList - Schools:', schools);
+    console.log('SchoolsList - Loading:', loading);
+    console.log('SchoolsList - Error:', error);
+  }, [districtId, schools, loading, error]);
+  
+  useEffect(() => {
+    // Apply filters whenever search term or schools changes
+    const filtered = schools.filter(applyFilters);
+    setFilteredSchools(filtered);
+  }, [searchTerm, schools]);
   
   const handleSchoolCreated = (newSchool: School) => {
-    setSchools(prev => [newSchool, ...prev]);
-    setFilteredSchools(prev => [newSchool, ...prev]);
+    // Refresh schools data after creating a new school
+    refetch();
+    
     toast({
       title: 'Success',
       description: 'School created successfully',
@@ -55,11 +57,9 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
   };
   
   const handleSchoolUpdated = (updatedSchool: School) => {
-    const updatedSchools = schools.map(school => 
-      school.id === updatedSchool.id ? updatedSchool : school
-    );
-    setSchools(updatedSchools);
-    setFilteredSchools(updatedSchools.filter(school => applyFilters(school)));
+    // Refresh schools data after updating a school
+    refetch();
+    
     toast({
       title: 'Success',
       description: 'School updated successfully',
@@ -67,9 +67,9 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
   };
   
   const handleSchoolDeleted = (deletedSchoolId: string) => {
-    const updatedSchools = schools.filter(school => school.id !== deletedSchoolId);
-    setSchools(updatedSchools);
-    setFilteredSchools(updatedSchools.filter(school => applyFilters(school)));
+    // Refresh schools data after deleting a school
+    refetch();
+    
     toast({
       title: 'Success',
       description: 'School deleted successfully',
@@ -84,12 +84,6 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
     
     return true;
   };
-  
-  useEffect(() => {
-    // Apply filters whenever search term changes
-    const filtered = schools.filter(applyFilters);
-    setFilteredSchools(filtered);
-  }, [searchTerm, schools]);
   
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -113,6 +107,16 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
   
   if (loading) {
     return <LoadingSpinner />;
+  }
+
+  if (error) {
+    console.error('Error loading schools:', error);
+    return (
+      <div className="p-8 text-center">
+        <p className="text-red-500 mb-4">Error loading schools. Please try again.</p>
+        <Button onClick={() => refetch()}>Retry</Button>
+      </div>
+    );
   }
 
   return (
@@ -144,8 +148,8 @@ export const SchoolsList: React.FC<SchoolsListProps> = ({ districtId }) => {
             <SchoolCard 
               key={school.id} 
               school={school} 
-              onEdit={handleEditSchool}
-              onDelete={handleDeleteSchool}
+              onEdit={() => handleEditSchool(school)}
+              onDelete={() => handleDeleteSchool(school)}
             />
           ))}
         </div>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Job, CreateJobParams, createJob, JOB_TITLES, WORK_TYPES, DEFAULT_BENEFITS, TOP_LANGUAGES } from '@/services/jobService';
-import { fetchSchools } from '@/services/schoolService';
+import { fetchSchools, School } from '@/services/schoolService';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,11 +35,22 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const { toast } = useToast();
   
-  const { data: schools = [] } = useQuery({
+  const { data: schools = [], isLoading: isLoadingSchools, error: schoolsError } = useQuery({
     queryKey: ['schools', districtId],
     queryFn: () => fetchSchools(districtId),
     enabled: !!districtId
   });
+  
+  // Log schools fetching details for debugging
+  useEffect(() => {
+    console.log('Schools query:', {
+      districtId,
+      isLoadingSchools,
+      schoolsError,
+      schoolsCount: schools?.length || 0,
+      schools
+    });
+  }, [districtId, isLoadingSchools, schoolsError, schools]);
   
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
@@ -78,6 +89,7 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
         languages_required: selectedLanguages
       };
       
+      console.log("Submitting job with data:", jobData);
       const newJob = await createJob(jobData);
       
       toast({
@@ -233,7 +245,7 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Location</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value || "On-site"}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select work location" />
@@ -260,7 +272,7 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Work Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value || "Full-time"}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select work type" />
@@ -288,18 +300,27 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a school" />
+                      <SelectValue placeholder={isLoadingSchools ? "Loading schools..." : "Select a school"} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="none">No school selected</SelectItem>
-                    {schools.map((school) => (
-                      <SelectItem key={school.id} value={school.id}>
-                        {school.name}
+                    <SelectItem value="">No school selected</SelectItem>
+                    {schools && schools.length > 0 ? (
+                      schools.map((school: School) => (
+                        <SelectItem key={school.id} value={school.id}>
+                          {school.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        {isLoadingSchools ? "Loading schools..." : schoolsError ? "Error loading schools" : "No schools found"}
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
+                {schoolsError && (
+                  <p className="text-sm text-red-500">Failed to load schools. Please try again.</p>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -388,3 +409,4 @@ export const CreateJobForm: React.FC<CreateJobFormProps> = ({
     </Form>
   );
 };
+
