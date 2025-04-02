@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
@@ -151,13 +150,6 @@ const DistrictHome = () => {
         </div>
       </div>
       
-      <DistrictOverview 
-        district={district}
-        jobsCount={jobsCount}
-        schoolsCount={schoolsCount}
-        evaluationsCount={evaluationsCount}
-      />
-      
       <div className="grid gap-8 grid-cols-1">
         <Card>
           <CardHeader>
@@ -174,6 +166,13 @@ const DistrictHome = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <DistrictOverview 
+        district={district}
+        jobsCount={jobsCount}
+        schoolsCount={schoolsCount}
+        evaluationsCount={evaluationsCount}
+      />
     </div>
   );
 };

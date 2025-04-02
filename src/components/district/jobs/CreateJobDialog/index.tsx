@@ -29,7 +29,7 @@ export const CreateJobDialog: React.FC<CreateJobDialogProps> = ({
         
         <CreateJobForm 
           districtId={districtId} 
-          onJobCreated={onJobCreated}
+          onJobCreated={onJobCreated} 
           onOpenChange={onOpenChange}
         />
       </DialogContent>
