@@ -29,13 +29,20 @@ export interface CreateSchoolParams {
  */
 export const fetchSchools = async (districtId: string): Promise<School[]> => {
   try {
+    console.log("fetchSchools - Fetching schools for district ID:", districtId);
+    
     const { data, error } = await supabase
       .from('schools')
       .select('*')
       .eq('district_id', districtId)
       .order('name', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error in fetchSchools:', error);
+      throw error;
+    }
+    
+    console.log("fetchSchools - Results:", data?.length || 0, "schools found");
     return data || [];
   } catch (error) {
     console.error('Error fetching schools:', error);

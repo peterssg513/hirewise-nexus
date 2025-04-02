@@ -25,9 +25,15 @@ interface SchoolSectionProps {
 export const SchoolSection: React.FC<SchoolSectionProps> = ({ form, districtId }) => {
   const { toast } = useToast();
   
+  // Add better debugging information
+  console.log("SchoolSection - Received districtId:", districtId);
+  
   const { data: schools = [], isLoading, error, refetch } = useQuery({
     queryKey: ['schools', districtId],
-    queryFn: () => fetchSchools(districtId),
+    queryFn: () => {
+      console.log("SchoolSection - Fetching schools for district ID:", districtId);
+      return fetchSchools(districtId);
+    },
     enabled: !!districtId,
     retry: 2,
     meta: {

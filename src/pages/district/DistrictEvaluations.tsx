@@ -5,11 +5,11 @@ import { EvaluationsPage } from '@/components/district/evaluations/EvaluationsPa
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchEvaluationRequests } from '@/services/evaluationRequestService';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 const DistrictEvaluations = () => {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
   const [evaluationCounts, setEvaluationCounts] = useState({
     open: 0,
     offered: 0,
@@ -19,39 +19,40 @@ const DistrictEvaluations = () => {
     total: 0
   });
 
-  useEffect(() => {
-    const loadEvaluationCounts = async () => {
-      if (!profile?.id) return;
+  // Add logging to see the actual profile ID being used
+  console.log("DistrictEvaluations - Profile:", profile);
+  
+  // Use React Query to handle the data fetching
+  const { data: evaluations = [], isLoading: loading } = useQuery({
+    queryKey: ['evaluationRequests', profile?.id],
+    queryFn: () => {
+      console.log("DistrictEvaluations - Fetching evaluations for profile ID:", profile?.id);
+      return fetchEvaluationRequests(profile?.id || '');
+    },
+    enabled: !!profile?.id,
+    onSuccess: (data) => {
+      // Count evaluations by status
+      const counts = {
+        open: data.filter(e => e.status === 'pending' || e.status === 'Open').length,
+        offered: data.filter(e => e.status === 'active' || e.status === 'Offered').length,
+        accepted: data.filter(e => e.status === 'Accepted').length,
+        inProgress: data.filter(e => e.status === 'Evaluation In Progress').length,
+        closed: data.filter(e => e.status === 'completed' || e.status === 'Closed').length,
+        total: data.length
+      };
       
-      try {
-        setLoading(true);
-        const evaluations = await fetchEvaluationRequests(profile.id);
-        
-        // Count evaluations by status
-        const counts = {
-          open: evaluations.filter(e => e.status === 'pending' || e.status === 'Open').length,
-          offered: evaluations.filter(e => e.status === 'active' || e.status === 'Offered').length,
-          accepted: evaluations.filter(e => e.status === 'Accepted').length,
-          inProgress: evaluations.filter(e => e.status === 'Evaluation In Progress').length,
-          closed: evaluations.filter(e => e.status === 'completed' || e.status === 'Closed').length,
-          total: evaluations.length
-        };
-        
-        setEvaluationCounts(counts);
-      } catch (error) {
-        console.error('Error loading evaluation counts:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load evaluation data',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadEvaluationCounts();
-  }, [profile?.id, toast]);
+      setEvaluationCounts(counts);
+      console.log("DistrictEvaluations - Evaluation counts:", counts);
+    },
+    onError: (error) => {
+      console.error('Error loading evaluation counts:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load evaluation data',
+        variant: 'destructive',
+      });
+    }
+  });
 
   if (!profile?.id) {
     return <div>Loading profile...</div>;

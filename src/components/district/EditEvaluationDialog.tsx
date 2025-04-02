@@ -20,6 +20,8 @@ import { EvaluationRequest, SERVICE_TYPES, updateEvaluationRequest } from '@/ser
 import { useToast } from '@/hooks/use-toast';
 import { fetchSchools } from '@/services/schoolService';
 import { GRADE_LEVELS } from '@/services/evaluationPaymentService';
+import { useQuery } from '@tanstack/react-query';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 interface EditEvaluationDialogProps {
   open: boolean;
@@ -49,7 +51,6 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
   onEvaluationUpdated 
 }) => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
   const { toast } = useToast();
 
   const form = useForm<EvaluationFormValues>({
@@ -67,8 +68,31 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
     },
   });
 
+  console.log("EditEvaluationDialog - Received evaluation with district_id:", evaluation.district_id);
+
+  // Query schools data
+  const { data: schools = [], isLoading: schoolsLoading, error: schoolsError } = useQuery({
+    queryKey: ['schools', evaluation.district_id],
+    queryFn: () => {
+      console.log("EditEvaluationDialog - Fetching schools for district ID:", evaluation.district_id);
+      return fetchSchools(evaluation.district_id);
+    },
+    enabled: !!evaluation.district_id && open,
+    retry: 2,
+    meta: {
+      onError: (err: Error) => {
+        console.error("Error fetching schools:", err);
+      }
+    }
+  });
+
+  // Log for debugging
   useEffect(() => {
     if (open) {
+      console.log("EditEvaluationDialog - Schools:", schools);
+      console.log("EditEvaluationDialog - Schools loading:", schoolsLoading);
+      console.log("EditEvaluationDialog - Schools error:", schoolsError);
+      
       form.reset({
         title: evaluation.title || '',
         description: evaluation.description || '',
@@ -80,21 +104,8 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
         service_type: evaluation.service_type || '',
         location: evaluation.location || '',
       });
-
-      const loadSchools = async () => {
-        try {
-          if (evaluation.district_id) {
-            const schoolsData = await fetchSchools(evaluation.district_id);
-            setSchools(schoolsData.map(school => ({ id: school.id, name: school.name })));
-          }
-        } catch (error) {
-          console.error('Failed to load schools:', error);
-        }
-      };
-
-      loadSchools();
     }
-  }, [open, evaluation, form]);
+  }, [open, evaluation, form, schools, schoolsLoading, schoolsError]);
 
   const onSubmit = async (data: EvaluationFormValues) => {
     try {
@@ -268,23 +279,38 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>School</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a school" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {schools.map((school) => (
-                        <SelectItem key={school.id} value={school.id}>
-                          {school.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {schoolsLoading ? (
+                    <div className="flex items-center space-x-2 py-2">
+                      <LoadingSpinner size="sm" />
+                      <span className="text-sm text-muted-foreground">Loading schools...</span>
+                    </div>
+                  ) : schoolsError ? (
+                    <div className="text-sm text-red-500 py-2">
+                      Error loading schools. Please try again.
+                    </div>
+                  ) : schools.length === 0 ? (
+                    <div className="text-sm text-amber-500 py-2">
+                      No schools found for your district.
+                    </div>
+                  ) : (
+                    <Select 
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a school" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {schools.map((school) => (
+                          <SelectItem key={school.id} value={school.id}>
+                            {school.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
