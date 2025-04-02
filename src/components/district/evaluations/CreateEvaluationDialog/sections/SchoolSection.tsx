@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { 
   FormField, 
@@ -13,6 +13,9 @@ import { EvaluationFormValues } from '../schema';
 import { fetchSchools } from '@/services/schoolService';
 import { useQuery } from '@tanstack/react-query';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 interface SchoolSectionProps {
   form: UseFormReturn<EvaluationFormValues>;
@@ -20,25 +23,48 @@ interface SchoolSectionProps {
 }
 
 export const SchoolSection: React.FC<SchoolSectionProps> = ({ form, districtId }) => {
-  const { data: schools = [], isLoading, error } = useQuery({
+  const { toast } = useToast();
+  
+  const { data: schools = [], isLoading, error, refetch } = useQuery({
     queryKey: ['schools', districtId],
     queryFn: () => fetchSchools(districtId),
-    enabled: !!districtId
+    enabled: !!districtId,
+    retry: 2,
+    onError: (err) => {
+      console.error("Error fetching schools:", err);
+    }
   });
+  
+  // Log for debugging
+  useEffect(() => {
+    console.log("SchoolSection - District ID:", districtId);
+    console.log("SchoolSection - Schools:", schools);
+    console.log("SchoolSection - Loading:", isLoading);
+    console.log("SchoolSection - Error:", error);
+  }, [districtId, schools, isLoading, error]);
 
   if (isLoading) {
-    return <div className="flex justify-center p-4"><LoadingSpinner /></div>;
+    return <div className="flex justify-center p-4"><LoadingSpinner size="sm" /></div>;
   }
 
   if (error) {
-    console.error("Error loading schools:", error);
-    return <div className="text-red-500">Error loading schools. Please try again.</div>;
+    return (
+      <div className="text-red-500 p-4 border border-red-300 rounded">
+        Error loading schools. 
+        <Button variant="link" onClick={() => refetch()} className="px-2">Retry</Button>
+      </div>
+    );
   }
 
   if (schools.length === 0) {
-    return <div className="text-amber-500 p-4 border border-amber-300 rounded">
-      No schools found for your district. Please add schools first.
-    </div>;
+    return (
+      <div className="text-amber-500 p-4 border border-amber-300 rounded">
+        <p className="mb-2">No schools found for your district. Please add schools first.</p>
+        <Button asChild variant="outline" size="sm">
+          <Link to="/district-dashboard/schools">Go to Schools</Link>
+        </Button>
+      </div>
+    );
   }
 
   return (

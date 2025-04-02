@@ -13,7 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { evaluationFormSchema, EvaluationFormValues } from './schema';
 import { Form } from '@/components/ui/form';
 import { useQuery } from '@tanstack/react-query';
-import { fetchSchoolById } from '@/services/schoolService';
+import { fetchSchoolById, fetchSchools } from '@/services/schoolService';
 
 export interface CreateEvaluationFormProps {
   districtId: string;
@@ -28,6 +28,13 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  // Prefetch schools to help with data loading
+  const { data: schoolsList } = useQuery({
+    queryKey: ['schools', districtId],
+    queryFn: () => fetchSchools(districtId),
+    enabled: !!districtId,
+  });
   
   const form = useForm<EvaluationFormValues>({
     resolver: zodResolver(evaluationFormSchema),
@@ -75,6 +82,12 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       }
     }
   }, [schoolData, form]);
+
+  // Log debug information
+  useEffect(() => {
+    console.log("CreateEvaluationForm - District ID:", districtId);
+    console.log("CreateEvaluationForm - Schools list:", schoolsList);
+  }, [districtId, schoolsList]);
 
   // Prepare evaluation data for submission
   const prepareEvaluationData = (data: EvaluationFormValues): Partial<EvaluationRequest> => {
