@@ -17,24 +17,24 @@ const Partners = () => {
           <div className="group relative">
             <div className="absolute inset-0 bg-gradient-to-r from-psyched-yellow/20 to-psyched-orange/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div className="relative p-6 grayscale hover:grayscale-0 transition-all duration-300 transform group-hover:scale-105">
-              <div className="font-bold text-xl md:text-2xl text-gray-700">Chicago Public Schools</div>
-              <div className="text-sm text-gray-500 mt-1">Since 2023</div>
+              <div className="font-bold text-xl md:text-2xl text-gray-700">Denver Public Schools</div>
+              <div className="text-sm text-gray-500 mt-1">Since 2022</div>
             </div>
           </div>
           
           <div className="group relative">
             <div className="absolute inset-0 bg-gradient-to-r from-psyched-yellow/20 to-psyched-orange/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div className="relative p-6 grayscale hover:grayscale-0 transition-all duration-300 transform group-hover:scale-105">
-              <div className="font-bold text-xl md:text-2xl text-gray-700">Los Angeles Unified</div>
-              <div className="text-sm text-gray-500 mt-1">Since 2023</div>
+              <div className="font-bold text-xl md:text-2xl text-gray-700">Kansas City Public Schools</div>
+              <div className="text-sm text-gray-500 mt-1">Since 2021</div>
             </div>
           </div>
           
           <div className="group relative">
             <div className="absolute inset-0 bg-gradient-to-r from-psyched-yellow/20 to-psyched-orange/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div className="relative p-6 grayscale hover:grayscale-0 transition-all duration-300 transform group-hover:scale-105">
-              <div className="font-bold text-xl md:text-2xl text-gray-700">NYC DOE</div>
-              <div className="text-sm text-gray-500 mt-1">Since 2023</div>
+              <div className="font-bold text-xl md:text-2xl text-gray-700">Midwestern Regional District</div>
+              <div className="text-sm text-gray-500 mt-1">Since 2018</div>
             </div>
           </div>
         </div>
