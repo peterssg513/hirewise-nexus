@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,27 +14,31 @@ import { EvaluationsList } from '@/components/district/EvaluationsList';
 import { DistrictProfile } from '@/components/district/DistrictProfile';
 import { DistrictOverview } from '@/components/district/DistrictOverview';
 import { CheckCircle, Clock, Calendar, MapPin } from 'lucide-react';
-
 const DistrictDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [district, setDistrict] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [jobsCount, setJobsCount] = useState({ active: 0, pending: 0, total: 0 });
+  const [jobsCount, setJobsCount] = useState({
+    active: 0,
+    pending: 0,
+    total: 0
+  });
   const [schoolsCount, setSchoolsCount] = useState(0);
-  const { user } = useAuth();
-  const { toast } = useToast();
-  
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     const loadDashboardData = async () => {
       if (!user) return;
-      
       try {
         setLoading(true);
         const districtProfile = await fetchDistrictProfile(user.id);
-        
         if (districtProfile) {
           setDistrict(districtProfile);
-          
+
           // Get jobs count
           const jobs = await fetchJobs(districtProfile.id);
           const activeCount = jobs.filter(job => job.status === 'active').length;
@@ -45,7 +48,7 @@ const DistrictDashboard = () => {
             pending: pendingCount,
             total: jobs.length
           });
-          
+
           // Get schools count
           const schools = await fetchSchools(districtProfile.id);
           setSchoolsCount(schools.length);
@@ -53,7 +56,7 @@ const DistrictDashboard = () => {
           toast({
             title: "Error loading district profile",
             description: "Could not find your district profile. Please contact support.",
-            variant: "destructive",
+            variant: "destructive"
           });
         }
       } catch (error) {
@@ -61,37 +64,29 @@ const DistrictDashboard = () => {
         toast({
           title: "Error loading dashboard data",
           description: "Failed to load dashboard information. Please try again later.",
-          variant: "destructive",
+          variant: "destructive"
         });
       } finally {
         setLoading(false);
       }
     };
-    
     loadDashboardData();
   }, [user, toast]);
-  
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
-  
   if (loading) {
     return <LoadingSpinner />;
   }
-  
   if (!district) {
-    return (
-      <div className="flex flex-col items-center justify-center h-96">
+    return <div className="flex flex-col items-center justify-center h-96">
         <h2 className="text-xl font-bold mb-4">District Profile Not Found</h2>
         <p className="text-muted-foreground">
           We couldn't find your district profile. Please contact support for assistance.
         </p>
-      </div>
-    );
+      </div>;
   }
-  
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">District Dashboard</h1>
       </div>
@@ -99,13 +94,7 @@ const DistrictDashboard = () => {
       <DistrictNavigation />
       
       <Tabs defaultValue="dashboard" onValueChange={handleTabChange}>
-        <TabsList className="grid grid-cols-5 w-full">
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="jobs">Jobs</TabsTrigger>
-          <TabsTrigger value="schools">Schools</TabsTrigger>
-          <TabsTrigger value="evaluations">Evaluations</TabsTrigger>
-          <TabsTrigger value="profile">District Profile</TabsTrigger>
-        </TabsList>
+        
         
         <TabsContent value="dashboard" className="space-y-4">
           <DistrictOverview district={district} jobsCount={jobsCount} schoolsCount={schoolsCount} />
@@ -127,8 +116,6 @@ const DistrictDashboard = () => {
           <DistrictProfile district={district} />
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 };
-
 export default DistrictDashboard;
