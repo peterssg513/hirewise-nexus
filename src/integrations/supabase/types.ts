@@ -845,11 +845,13 @@ export type Database = {
           district_name: string | null
           id: string | null
           location: string | null
+          school_id: string | null
           service_type: string | null
           skills_required: string[] | null
           status: string | null
           timeframe: string | null
           title: string | null
+          updated_at: string | null
         }
         Relationships: [
           {
@@ -864,6 +866,13 @@ export type Database = {
             columns: ["district_id"]
             isOneToOne: false
             referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluation_postings_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
             referencedColumns: ["id"]
           },
         ]
