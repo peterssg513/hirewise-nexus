@@ -1,12 +1,9 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
-
 const Hero = () => {
-  return (
-    <section className="pt-20 pb-20 bg-gradient-to-br from-psyched-purple via-psyched-indigo to-psyched-darkPurple text-white relative overflow-hidden">
+  return <section className="pt-20 pb-20 bg-gradient-to-br from-psyched-purple via-psyched-indigo to-psyched-darkPurple text-white relative overflow-hidden bg-violet-600">
       <div className="absolute -top-24 -right-24 w-64 h-64 bg-psyched-indigo/30 rounded-full blur-3xl"></div>
       <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-psyched-lightPurple/30 rounded-full blur-3xl"></div>
       
@@ -14,13 +11,19 @@ const Hero = () => {
       <div className="absolute top-20 right-[20%] magic-star">
         <Sparkles className="h-6 w-6 text-yellow-300" />
       </div>
-      <div className="absolute bottom-20 left-[20%] magic-star" style={{ animationDelay: '2s' }}>
+      <div className="absolute bottom-20 left-[20%] magic-star" style={{
+      animationDelay: '2s'
+    }}>
         <Sparkles className="h-4 w-4 text-yellow-300" />
       </div>
-      <div className="absolute top-40 left-[10%] magic-star" style={{ animationDelay: '1s' }}>
+      <div className="absolute top-40 left-[10%] magic-star" style={{
+      animationDelay: '1s'
+    }}>
         <Sparkles className="h-5 w-5 text-yellow-300" />
       </div>
-      <div className="absolute bottom-40 right-[10%] magic-star" style={{ animationDelay: '3s' }}>
+      <div className="absolute bottom-40 right-[10%] magic-star" style={{
+      animationDelay: '3s'
+    }}>
         <Sparkles className="h-7 w-7 text-yellow-300" />
       </div>
       
@@ -62,7 +65,7 @@ const Hero = () => {
             
             <div className="flex flex-wrap gap-4">
               <Link to="/for-psychologists">
-                <Button size="lg" className="group bg-white text-psyched-purple hover:bg-white/90">
+                <Button size="lg" className="group text-psyched-purple bg-slate-950 hover:bg-slate-800">
                   Teachers sign up free
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -89,11 +92,7 @@ const Hero = () => {
               </div>
               
               <div className="relative">
-                <img 
-                  src="/lovable-uploads/d32de770-2b93-4b8f-abeb-663cea05f6fd.png" 
-                  alt="PsychedHire Screenshot" 
-                  className="rounded-md w-full shadow-lg border border-white/30"
-                />
+                <img src="/lovable-uploads/d32de770-2b93-4b8f-abeb-663cea05f6fd.png" alt="PsychedHire Screenshot" className="rounded-md w-full shadow-lg border border-white/30" />
                 <div className="absolute -top-6 -right-6">
                   <Sparkles className="h-10 w-10 text-yellow-300 opacity-80" />
                 </div>
@@ -104,8 +103,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
