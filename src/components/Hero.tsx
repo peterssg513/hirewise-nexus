@@ -92,7 +92,7 @@ const Hero = () => {
               </div>
               
               <div className="relative">
-                <img src="/lovable-uploads/d32de770-2b93-4b8f-abeb-663cea05f6fd.png" alt="PsychedHire Screenshot" className="rounded-md w-full shadow-lg border border-white/30" />
+                <img alt="PsychedHire Screenshot" className="rounded-md w-full shadow-lg border border-white/30" src="/lovable-uploads/917f5e68-3967-473b-bc3e-69479c38263f.png" />
                 <div className="absolute -top-6 -right-6">
                   <Sparkles className="h-10 w-10 text-yellow-300 opacity-80" />
                 </div>
