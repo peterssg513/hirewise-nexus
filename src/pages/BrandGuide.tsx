@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import html2pdf from 'html2pdf.js';
+import { toast } from "sonner";
 import { 
   ArrowLeft, ArrowRight, Check, X, Copy, 
   Home, Search, Settings, User, Users, 
@@ -11,20 +14,101 @@ import {
   MessageCircle, Send, PlusSquare, HelpCircle,
   CheckCircle, AlertTriangle, XCircle, LogOut,
   Bookmark, Download, Upload, Eye, EyeOff,
-  Trash, Edit, Save, RefreshCw
+  Trash, Edit, Save, RefreshCw, ChevronRight,
+  ChevronLeft, ChevronDown, ChevronUp, Menu,
+  Home as HomeIcon, Info, Settings as SettingsIcon,
+  CreditCard, FileText as FileTextIcon, BarChart,
+  Monitor, Share, Zap, Lock, Unlock, Cloud,
+  ExternalLink, Link as LinkIcon, Globe, Database,
+  Key, Map, Flag, MapPin, Filter, Sliders, Command,
+  Printer, Tag, Mic, Video, Music, Image, File, 
+  Folder, Paperclip
 } from 'lucide-react';
 import BrandGuideLogo from '@/components/nav/BrandGuideLogo';
 import AIInspiredLogo from '@/components/nav/AIInspiredLogo';
-import { toast } from "sonner";
 
 const BrandGuide = () => {
   const [activeSectionId, setActiveSectionId] = useState<string>("colors");
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Scroll to section and set active section
   const scrollToSection = (id: string) => {
     setActiveSectionId(id);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const handleDownloadPDF = () => {
+    setIsGeneratingPDF(true);
+    toast.info("Preparing PDF download...");
+
+    // Target the content div, excluding the header and navigation
+    const element = document.getElementById('brand-guide-content');
+    const originalPadding = document.body.style.padding;
+    const originalOverflow = document.body.style.overflow;
+
+    // Options for html2pdf
+    const opt = {
+      margin: 10,
+      filename: 'PsychedHire-BrandGuide.pdf',
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        letterRendering: true,
+        scrollY: 0
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Wait for a moment to ensure all animations are complete
+    setTimeout(() => {
+      // Clone the element to avoid modifying the original DOM
+      const cloneElement = element.cloneNode(true) as HTMLElement;
+      
+      // Create a temporary container
+      const tempContainer = document.createElement('div');
+      tempContainer.appendChild(cloneElement);
+      document.body.appendChild(tempContainer);
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.left = '-9999px';
+
+      // Run html2pdf
+      html2pdf().from(cloneElement).set(opt).save()
+        .then(() => {
+          // Clean up
+          document.body.removeChild(tempContainer);
+          document.body.style.padding = originalPadding;
+          document.body.style.overflow = originalOverflow;
+          
+          setIsGeneratingPDF(false);
+          toast.success("PDF downloaded successfully!");
+        })
+        .catch(err => {
+          console.error("PDF generation error:", err);
+          toast.error("Failed to generate PDF. Please try again.");
+          setIsGeneratingPDF(false);
+        });
+    }, 1000);
+  };
+
+  // Setup download link after component mounts
+  useEffect(() => {
+    const downloadLink = document.getElementById('download-pdf-link');
+    if (downloadLink) {
+      downloadLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleDownloadPDF();
+      });
+    }
+
+    return () => {
+      const downloadLink = document.getElementById('download-pdf-link');
+      if (downloadLink) {
+        downloadLink.removeEventListener('click', handleDownloadPDF);
+      }
+    };
+  }, []);
 
   // Animation variants
   const fadeIn = {
@@ -174,6 +258,44 @@ const BrandGuide = () => {
     { name: "Edit", component: <Edit className="text-indigo-600" /> },
     { name: "Save", component: <Save className="text-green-500" /> },
     { name: "RefreshCw", component: <RefreshCw className="text-indigo-600" /> },
+    // Additional icons
+    { name: "ChevronRight", component: <ChevronRight className="text-indigo-600" /> },
+    { name: "ChevronLeft", component: <ChevronLeft className="text-indigo-600" /> },
+    { name: "ChevronDown", component: <ChevronDown className="text-indigo-600" /> },
+    { name: "ChevronUp", component: <ChevronUp className="text-indigo-600" /> },
+    { name: "Menu", component: <Menu className="text-gray-600" /> },
+    { name: "HomeIcon", component: <HomeIcon className="text-indigo-600" /> },
+    { name: "Info", component: <Info className="text-indigo-600" /> },
+    { name: "SettingsIcon", component: <SettingsIcon className="text-gray-600" /> },
+    { name: "CreditCard", component: <CreditCard className="text-indigo-600" /> },
+    { name: "FileTextIcon", component: <FileTextIcon className="text-indigo-600" /> },
+    { name: "BarChart", component: <BarChart className="text-indigo-600" /> },
+    { name: "Monitor", component: <Monitor className="text-indigo-600" /> },
+    { name: "Share", component: <Share className="text-indigo-600" /> },
+    { name: "Zap", component: <Zap className="text-amber-500" /> },
+    { name: "Lock", component: <Lock className="text-indigo-600" /> },
+    { name: "Unlock", component: <Unlock className="text-indigo-600" /> },
+    { name: "Cloud", component: <Cloud className="text-indigo-600" /> },
+    { name: "ExternalLink", component: <ExternalLink className="text-indigo-600" /> },
+    { name: "LinkIcon", component: <LinkIcon className="text-indigo-600" /> },
+    { name: "Globe", component: <Globe className="text-indigo-600" /> },
+    { name: "Database", component: <Database className="text-indigo-600" /> },
+    { name: "Key", component: <Key className="text-indigo-600" /> },
+    { name: "Map", component: <Map className="text-indigo-600" /> },
+    { name: "Flag", component: <Flag className="text-indigo-600" /> },
+    { name: "MapPin", component: <MapPin className="text-indigo-600" /> },
+    { name: "Filter", component: <Filter className="text-indigo-600" /> },
+    { name: "Sliders", component: <Sliders className="text-indigo-600" /> },
+    { name: "Command", component: <Command className="text-indigo-600" /> },
+    { name: "Printer", component: <Printer className="text-indigo-600" /> },
+    { name: "Tag", component: <Tag className="text-indigo-600" /> },
+    { name: "Mic", component: <Mic className="text-indigo-600" /> },
+    { name: "Video", component: <Video className="text-indigo-600" /> },
+    { name: "Music", component: <Music className="text-indigo-600" /> },
+    { name: "Image", component: <Image className="text-indigo-600" /> },
+    { name: "File", component: <File className="text-indigo-600" /> },
+    { name: "Folder", component: <Folder className="text-indigo-600" /> },
+    { name: "Paperclip", component: <Paperclip className="text-indigo-600" /> },
   ];
 
   // Button variants - Updated to only include purple, white, and relevant colors
@@ -225,7 +347,7 @@ const BrandGuide = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex-shrink-0 flex items-center">
-              <BrandGuideLogo />
+              <BrandGuideLogo showDownload={true} />
             </div>
             <nav className="hidden md:flex space-x-8">
               {[
@@ -259,7 +381,7 @@ const BrandGuide = () => {
         </div>
       </header>
 
-      <main className="py-10">
+      <main className="py-10" id="brand-guide-content">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Hero Section */}
           <motion.section 
