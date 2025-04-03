@@ -176,16 +176,8 @@ const BrandGuide = () => {
     { name: "RefreshCw", component: <RefreshCw className="text-indigo-600" /> },
   ];
 
-  // Button variants - Updated to match AI-inspired design
+  // Button variants - Updated to only include purple, white, and relevant colors
   const buttonVariants = [
-    {
-      name: "Default",
-      element: <Button>Default Button</Button>
-    },
-    {
-      name: "Default with Icon",
-      element: <Button>Default with Icon <ArrowRight className="ml-2 h-4 w-4" /></Button>
-    },
     {
       name: "Primary",
       element: <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">Primary Button</Button>
@@ -195,20 +187,28 @@ const BrandGuide = () => {
       element: <Button variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">Secondary Button</Button>
     },
     {
-      name: "Outline",
+      name: "Outline - Purple",
       element: <Button variant="outline" className="border-indigo-500 text-indigo-600 hover:bg-indigo-50">Outline Button</Button>
     },
     {
-      name: "Ghost",
+      name: "Ghost - Purple",
       element: <Button variant="ghost" className="text-indigo-600 hover:bg-indigo-50">Ghost Button</Button>
-    },
-    {
-      name: "Success",
-      element: <Button className="bg-green-500 hover:bg-green-600 text-white">Success Button</Button>
     },
     {
       name: "Subtle",
       element: <Button variant="ghost" className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100">Subtle Button</Button>
+    },
+    {
+      name: "Primary with Icon",
+      element: <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">Primary Button <ArrowRight className="ml-2 h-4 w-4" /></Button>
+    },
+    {
+      name: "White",
+      element: <Button className="bg-white text-indigo-600 border border-indigo-200 hover:bg-gray-50">White Button</Button>
+    },
+    {
+      name: "Gradient Text",
+      element: <Button variant="ghost" className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90">Gradient Text Button</Button>
     },
   ];
 
@@ -836,52 +836,6 @@ const BrandGuide = () => {
               ))}
             </div>
           </motion.section>
-            
-          {/* Resources */}
-          <motion.section 
-            className="mb-10"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-          >
-            <motion.h2 
-              variants={fadeIn}
-              custom={0}
-              className="text-3xl font-bold mb-8 pb-2 border-b border-gray-200"
-            >
-              Resources
-            </motion.h2>
-            
-            <motion.div 
-              variants={fadeIn}
-              custom={1}
-              className="bg-white rounded-lg shadow-md p-6 border border-gray-100"
-              whileHover={hoverScale}
-            >
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Design Assets</h3>
-              <p className="text-gray-600 mb-6">
-                Access our design assets, templates, and resources to ensure brand consistency across all materials.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[
-                  "Logo Package", "Brand Guidelines PDF", "UI Component Library", 
-                  "Social Media Templates", "Email Templates", "Presentation Template"
-                ].map((resource, index) => (
-                  <motion.div 
-                    key={index} 
-                    className="p-4 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <span className="text-gray-700">{resource}</span>
-                    <Button variant="outline" size="sm" className="h-8 text-xs border-indigo-500 text-indigo-600 hover:bg-indigo-50">
-                      Download
-                    </Button>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </motion.section>
         </div>
       </main>
 
@@ -901,3 +855,4 @@ const BrandGuide = () => {
 };
 
 export default BrandGuide;
+
