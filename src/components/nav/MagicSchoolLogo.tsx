@@ -10,9 +10,9 @@ export const MagicSchoolLogo = ({ variant = 'default' }: { variant?: 'default' |
       case 'light':
         return "text-white";
       case 'dark':
-        return "text-magic-gray900";
+        return "text-psyched-gray900";
       default:
-        return "text-magic-purple";
+        return "text-psyched-purple";
     }
   };
 
@@ -24,12 +24,12 @@ export const MagicSchoolLogo = ({ variant = 'default' }: { variant?: 'default' |
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
       >
         <div className={`font-bold text-2xl ${getLogoClasses()}`}>
-          <span className="text-magic-purple">Magic</span>
-          <span className="text-magic-indigo font-extrabold">School</span>
+          <span className="text-psyched-purple">Psyched</span>
+          <span className="text-psyched-indigo font-extrabold">Hire!</span>
         </div>
         <Sparkles 
           size={16} 
-          className="text-magic-yellow absolute -top-1 -right-4" 
+          className="text-psyched-yellow absolute -top-1 -right-4" 
         />
       </motion.div>
     </Link>

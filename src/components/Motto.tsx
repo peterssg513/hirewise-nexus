@@ -4,7 +4,7 @@ import { Sparkles } from 'lucide-react';
 
 const Motto = () => {
   return (
-    <section className="py-12 bg-magic-purple text-white relative overflow-hidden">
+    <section className="py-12 bg-psyched-purple text-white relative overflow-hidden">
       <div className="absolute top-5 right-10">
         <Sparkles className="text-yellow-300 h-8 w-8 opacity-80" />
       </div>

@@ -15,8 +15,8 @@ export const BrandGuideLogo = ({ showDownload = false }: { showDownload?: boolea
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
           <div className="font-bold text-2xl">
-            <span className="text-magic-purple">Magic</span>
-            <span className="text-magic-indigo font-extrabold">School</span>
+            <span className="text-psyched-purple">Psyched</span>
+            <span className="text-psyched-indigo font-extrabold">Hire!</span>
           </div>
           <Sparkles 
             size={16} 

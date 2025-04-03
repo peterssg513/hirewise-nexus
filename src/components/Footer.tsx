@@ -5,7 +5,7 @@ import { Sparkles } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-magic-gray900 text-white pt-12 pb-6 relative overflow-hidden">
+    <footer className="bg-psyched-gray900 text-white pt-12 pb-6 relative overflow-hidden">
       <div className="absolute top-10 right-10 opacity-50">
         <Sparkles className="text-yellow-300 h-6 w-6" />
       </div>
@@ -18,8 +18,8 @@ const Footer = () => {
           <div>
             <div className="flex items-center mb-4 relative">
               <div className="font-bold text-2xl">
-                <span className="text-magic-purple">Magic</span>
-                <span className="text-white font-extrabold">School</span>
+                <span className="text-psyched-purple">Psyched</span>
+                <span className="text-white font-extrabold">Hire!</span>
               </div>
               <Sparkles 
                 size={14} 
@@ -103,7 +103,7 @@ const Footer = () => {
         <div className="border-t border-gray-700 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              &copy; {new Date().getFullYear()} MagicSchool. All rights reserved.
+              &copy; {new Date().getFullYear()} PsychedHire. All rights reserved.
             </p>
             <div className="flex space-x-4">
               <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">

@@ -36,19 +36,19 @@ const Index = () => {
         <h3 className="text-lg font-medium text-gray-700 mb-4">Looking for something different?</h3>
         <div className="flex flex-wrap justify-center gap-4">
           <Link to="/ai-inspired-design">
-            <Button variant="outline" className="border-magic-purple text-magic-purple hover:bg-magic-purple/10 flex items-center gap-2">
+            <Button variant="outline" className="border-psyched-purple text-psyched-purple hover:bg-psyched-purple/10 flex items-center gap-2">
               View AI-Inspired Design
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
           <Link to="/third-landing-page">
-            <Button variant="outline" className="border-magic-indigo text-magic-indigo hover:bg-magic-indigo/10 flex items-center gap-2">
+            <Button variant="outline" className="border-psyched-indigo text-psyched-indigo hover:bg-psyched-indigo/10 flex items-center gap-2">
               Third Landing Page
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
           <Link to="/brand-guide">
-            <Button variant="outline" className="border-magic-lightPurple text-magic-lightPurple hover:bg-magic-lightPurple/10 flex items-center gap-2">
+            <Button variant="outline" className="border-psyched-lightPurple text-psyched-lightPurple hover:bg-psyched-lightPurple/10 flex items-center gap-2">
               Brand Guide
               <Sparkles className="h-4 w-4" />
             </Button>

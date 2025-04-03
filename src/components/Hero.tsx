@@ -6,9 +6,9 @@ import { ArrowRight, Check, Sparkles } from 'lucide-react';
 
 const Hero = () => {
   return (
-    <section className="pt-20 pb-20 bg-magic-purple text-white relative overflow-hidden">
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-magic-indigo/30 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-magic-lightPurple/30 rounded-full blur-3xl"></div>
+    <section className="pt-20 pb-20 bg-psyched-purple text-white relative overflow-hidden">
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-psyched-indigo/30 rounded-full blur-3xl"></div>
+      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-psyched-lightPurple/30 rounded-full blur-3xl"></div>
       
       {/* Animated stars */}
       <div className="absolute top-20 right-[20%] magic-star">
@@ -29,10 +29,10 @@ const Hero = () => {
           <div>
             <div className="inline-flex items-center px-4 py-1.5 mb-4 bg-white/10 text-white rounded-full text-sm font-medium backdrop-blur-sm">
               <Sparkles className="w-4 h-4 mr-2 text-yellow-300" />
-              The magic of AI to help schools
+              The power of AI to help schools
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Magic<span className="text-yellow-300">School</span>
+              Psyched<span className="text-yellow-300">Hire!</span>
             </h1>
             <p className="text-xl text-white/90 mb-8 max-w-lg leading-relaxed">
               The most loved, secure, and trusted AI platform for
@@ -62,13 +62,13 @@ const Hero = () => {
             
             <div className="flex flex-wrap gap-4">
               <Link to="/for-psychologists">
-                <Button size="lg" className="group bg-white text-magic-purple hover:bg-white/90">
+                <Button size="lg" className="group bg-white text-psyched-purple hover:bg-white/90">
                   Teachers sign up free
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
               <Link to="/for-districts">
-                <Button size="lg" className="group bg-magic-purple/30 border border-white/30 backdrop-blur-sm text-white hover:bg-white/20">
+                <Button size="lg" className="group bg-psyched-purple/30 border border-white/30 backdrop-blur-sm text-white hover:bg-white/20">
                   Schools learn more
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -91,7 +91,7 @@ const Hero = () => {
               <div className="relative">
                 <img 
                   src="/lovable-uploads/d32de770-2b93-4b8f-abeb-663cea05f6fd.png" 
-                  alt="MagicSchool Screenshot" 
+                  alt="PsychedHire Screenshot" 
                   className="rounded-md w-full shadow-lg border border-white/30"
                 />
                 <div className="absolute -top-6 -right-6">
@@ -100,7 +100,7 @@ const Hero = () => {
               </div>
             </div>
             
-            <div className="absolute top-4 -left-4 -z-10 w-full h-full bg-magic-indigo/40 rounded-lg blur-sm"></div>
+            <div className="absolute top-4 -left-4 -z-10 w-full h-full bg-psyched-indigo/40 rounded-lg blur-sm"></div>
           </div>
         </div>
       </div>
