@@ -44,15 +44,15 @@ const DistrictEvaluations = () => {
         
         setEvaluationCounts(counts);
         console.log("DistrictEvaluations - Evaluation counts:", counts);
+      },
+      onError: (error) => {
+        console.error('Error loading evaluation counts:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load evaluation data',
+          variant: 'destructive',
+        });
       }
-    },
-    onError: (error) => {
-      console.error('Error loading evaluation counts:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load evaluation data',
-        variant: 'destructive',
-      });
     }
   });
 
