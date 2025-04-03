@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -57,24 +56,25 @@ const BrandGuide = () => {
     transition: { duration: 0.3 }
   };
   
-  // Color palette - Updated to match AI-inspired design
+  // Color palette - Updated to only include first 3 rows
   const brandColors = [
+    // First row
     { name: "Indigo 600", hex: "#4F46E5", class: "bg-indigo-600" },
     { name: "Purple 600", hex: "#9333EA", class: "bg-purple-600" },
     { name: "Indigo 700", hex: "#4338CA", class: "bg-indigo-700" },
     { name: "Purple 500", hex: "#A855F7", class: "bg-purple-500" },
+    
+    // Second row
     { name: "Indigo 500", hex: "#6366F1", class: "bg-indigo-500" },
     { name: "Violet 400", hex: "#A78BFA", class: "bg-violet-400" },
+    { name: "Gray 800", hex: "#1F2937", class: "bg-gray-800" },
+    { name: "Gray 900", hex: "#111827", class: "bg-gray-900" },
+    
+    // Third row
     { name: "White", hex: "#FFFFFF", class: "bg-white" },
     { name: "Gray 50", hex: "#F9FAFB", class: "bg-gray-50" },
     { name: "Gray 100", hex: "#F3F4F6", class: "bg-gray-100" },
     { name: "Gray 600", hex: "#4B5563", class: "bg-gray-600" },
-    { name: "Gray 800", hex: "#1F2937", class: "bg-gray-800" },
-    { name: "Gray 900", hex: "#111827", class: "bg-gray-900" },
-    { name: "Green 500", hex: "#10B981", class: "bg-green-500" },
-    { name: "Amber 500", hex: "#F59E0B", class: "bg-amber-500" },
-    { name: "Red 500", hex: "#EF4444", class: "bg-red-500" },
-    { name: "Sky 400", hex: "#38BDF8", class: "bg-sky-400" },
   ];
 
   // Gradients - Updated to match AI-inspired design
@@ -855,4 +855,3 @@ const BrandGuide = () => {
 };
 
 export default BrandGuide;
-
