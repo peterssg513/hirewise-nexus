@@ -7,9 +7,11 @@ export const AIInspiredLogo = () => {
   return (
     <Link to="/ai-inspired-design" className="flex items-center group">
       <motion.div 
-        className="bg-gradient-to-r from-purple-600 to-violet-500 font-bold px-2 py-1 text-white mr-1 rounded"
+        className="bg-gradient-to-r from-purple-600 to-violet-500 font-bold px-3 py-1.5 text-white mr-1 rounded"
         whileHover={{ scale: 1.05 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        initial={{ opacity: 0, y: -5 }}
+        animate={{ opacity: 1, y: 0 }}
       >
         Psyched
       </motion.div>
@@ -18,6 +20,7 @@ export const AIInspiredLogo = () => {
         initial={{ opacity: 0, x: -5 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
+        whileHover={{ scale: 1.05 }}
       >
         Hire!
       </motion.div>
