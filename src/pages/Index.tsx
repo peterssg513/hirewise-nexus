@@ -31,13 +31,19 @@ const Index = () => {
       <CaseStudies />
       <CallToAction />
       
-      {/* Link to AI-inspired design */}
+      {/* Links to alternative designs */}
       <div className="bg-gray-50 py-8 text-center">
         <h3 className="text-lg font-medium text-gray-700 mb-4">Looking for something different?</h3>
         <div className="flex justify-center space-x-4">
           <Link to="/ai-inspired-design">
             <Button variant="outline" className="border-purple-500 text-purple-600 hover:bg-purple-50 flex items-center gap-2">
               View AI-Inspired Design
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link to="/third-landing-page">
+            <Button variant="outline" className="border-teal-500 text-teal-600 hover:bg-teal-50 flex items-center gap-2">
+              Third Landing Page
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
