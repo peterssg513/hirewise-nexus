@@ -1,9 +1,6 @@
-
 import React from 'react';
-
 const Partners = () => {
-  return (
-    <section className="py-12 bg-gray-50">
+  return <section className="py-12 bg-purple-50">
       <div className="psyched-container">
         <h2 className="text-center text-2xl font-bold text-magic-purple mb-3">
           Trusted by Top School Districts
@@ -45,8 +42,6 @@ const Partners = () => {
           </p>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Partners;

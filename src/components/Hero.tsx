@@ -39,7 +39,7 @@ const Hero = () => {
             </h1>
             <p className="text-xl text-white/90 mb-8 max-w-lg leading-relaxed">
               The most loved, secure, and trusted AI platform for
-              <span className="font-medium text-white"> educators and students.</span>
+              <span className="font-medium text-white"> school psychologists and schools.</span>
             </p>
             
             <ul className="mb-8 space-y-3">

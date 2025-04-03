@@ -1,10 +1,7 @@
-
 import React from 'react';
 import { Sparkles } from 'lucide-react';
-
 const Stats = () => {
-  return (
-    <section className="py-20 bg-psyched-purple text-white relative overflow-hidden">
+  return <section className="py-20 bg-psyched-purple text-white relative overflow-hidden bg-violet-600">
       <div className="absolute top-10 left-10">
         <Sparkles className="text-yellow-300 h-8 w-8 opacity-80" />
       </div>
@@ -42,8 +39,6 @@ const Stats = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Stats;
