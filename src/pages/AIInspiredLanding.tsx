@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Star, Calendar, FileText, Search, Award, TrendingDown, Clock, School, Sparkles } from 'lucide-react';
+import AIInspiredLogo from '@/components/nav/AIInspiredLogo';
 
 const AIInspiredLanding = () => {
   // Stats for the hero section
@@ -127,17 +127,7 @@ const AIInspiredLanding = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="flex items-center">
-                <svg className="h-10 w-10" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="40" height="40" rx="8" fill="#7C3AED" />
-                  <path d="M12 20C12 15.5817 15.5817 12 20 12C24.4183 12 28 15.5817 28 20C28 24.4183 24.4183 28 20 28" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                  <path d="M20 28C17.7909 28 16 26.2091 16 24C16 21.7909 17.7909 20 20 20" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                  <path d="M10 20H12M28 20H30M20 10V12M20 28V30" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                <span className="ml-2 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-violet-500">
-                  PsychedHire
-                </span>
-              </Link>
+              <AIInspiredLogo />
             </div>
             <nav className="hidden md:flex space-x-8">
               <Link to="/for-psychologists" className="text-gray-600 hover:text-purple-700 px-3 py-2 text-sm font-medium">For Psychologists</Link>
@@ -570,15 +560,7 @@ const AIInspiredLanding = () => {
           </div>
           <div className="mt-8 border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center">
-              <svg className="h-8 w-8" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="40" height="40" rx="8" fill="#7C3AED" />
-                <path d="M12 20C12 15.5817 15.5817 12 20 12C24.4183 12 28 15.5817 28 20C28 24.4183 24.4183 28 20 28" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                <path d="M20 28C17.7909 28 16 26.2091 16 24C16 21.7909 17.7909 20 20 20" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                <path d="M10 20H12M28 20H30M20 10V12M20 28V30" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-              <span className="ml-2 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-violet-500">
-                PsychedHire
-              </span>
+              <AIInspiredLogo />
             </div>
             <p className="text-sm text-gray-500 mt-4 md:mt-0">© 2025 PsychedHire. All rights reserved.</p>
           </div>
