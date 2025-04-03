@@ -1,20 +1,30 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-psyched-darkBlue text-white pt-12 pb-6">
+    <footer className="bg-magic-gray900 text-white pt-12 pb-6 relative overflow-hidden">
+      <div className="absolute top-10 right-10 opacity-50">
+        <Sparkles className="text-yellow-300 h-6 w-6" />
+      </div>
+      <div className="absolute bottom-10 left-10 opacity-30">
+        <Sparkles className="text-yellow-300 h-4 w-4" />
+      </div>
+      
       <div className="psyched-container">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
           <div>
-            <div className="flex items-center mb-4">
-              <div className="bg-psyched-yellow text-psyched-darkBlue font-bold px-2 py-1 mr-1">
-                Psyched
+            <div className="flex items-center mb-4 relative">
+              <div className="font-bold text-2xl">
+                <span className="text-magic-purple">Magic</span>
+                <span className="text-white font-extrabold">School</span>
               </div>
-              <div className="text-white font-semibold">
-                Hire
-              </div>
+              <Sparkles 
+                size={14} 
+                className="text-yellow-400 absolute -top-1 right-2" 
+              />
             </div>
             <p className="text-gray-400 mb-4">
               Connecting qualified psychologists with K-12 schools to support student mental health.
@@ -93,7 +103,7 @@ const Footer = () => {
         <div className="border-t border-gray-700 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              &copy; {new Date().getFullYear()} PsychedHire. All rights reserved.
+              &copy; {new Date().getFullYear()} MagicSchool. All rights reserved.
             </p>
             <div className="flex space-x-4">
               <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">

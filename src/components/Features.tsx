@@ -6,16 +6,22 @@ const Features = () => {
   return (
     <section className="py-16 bg-white relative overflow-hidden">
       <div className="absolute opacity-5 -right-20 top-20">
-        <Star className="w-64 h-64 text-psyched-yellow" />
+        <Star className="w-64 h-64 text-yellow-400" />
+      </div>
+      <div className="absolute top-10 right-10">
+        <Sparkles className="text-yellow-400 h-6 w-6 opacity-60" />
+      </div>
+      <div className="absolute bottom-10 left-10">
+        <Sparkles className="text-yellow-400 h-5 w-5 opacity-50" />
       </div>
       
       <div className="psyched-container relative z-10">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-1.5 mb-4 bg-blue-50 text-blue-600 rounded-full text-sm font-medium">
+          <div className="inline-flex items-center px-4 py-1.5 mb-4 bg-magic-purple/10 text-magic-purple rounded-full text-sm font-medium">
             <Sparkles className="w-4 h-4 mr-2" />
             Our Mission
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-psyched-darkBlue mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-magic-gray900 mb-4">
             Connecting Schools With The Right Psychologists
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -26,11 +32,11 @@ const Features = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="bg-psyched-cream rounded-lg p-8 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
-            <div className="w-14 h-14 bg-psyched-yellow/20 rounded-full flex items-center justify-center mb-6">
-              <Clock className="h-6 w-6 text-psyched-yellow" />
+          <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-100 transition-all hover:shadow-md hover:-translate-y-1">
+            <div className="w-14 h-14 bg-magic-purple/10 rounded-full flex items-center justify-center mb-6">
+              <Clock className="h-6 w-6 text-magic-purple" />
             </div>
-            <h3 className="text-xl font-semibold text-psyched-darkBlue mb-3">Simplified Hiring</h3>
+            <h3 className="text-xl font-semibold text-magic-gray900 mb-3">Simplified Hiring</h3>
             <p className="text-gray-600 mb-4">
               Our streamlined process removes the complexity from hiring school psychologists, allowing 
               administrators to focus on what matters most: their students.
@@ -51,11 +57,11 @@ const Features = () => {
             </ul>
           </div>
 
-          <div className="bg-psyched-cream rounded-lg p-8 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
-            <div className="w-14 h-14 bg-psyched-yellow/20 rounded-full flex items-center justify-center mb-6">
-              <Award className="h-6 w-6 text-psyched-yellow" />
+          <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-100 transition-all hover:shadow-md hover:-translate-y-1">
+            <div className="w-14 h-14 bg-magic-indigo/10 rounded-full flex items-center justify-center mb-6">
+              <Award className="h-6 w-6 text-magic-indigo" />
             </div>
-            <h3 className="text-xl font-semibold text-psyched-darkBlue mb-3">Quality Matches</h3>
+            <h3 className="text-xl font-semibold text-magic-gray900 mb-3">Quality Matches</h3>
             <p className="text-gray-600 mb-4">
               We vet all psychologists on our platform, ensuring schools find candidates with the right qualifications
               and experience for their specific needs.
@@ -76,11 +82,11 @@ const Features = () => {
             </ul>
           </div>
 
-          <div className="bg-psyched-cream rounded-lg p-8 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
-            <div className="w-14 h-14 bg-psyched-yellow/20 rounded-full flex items-center justify-center mb-6">
-              <Users className="h-6 w-6 text-psyched-yellow" />
+          <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-100 transition-all hover:shadow-md hover:-translate-y-1">
+            <div className="w-14 h-14 bg-magic-lightPurple/10 rounded-full flex items-center justify-center mb-6">
+              <Users className="h-6 w-6 text-magic-lightPurple" />
             </div>
-            <h3 className="text-xl font-semibold text-psyched-darkBlue mb-3">Ongoing Support</h3>
+            <h3 className="text-xl font-semibold text-magic-gray900 mb-3">Ongoing Support</h3>
             <p className="text-gray-600 mb-4">
               Our relationship doesn't end with a placement. We provide continued support to ensure successful
               integration and long-term success.

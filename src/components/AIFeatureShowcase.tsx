@@ -6,18 +6,21 @@ import { Sparkles, FileText, BookOpen, Clock } from 'lucide-react';
 
 const AIFeatureShowcase = () => {
   return (
-    <section className="py-16 bg-gradient-to-br from-psyched-cream to-white overflow-hidden relative">
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-psyched-yellow/10 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-psyched-lightBlue/10 rounded-full blur-3xl"></div>
+    <section className="py-16 bg-gradient-to-br from-white to-gray-50 overflow-hidden relative">
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-magic-purple/5 rounded-full blur-3xl"></div>
+      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-magic-indigo/5 rounded-full blur-3xl"></div>
+      <div className="absolute top-20 right-40 magic-star" style={{ animationDelay: '2s' }}>
+        <Sparkles className="h-8 w-8 text-yellow-400" />
+      </div>
       
       <div className="psyched-container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="inline-flex items-center px-3 py-1 mb-4 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
+            <div className="inline-flex items-center px-3 py-1 mb-4 bg-magic-purple/10 text-magic-purple rounded-full text-sm font-medium">
               <Sparkles className="w-4 h-4 mr-2" />
               AI-Powered Assistance
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-psyched-darkBlue mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-magic-gray900 mb-6">
               Revolutionary Report Writing with AI
             </h2>
             <p className="text-lg text-gray-600 mb-8">
@@ -27,38 +30,38 @@ const AIFeatureShowcase = () => {
             
             <div className="space-y-4 mb-8">
               <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1 bg-psyched-yellow/20 p-2 rounded-full">
-                  <FileText className="h-5 w-5 text-psyched-yellow" />
+                <div className="flex-shrink-0 mt-1 bg-magic-purple/10 p-2 rounded-full">
+                  <FileText className="h-5 w-5 text-magic-purple" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-psyched-darkBlue">Template-Based Writing</h3>
+                  <h3 className="text-lg font-semibold text-magic-gray900">Template-Based Writing</h3>
                   <p className="text-gray-600">Start with professional templates aligned with educational standards.</p>
                 </div>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1 bg-psyched-yellow/20 p-2 rounded-full">
-                  <BookOpen className="h-5 w-5 text-psyched-yellow" />
+                <div className="flex-shrink-0 mt-1 bg-magic-indigo/10 p-2 rounded-full">
+                  <BookOpen className="h-5 w-5 text-magic-indigo" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-psyched-darkBlue">Compliance Checking</h3>
+                  <h3 className="text-lg font-semibold text-magic-gray900">Compliance Checking</h3>
                   <p className="text-gray-600">Automatic verification of compliance with district and state requirements.</p>
                 </div>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1 bg-psyched-yellow/20 p-2 rounded-full">
-                  <Clock className="h-5 w-5 text-psyched-yellow" />
+                <div className="flex-shrink-0 mt-1 bg-magic-lightPurple/10 p-2 rounded-full">
+                  <Clock className="h-5 w-5 text-magic-lightPurple" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-psyched-darkBlue">Time-Saving</h3>
+                  <h3 className="text-lg font-semibold text-magic-gray900">Time-Saving</h3>
                   <p className="text-gray-600">Reduce report writing time by up to 60% while maintaining quality and personalization.</p>
                 </div>
               </div>
             </div>
             
             <Link to="/register?role=psychologist">
-              <Button size="lg" className="bg-psyched-lightBlue text-psyched-darkBlue hover:bg-psyched-lightBlue/90">
+              <Button size="lg" className="bg-gradient-to-r from-magic-indigo to-magic-purple text-white hover:opacity-90">
                 Try AI-Assisted Reporting <span className="ml-2">→</span>
               </Button>
             </Link>
@@ -83,7 +86,7 @@ const AIFeatureShowcase = () => {
                   <p><span className="font-semibold">Age:</span> 9 years, 4 months</p>
                   <p><span className="font-semibold">Grade:</span> 4th</p>
                   
-                  <div className="bg-psyched-yellow/10 border-l-2 border-psyched-yellow p-2 my-3 rounded">
+                  <div className="bg-magic-purple/10 border-l-2 border-magic-purple p-2 my-3 rounded">
                     <p className="text-xs italic">AI suggests: Add details about testing environment and student's demeanor during evaluation.</p>
                   </div>
                   
@@ -97,7 +100,7 @@ const AIFeatureShowcase = () => {
                     <li>Processing Speed: 88 (Low Average)</li>
                   </ul>
                   
-                  <div className="bg-blue-50 border-l-2 border-blue-400 p-2 my-3 rounded">
+                  <div className="bg-magic-indigo/10 border-l-2 border-magic-indigo p-2 my-3 rounded">
                     <p className="text-xs">AI compliance check: This report meets all district requirements. Consider adding behavioral observations to strengthen recommendations.</p>
                   </div>
                 </div>
@@ -105,14 +108,14 @@ const AIFeatureShowcase = () => {
               
               <div className="flex justify-between mt-4">
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="text-xs">AI Suggest</Button>
-                  <Button variant="outline" size="sm" className="text-xs">Check Compliance</Button>
+                  <Button variant="outline" size="sm" className="text-xs text-magic-purple">AI Suggest</Button>
+                  <Button variant="outline" size="sm" className="text-xs text-magic-indigo">Check Compliance</Button>
                 </div>
-                <Button size="sm" className="bg-psyched-yellow text-psyched-darkBlue text-xs">Save Draft</Button>
+                <Button size="sm" className="bg-magic-purple text-white text-xs">Save Draft</Button>
               </div>
             </div>
             
-            <div className="absolute top-8 -left-8 -z-10 w-full h-full bg-psyched-lightBlue/20 rounded-lg"></div>
+            <div className="absolute top-8 -left-8 -z-10 w-full h-full bg-magic-purple/10 rounded-lg"></div>
           </div>
         </div>
       </div>

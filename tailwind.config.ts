@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -67,7 +66,20 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors for PsychedHire
+				magic: {
+					purple: '#6E41E2',
+					brightPurple: '#9333EA',
+					lightPurple: '#A788FA',
+					indigo: '#4F46E5',
+					indigoDark: '#4338CA',
+					yellow: '#FFD700',
+					white: '#FFFFFF',
+					gray50: '#F9FAFB',
+					gray100: '#F3F4F6',
+					gray600: '#4B5563',
+					gray800: '#1F2937',
+					gray900: '#111827',
+				},
 				psyched: {
 					yellow: '#F7C600',
 					darkBlue: '#2A3950',
@@ -75,7 +87,6 @@ export default {
 					orange: '#FF9052',
 					cream: '#FFF9E7',
 				},
-				// Adding our new color palette for the third landing page
 				teal: {
 					50: '#f0fdfa',
 					100: '#ccfbf1',
@@ -134,11 +145,21 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'spin-slow': {
+					'0%': { transform: 'rotate(0deg)' },
+					'100%': { transform: 'rotate(360deg)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'float': 'float 6s ease-in-out infinite',
+				'spin-slow': 'spin-slow 10s linear infinite'
 			}
 		}
 	},

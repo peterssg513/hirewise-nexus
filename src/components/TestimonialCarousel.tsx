@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Quote, Star, ArrowRight } from 'lucide-react';
+import { Quote, Star, ArrowRight, Sparkles } from 'lucide-react';
 
 interface Testimonial {
   id: number;
@@ -54,14 +54,21 @@ const testimonials: Testimonial[] = [
 
 const TestimonialCarousel = () => {
   return (
-    <section className="py-16 bg-gradient-to-br from-white to-psyched-cream">
+    <section className="py-16 bg-gradient-to-br from-white to-gray-50 relative overflow-hidden">
+      <div className="absolute top-10 right-10">
+        <Sparkles className="text-yellow-400 h-6 w-6 opacity-60" />
+      </div>
+      <div className="absolute bottom-10 left-10">
+        <Sparkles className="text-yellow-400 h-5 w-5 opacity-50" />
+      </div>
+      
       <div className="psyched-container">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-1.5 mb-4 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
-            <Star className="w-4 h-4 mr-2 text-amber-500" />
+          <div className="inline-flex items-center px-4 py-1.5 mb-4 bg-magic-purple/10 text-magic-purple rounded-full text-sm font-medium">
+            <Star className="w-4 h-4 mr-2 text-yellow-500" />
             Success Stories
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-psyched-darkBlue mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-magic-gray900 mb-4">
             What Our Users Say
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -78,13 +85,13 @@ const TestimonialCarousel = () => {
                     <CardContent className="p-6">
                       <div className="flex flex-col h-full">
                         <div className="flex items-center justify-between mb-4">
-                          <Quote size={24} className="text-psyched-yellow" />
+                          <Quote size={24} className="text-magic-purple" />
                           <div className="flex">
                             {[...Array(5)].map((_, i) => (
                               <Star 
                                 key={i} 
                                 size={16} 
-                                className={i < testimonial.rating ? "fill-psyched-yellow text-psyched-yellow" : "text-gray-300"} 
+                                className={i < testimonial.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} 
                               />
                             ))}
                           </div>
@@ -96,14 +103,14 @@ const TestimonialCarousel = () => {
                         
                         <div className="mt-auto">
                           <div className="pt-4 border-t border-gray-100">
-                            <p className="font-semibold text-psyched-darkBlue">
+                            <p className="font-semibold text-magic-gray900">
                               {testimonial.author}
                             </p>
                             <p className="text-sm text-gray-600 mb-4">
                               {testimonial.role}, {testimonial.organization}
                             </p>
                             <Link to={`/success-stories/${testimonial.slug}`}>
-                              <Button variant="link" className="p-0 h-auto text-psyched-lightBlue hover:text-psyched-darkBlue flex items-center gap-1">
+                              <Button variant="link" className="p-0 h-auto text-magic-purple hover:text-magic-indigo flex items-center gap-1">
                                 Read full case study <ArrowRight size={16} />
                               </Button>
                             </Link>
@@ -122,7 +129,7 @@ const TestimonialCarousel = () => {
         
         <div className="text-center mt-12">
           <Link to="/success-stories">
-            <Button className="bg-psyched-lightBlue text-white hover:bg-psyched-darkBlue">
+            <Button className="bg-magic-purple text-white hover:bg-magic-purple/90">
               View All Success Stories
             </Button>
           </Link>

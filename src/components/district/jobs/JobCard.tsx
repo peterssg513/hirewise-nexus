@@ -20,9 +20,9 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onView, onDelete }) => {
       case 'active':
         return 'bg-green-100 text-green-700 border-green-200';
       case 'offered':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
+        return 'bg-magic-indigo/10 text-magic-indigo border-magic-indigo/20';
       case 'accepted':
-        return 'bg-purple-100 text-purple-700 border-purple-200';
+        return 'bg-magic-purple/10 text-magic-purple border-magic-purple/20';
       case 'closed':
         return 'bg-gray-100 text-gray-700 border-gray-200';
       default:
@@ -47,12 +47,24 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onView, onDelete }) => {
     }
   };
 
+  const getBorderColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return '#10b981';
+      case 'pending':
+        return '#f59e0b';
+      case 'offered':
+        return '#4F46E5';
+      case 'accepted':
+        return '#6E41E2';
+      default:
+        return '#6b7280';
+    }
+  };
+
   return (
     <Card className="overflow-hidden border-l-4 hover:shadow-md transition-shadow" 
-          style={{ borderLeftColor: job.status === 'active' ? '#10b981' : 
-                                  job.status === 'pending' ? '#f59e0b' : 
-                                  job.status === 'offered' ? '#3b82f6' : 
-                                  job.status === 'accepted' ? '#8b5cf6' : '#6b7280' }}>
+          style={{ borderLeftColor: getBorderColor(job.status) }}>
       <CardContent className="p-0">
         <div className="p-4">
           <div className="flex justify-between items-start mb-2">
@@ -84,13 +96,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onView, onDelete }) => {
           
           <div className="flex flex-wrap gap-1 mt-2">
             {job.work_location && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">
+              <Badge variant="outline" className="bg-magic-indigo/10 text-magic-indigo border-magic-indigo/20">
                 {job.work_location}
               </Badge>
             )}
             
             {job.timeframe && (
-              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-100">
+              <Badge variant="outline" className="bg-magic-purple/10 text-magic-purple border-magic-purple/20">
                 <Clock className="h-3 w-3 mr-1" />
                 {job.timeframe}
               </Badge>
@@ -115,7 +127,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onView, onDelete }) => {
         <div className="flex border-t bg-gray-50">
           <Button
             variant="ghost"
-            className="flex-1 rounded-none py-2 h-auto text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+            className="flex-1 rounded-none py-2 h-auto text-magic-indigo hover:bg-magic-indigo/10 hover:text-magic-indigo"
             onClick={() => onView(job)}
           >
             <Eye className="mr-2 h-4 w-4" />

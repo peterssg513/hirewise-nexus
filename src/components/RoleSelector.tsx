@@ -17,14 +17,14 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onChange }) =
         className={cn(
           "border rounded-md p-4 flex flex-col items-center cursor-pointer transition-all",
           selectedRole === 'psychologist' 
-            ? "border-psyched-lightBlue bg-psyched-lightBlue/10" 
-            : "border-gray-200 hover:border-psyched-lightBlue"
+            ? "border-magic-purple bg-magic-purple/10" 
+            : "border-gray-200 hover:border-magic-purple"
         )}
         onClick={() => onChange('psychologist')}
       >
         <div className={cn(
           "w-12 h-12 rounded-full flex items-center justify-center mb-3",
-          selectedRole === 'psychologist' ? "bg-psyched-lightBlue text-white" : "bg-gray-100"
+          selectedRole === 'psychologist' ? "bg-magic-purple text-white" : "bg-gray-100"
         )}>
           <GraduationCap size={24} />
         </div>
@@ -35,14 +35,14 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onChange }) =
         className={cn(
           "border rounded-md p-4 flex flex-col items-center cursor-pointer transition-all",
           selectedRole === 'district' 
-            ? "border-psyched-orange bg-psyched-orange/10" 
-            : "border-gray-200 hover:border-psyched-orange"
+            ? "border-magic-indigo bg-magic-indigo/10" 
+            : "border-gray-200 hover:border-magic-indigo"
         )}
         onClick={() => onChange('district')}
       >
         <div className={cn(
           "w-12 h-12 rounded-full flex items-center justify-center mb-3",
-          selectedRole === 'district' ? "bg-psyched-orange text-white" : "bg-gray-100"
+          selectedRole === 'district' ? "bg-magic-indigo text-white" : "bg-gray-100"
         )}>
           <Building size={24} />
         </div>
@@ -53,14 +53,14 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onChange }) =
         className={cn(
           "border rounded-md p-4 flex flex-col items-center cursor-pointer transition-all",
           selectedRole === 'admin' 
-            ? "border-blue-500 bg-blue-500/10" 
-            : "border-gray-200 hover:border-blue-500"
+            ? "border-magic-lightPurple bg-magic-lightPurple/10" 
+            : "border-gray-200 hover:border-magic-lightPurple"
         )}
         onClick={() => onChange('admin')}
       >
         <div className={cn(
           "w-12 h-12 rounded-full flex items-center justify-center mb-3",
-          selectedRole === 'admin' ? "bg-blue-500 text-white" : "bg-gray-100"
+          selectedRole === 'admin' ? "bg-magic-lightPurple text-white" : "bg-gray-100"
         )}>
           <Users size={24} />
         </div>

@@ -14,7 +14,7 @@ import CallToAction from '@/components/CallToAction';
 import Footer from '@/components/Footer';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -36,21 +36,21 @@ const Index = () => {
         <h3 className="text-lg font-medium text-gray-700 mb-4">Looking for something different?</h3>
         <div className="flex flex-wrap justify-center gap-4">
           <Link to="/ai-inspired-design">
-            <Button variant="outline" className="border-purple-500 text-purple-600 hover:bg-purple-50 flex items-center gap-2">
+            <Button variant="outline" className="border-magic-purple text-magic-purple hover:bg-magic-purple/10 flex items-center gap-2">
               View AI-Inspired Design
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
           <Link to="/third-landing-page">
-            <Button variant="outline" className="border-teal-500 text-teal-600 hover:bg-teal-50 flex items-center gap-2">
+            <Button variant="outline" className="border-magic-indigo text-magic-indigo hover:bg-magic-indigo/10 flex items-center gap-2">
               Third Landing Page
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
           <Link to="/brand-guide">
-            <Button variant="outline" className="border-purple-500 text-purple-600 hover:bg-purple-50 flex items-center gap-2">
+            <Button variant="outline" className="border-magic-lightPurple text-magic-lightPurple hover:bg-magic-lightPurple/10 flex items-center gap-2">
               Brand Guide
-              <ArrowRight className="h-4 w-4" />
+              <Sparkles className="h-4 w-4" />
             </Button>
           </Link>
         </div>
