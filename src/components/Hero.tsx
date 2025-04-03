@@ -6,7 +6,7 @@ import { ArrowRight, Check, Sparkles } from 'lucide-react';
 
 const Hero = () => {
   return (
-    <section className="pt-20 pb-20 bg-psyched-purple text-white relative overflow-hidden">
+    <section className="pt-20 pb-20 bg-gradient-to-br from-psyched-purple via-psyched-indigo to-psyched-darkPurple text-white relative overflow-hidden">
       <div className="absolute -top-24 -right-24 w-64 h-64 bg-psyched-indigo/30 rounded-full blur-3xl"></div>
       <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-psyched-lightPurple/30 rounded-full blur-3xl"></div>
       
