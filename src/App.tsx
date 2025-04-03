@@ -31,6 +31,7 @@ import AdminEvaluations from './pages/admin/AdminEvaluations';
 import AdminSchools from './pages/admin/AdminSchools';
 import Approvals from './pages/admin/Approvals';
 import Unauthorized from './pages/Unauthorized';
+import AIInspiredLanding from './pages/AIInspiredLanding';
 
 // Success stories pages
 import SuccessStories from './pages/SuccessStories';
@@ -62,6 +63,9 @@ function App() {
         <Route path="/psychologist-signup" element={<PsychologistSignup />} />
         <Route path="/district-signup" element={<DistrictSignup />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
+        
+        {/* New AI-inspired design landing page */}
+        <Route path="/ai-inspired-design" element={<AIInspiredLanding />} />
         
         {/* Success Stories Routes */}
         <Route path="/success-stories" element={<SuccessStories />} />
