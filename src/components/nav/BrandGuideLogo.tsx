@@ -7,7 +7,7 @@ export const BrandGuideLogo = () => {
   return (
     <Link to="/brand-guide" className="flex items-center group">
       <motion.div 
-        className="bg-gradient-to-r from-purple-600 to-violet-500 font-bold px-3 py-1.5 text-white mr-1 rounded"
+        className="bg-gradient-to-r from-indigo-600 to-purple-600 font-bold px-3 py-1.5 text-white mr-1 rounded-md shadow-md"
         whileHover={{ scale: 1.05 }}
         transition={{
           type: "spring",
@@ -24,7 +24,7 @@ export const BrandGuideLogo = () => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
         whileHover={{ scale: 1.05 }}
-        className="text-white font-semibold"
+        className="text-gray-800 dark:text-white font-semibold"
       >
         Hire!
       </motion.div>
