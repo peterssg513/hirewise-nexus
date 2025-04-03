@@ -169,6 +169,10 @@ const AIInspiredLanding = () => {
                 Success Stories
                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
               </Link>
+              <Link to="/brand-guide" className="text-gray-600 hover:text-purple-700 px-3 py-2 text-sm font-medium relative group">
+                Brand Guide
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+              </Link>
               <Link to="/about" className="text-gray-600 hover:text-purple-700 px-3 py-2 text-sm font-medium relative group">
                 About
                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>

@@ -33,6 +33,7 @@ import Approvals from './pages/admin/Approvals';
 import Unauthorized from './pages/Unauthorized';
 import AIInspiredLanding from './pages/AIInspiredLanding';
 import ThirdLandingPage from './pages/ThirdLandingPage';
+import BrandGuide from './pages/BrandGuide'; // Add this import
 
 // Success stories pages
 import SuccessStories from './pages/SuccessStories';
@@ -70,6 +71,9 @@ function App() {
         
         {/* Third landing page */}
         <Route path="/third-landing-page" element={<ThirdLandingPage />} />
+        
+        {/* Brand Guide page */}
+        <Route path="/brand-guide" element={<BrandGuide />} />
         
         {/* Success Stories Routes */}
         <Route path="/success-stories" element={<SuccessStories />} />
