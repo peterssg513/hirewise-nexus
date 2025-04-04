@@ -73,6 +73,7 @@ export default {
 					lightPurple: '#A788FA',
 					indigo: '#4F46E5',
 					indigoDark: '#4338CA',
+					darkPurple: '#1A1F2C',  // Added the missing darkPurple color
 					yellow: '#F7C600',
 					darkBlue: '#2A3950',
 					lightBlue: '#8DD3F7',
