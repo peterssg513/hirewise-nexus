@@ -3,124 +3,101 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface School {
   id: string;
+  district_id: string;
   name: string;
-  enrollment_size?: number;
-  street?: string;
+  address?: string;
   city?: string;
   state?: string;
-  zip_code?: string;
-  district_id: string;
-  created_at: string;
-  updated_at: string;
+  zipcode?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  principal_name?: string;
+  school_type?: string;
+  grade_levels?: string[];
+  student_count?: number;
 }
 
-export interface CreateSchoolParams {
-  name: string;
-  enrollment_size?: number;
-  street?: string;
-  city?: string;
-  state?: string;
-  zip_code?: string;
-  district_id: string;
-}
-
-/**
- * Fetches all schools for the current district
- */
+// Fetch schools for a district
 export const fetchSchools = async (districtId: string): Promise<School[]> => {
   try {
-    console.log("fetchSchools - Fetching schools for district ID:", districtId);
-    
     const { data, error } = await supabase
       .from('schools')
       .select('*')
       .eq('district_id', districtId)
       .order('name', { ascending: true });
-
-    if (error) {
-      console.error('Error in fetchSchools:', error);
-      throw error;
-    }
     
-    console.log("fetchSchools - Results:", data?.length || 0, "schools found");
-    return data || [];
+    if (error) throw error;
+    return data as School[];
   } catch (error) {
     console.error('Error fetching schools:', error);
-    throw error;
+    return [];
   }
 };
 
-/**
- * Fetch a single school by ID
- */
-export const fetchSchoolById = async (schoolId: string): Promise<School | null> => {
+// Create a new school
+export const createSchool = async (schoolData: Partial<School>): Promise<School> => {
   try {
     const { data, error } = await supabase
       .from('schools')
-      .select('*')
-      .eq('id', schoolId)
-      .single();
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error fetching school:', error);
-    throw error;
-  }
-};
-
-/**
- * Creates a new school
- */
-export const createSchool = async (schoolData: CreateSchoolParams): Promise<School> => {
-  try {
-    const { data, error } = await supabase
-      .from('schools')
-      .insert(schoolData)
+      .insert([schoolData])
       .select()
       .single();
-
+    
     if (error) throw error;
-    return data;
+    return data as School;
   } catch (error) {
     console.error('Error creating school:', error);
     throw error;
   }
 };
 
-/**
- * Updates an existing school
- */
-export const updateSchool = async (schoolId: string, schoolData: Partial<School>): Promise<School> => {
+// Update a school
+export const updateSchool = async (id: string, schoolData: Partial<School>): Promise<School> => {
   try {
     const { data, error } = await supabase
       .from('schools')
       .update(schoolData)
-      .eq('id', schoolId)
+      .eq('id', id)
       .select()
       .single();
-
+    
     if (error) throw error;
-    return data;
+    return data as School;
   } catch (error) {
     console.error('Error updating school:', error);
     throw error;
   }
 };
 
-/**
- * Deletes a school
- */
-export const deleteSchool = async (schoolId: string): Promise<void> => {
+// Delete a school
+export const deleteSchool = async (id: string): Promise<void> => {
   try {
     const { error } = await supabase
       .from('schools')
       .delete()
-      .eq('id', schoolId);
-
+      .eq('id', id);
+    
     if (error) throw error;
   } catch (error) {
     console.error('Error deleting school:', error);
     throw error;
+  }
+};
+
+// Get school by id
+export const getSchoolById = async (id: string): Promise<School | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('schools')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data as School;
+  } catch (error) {
+    console.error('Error fetching school:', error);
+    return null;
   }
 };

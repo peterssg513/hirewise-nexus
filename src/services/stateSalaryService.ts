@@ -1,6 +1,4 @@
 
-import { supabase } from '@/integrations/supabase/client';
-
 export const STATES = [
   { code: 'AL', name: 'Alabama' },
   { code: 'AK', name: 'Alaska' },
@@ -55,62 +53,29 @@ export const STATES = [
   { code: 'DC', name: 'District of Columbia' }
 ];
 
-// Define a list of state names for backward compatibility
-export const STATE_NAMES = STATES.map(state => state.name);
-
-export const WORK_TYPES = [
-  'Full-time',
-  'Part-time',
-  'Contract',
-  'Temporary',
-  'Seasonal',
-  'Internship',
-  'Consultant',
-  'Independent Contractor',
-  'Per Diem'
-];
-
 export const WORK_LOCATIONS = [
-  'On-site',
-  'Remote',
-  'Hybrid',
-  'Multiple Schools',
-  'District Office'
+  "On-site",
+  "Remote",
+  "Hybrid",
+  "Multiple Schools",
+  "District-wide",
+  "Regional"
 ];
 
-interface StateSalary {
-  id: string;
-  state: string;
-  salary_amount: number;
-  year: number;
-}
+export const STATE_SALARY_DATA = {
+  'CA': { min: 80000, max: 120000 },
+  'NY': { min: 75000, max: 115000 },
+  'TX': { min: 65000, max: 95000 },
+  'FL': { min: 60000, max: 90000 },
+  'IL': { min: 68000, max: 98000 },
+  // Default for other states
+  'default': { min: 55000, max: 85000 }
+};
 
-export const fetchAverageSalaryByState = async (state: string): Promise<number | null> => {
-  try {
-    // Check for valid state name
-    const stateNames = STATES.map(s => s.name);
-    if (!stateNames.includes(state)) {
-      console.error(`Invalid state: ${state}`);
-      return null;
-    }
+export const getSalaryRangeForState = (stateCode: string): { min: number, max: number } => {
+  return STATE_SALARY_DATA[stateCode as keyof typeof STATE_SALARY_DATA] || STATE_SALARY_DATA.default;
+};
 
-    // Using the from() method with a table that actually exists in your database
-    const { data, error } = await supabase
-      .from('state_salaries') // Using the actual table name that exists in your database
-      .select('salary_amount')
-      .eq('state_name', state)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error) {
-      console.error('Error fetching state salary:', error);
-      return null;
-    }
-
-    return data?.salary_amount || null;
-  } catch (error) {
-    console.error('Exception fetching state salary:', error);
-    return null;
-  }
+export const formatSalaryRange = (min: number, max: number): string => {
+  return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
 };
