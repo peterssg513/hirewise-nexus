@@ -1,6 +1,10 @@
 
 /* PsychedHire Common Styles */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @layer components {
   .psyched-hero {
     @apply pt-20 pb-20 bg-gradient-to-br from-psyched-purple via-psyched-indigo to-psyched-darkPurple text-white relative overflow-hidden;
