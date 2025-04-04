@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -16,10 +15,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { EvaluationRequest, SERVICE_TYPES, updateEvaluationRequest } from '@/services/evaluationRequestService';
+import { EvaluationRequest, updateEvaluationRequest } from '@/services/evaluationRequestService';
+import { SERVICE_TYPES, GRADE_LEVELS } from '@/services/evaluationPaymentService';
 import { useToast } from '@/hooks/use-toast';
 import { fetchSchools } from '@/services/schoolService';
-import { GRADE_LEVELS } from '@/services/evaluationPaymentService';
 import { useQuery } from '@tanstack/react-query';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
@@ -70,7 +69,6 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
 
   console.log("EditEvaluationDialog - Received evaluation with district_id:", evaluation.district_id);
 
-  // Query schools data
   const { data: schools = [], isLoading: schoolsLoading, error: schoolsError } = useQuery({
     queryKey: ['schools', evaluation.district_id],
     queryFn: () => {
@@ -86,7 +84,6 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
     }
   });
 
-  // Log for debugging
   useEffect(() => {
     if (open) {
       console.log("EditEvaluationDialog - Schools:", schools);
@@ -111,7 +108,6 @@ export const EditEvaluationDialog: React.FC<EditEvaluationDialogProps> = ({
     try {
       setIsSubmitting(true);
       
-      // Convert age from string to number if present
       const evaluationData = {
         ...data,
         age: data.age ? parseInt(data.age, 10) : undefined,
