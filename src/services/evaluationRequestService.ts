@@ -1,6 +1,18 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
+export type EvaluationRequestStatus = 
+  | 'pending' 
+  | 'active' 
+  | 'completed' 
+  | 'canceled' 
+  | 'rejected'
+  | 'Open' 
+  | 'Offered' 
+  | 'Accepted' 
+  | 'Evaluation In Progress' 
+  | 'Closed';
+
 export interface EvaluationRequest {
   id: string;
   title?: string;
@@ -13,7 +25,7 @@ export interface EvaluationRequest {
   district_id?: string;
   school_id?: string;
   service_type?: string;
-  status?: string;
+  status?: EvaluationRequestStatus;
   created_at: string;
   updated_at: string;
   other_relevant_info?: string;
@@ -21,6 +33,8 @@ export interface EvaluationRequest {
   special_education_teachers?: string;
   parents?: string;
   location?: string;
+  timeframe?: string;
+  skills_required?: string[];
 }
 
 export const fetchEvaluationRequests = async (districtId: string): Promise<EvaluationRequest[]> => {

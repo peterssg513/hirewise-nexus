@@ -8,17 +8,12 @@ type ToastProps = {
   variant?: "default" | "destructive" | "success" | "warning" | "info";
 };
 
-const toasts: ToastProps[] = [];
-
 export function useToast() {
   const toast = ({ title, description, action, variant = "default" }: ToastProps) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    
     // Choose the appropriate toast function based on variant
     switch (variant) {
       case "destructive":
         sonnerToast.error(title, {
-          id,
           description,
           action,
           style: { 
@@ -29,7 +24,6 @@ export function useToast() {
         break;
       case "success":
         sonnerToast.success(title, {
-          id,
           description,
           action,
           style: { 
@@ -40,7 +34,6 @@ export function useToast() {
         break;
       case "warning":
         sonnerToast.warning(title, {
-          id,
           description,
           action,
           style: { 
@@ -51,7 +44,6 @@ export function useToast() {
         break;
       case "info":
         sonnerToast.info(title, {
-          id,
           description,
           action,
           style: { 
@@ -62,7 +54,6 @@ export function useToast() {
         break;
       default:
         sonnerToast(title, {
-          id,
           description,
           action,
           style: { 
@@ -71,16 +62,10 @@ export function useToast() {
           }
         });
     }
-    
-    // Store the toast for reference
-    toasts.push({ id, title, description, action, variant } as any);
-    
-    return id;
   };
   
   return {
     toast,
-    toasts,
     dismiss: sonnerToast.dismiss,
     error: (title: string, description?: string) => toast({
       title,
