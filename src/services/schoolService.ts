@@ -94,12 +94,7 @@ export const deleteSchool = async (id: string): Promise<void> => {
   }
 };
 
-// Get school by id
-export const getSchoolById = async (id: string): Promise<School | null> => {
-  return fetchSchoolById(id);
-};
-
-// Fetch school by id - new function name for consistency
+// Fetch school by id - the main function that should be exported
 export const fetchSchoolById = async (id: string): Promise<School | null> => {
   try {
     const { data, error } = await supabase
@@ -114,4 +109,9 @@ export const fetchSchoolById = async (id: string): Promise<School | null> => {
     console.error('Error fetching school:', error);
     return null;
   }
+};
+
+// Get school by id - alias for backward compatibility
+export const getSchoolById = async (id: string): Promise<School | null> => {
+  return fetchSchoolById(id);
 };
