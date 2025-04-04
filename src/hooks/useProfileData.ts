@@ -2,14 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  fetchPsychologistProfile, 
-  createPsychologistProfile 
-} from '@/services/profileService';
-import { 
-  Experience, 
-  Education 
-} from '@/services/psychologistSignupService';
+import { getPsychologistProfile, createProfile } from '@/services/profileService';
+import { Experience, Education } from '@/services/psychologistSignupService';
 import { Certification } from '@/services/certificationService';
 
 // Helper function to safely parse JSON
@@ -95,7 +89,7 @@ export const useProfileData = (): ProfileDataState => {
       console.log("Fetching profile for user:", user.id);
       
       try {
-        const data = await fetchPsychologistProfile(user.id);
+        const data = await getPsychologistProfile(user.id);
         console.log("Profile data retrieved:", data);
         
         // Ensure profile_picture_url is correctly set
@@ -154,7 +148,7 @@ export const useProfileData = (): ProfileDataState => {
       } catch (profileError) {
         console.error('Error fetching profile, trying to create new profile:', profileError);
         
-        const newProfile = await createPsychologistProfile(user.id);
+        const newProfile = await createProfile(user.id, 'psychologist');
         setProfile(newProfile);
         setExperiences([]);
         setEducations([]);

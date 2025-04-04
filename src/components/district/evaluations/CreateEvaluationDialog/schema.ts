@@ -1,7 +1,6 @@
 
 import { z } from "zod";
 import { GRADE_LEVELS } from "@/services/evaluationServiceConstants";
-import { EvaluationRequestStatus } from "@/types/evaluationRequest";
 
 export const evaluationFormSchema = z.object({
   legal_name: z.string().min(1, "Student's legal name is required"),

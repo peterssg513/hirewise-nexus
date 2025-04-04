@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { evaluationFormSchema, EvaluationFormValues } from './schema';
 import { createEvaluationRequest } from '@/services/evaluationRequestService';
-import { EvaluationRequestStatus } from '@/types/evaluationRequest';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -15,13 +14,19 @@ import { AdditionalInfoSection } from './sections/AdditionalInfoSection';
 import { useNavigate } from 'react-router-dom';
 
 interface CreateEvaluationFormProps {
+  districtId?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
+  onEvaluationCreated?: (evaluation: any) => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
+  districtId,
   onSuccess,
   onCancel,
+  onEvaluationCreated,
+  onOpenChange
 }) => {
   const { profile } = useAuth();
   const navigate = useNavigate();
@@ -46,7 +51,9 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
   });
   
   const onSubmit = async (data: EvaluationFormValues) => {
-    if (!profile?.id) {
+    const effectiveDistrictId = districtId || profile?.id;
+    
+    if (!effectiveDistrictId) {
       toast.error('Authentication error', {
         description: 'You must be logged in to create an evaluation request'
       });
@@ -65,7 +72,7 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
       const response = await createEvaluationRequest({
         ...data,
         age: numericAge,
-        district_id: profile.id,
+        district_id: effectiveDistrictId,
         skills_required: data.skills_required || []
       });
       
@@ -73,6 +80,14 @@ export const CreateEvaluationForm: React.FC<CreateEvaluationFormProps> = ({
         toast.success('Evaluation request created', {
           description: 'Your evaluation request has been submitted for approval'
         });
+        
+        if (onEvaluationCreated) {
+          onEvaluationCreated(response);
+        }
+        
+        if (onOpenChange) {
+          onOpenChange(false);
+        }
         
         if (onSuccess) {
           onSuccess();

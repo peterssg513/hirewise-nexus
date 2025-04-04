@@ -1,10 +1,8 @@
 
-import { Toast } from 'sonner';
+import { Toaster as SonnerToaster } from 'sonner';
 
 export function Toaster() {
   return (
-    <>
-      <Toast position="top-right" closeButton />
-    </>
+    <SonnerToaster position="top-right" closeButton />
   );
 }

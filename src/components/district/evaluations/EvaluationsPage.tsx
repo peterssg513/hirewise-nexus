@@ -1,18 +1,19 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EvaluationCard } from './EvaluationCard';
-import { CreateEvaluationDialog } from './CreateEvaluationDialog';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { fetchEvaluationRequests, EvaluationRequest } from '@/services/evaluationRequestService';
+import { Plus } from 'lucide-react';
+import { CreateEvaluationDialog } from './CreateEvaluationDialog';
+import { EvaluationCard } from './EvaluationCard';
+import { getEvaluationRequests } from '@/services/evaluationRequestService';
+import { EvaluationRequest } from '@/types/evaluationRequest';
+import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { EmptyState } from '@/components/common/EmptyState';
 
 interface EvaluationsPageProps {
   districtId: string;
-  evaluationCounts: {
+  evaluationCounts?: {
     open: number;
     offered: number;
     accepted: number;
@@ -23,111 +24,149 @@ interface EvaluationsPageProps {
   loading?: boolean;
 }
 
-export const EvaluationsPage: React.FC<EvaluationsPageProps> = ({
-  districtId,
-  evaluationCounts,
-  loading: initialLoading = false
+export const EvaluationsPage: React.FC<EvaluationsPageProps> = ({ 
+  districtId, 
+  evaluationCounts = { open: 0, offered: 0, accepted: 0, inProgress: 0, closed: 0, total: 0 },
+  loading = false 
 }) => {
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [evaluations, setEvaluations] = useState<EvaluationRequest[]>([]);
   const [activeTab, setActiveTab] = useState('all');
-  
-  const {
-    data: evaluations,
-    isLoading,
-    refetch
-  } = useQuery({
-    queryKey: ['districtEvaluations', districtId],
-    queryFn: () => fetchEvaluationRequests(districtId),
-    initialData: []
-  });
+  const [isLoading, setIsLoading] = useState(loading);
+  const { toast } = useToast();
 
-  // Filter evaluations based on the active tab
-  const filteredEvaluations = evaluations.filter((evaluation: EvaluationRequest) => {
-    switch (activeTab) {
-      case 'open':
-        return evaluation.status === 'pending' || evaluation.status === 'Open';
-      case 'offered':
-        return evaluation.status === 'active' || evaluation.status === 'Offered';
-      case 'accepted':
-        return evaluation.status === 'Accepted';
-      case 'inProgress':
-        return evaluation.status === 'Evaluation In Progress';
-      case 'closed':
-        return evaluation.status === 'completed' || evaluation.status === 'Closed';
-      default:
-        return true;
+  const fetchEvaluations = async () => {
+    if (!districtId) return;
+    
+    try {
+      setIsLoading(true);
+      const data = await getEvaluationRequests(districtId);
+      setEvaluations(data);
+    } catch (error) {
+      console.error('Error fetching evaluations:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load evaluations',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
     }
-  });
-  
-  const handleEvaluationCreated = () => {
-    refetch();
   };
+  
+  useEffect(() => {
+    if (districtId) {
+      fetchEvaluations();
+    }
+  }, [districtId]);
   
   const handleCreateEvaluation = () => {
-    setCreateDialogOpen(true);
+    setIsCreateDialogOpen(true);
   };
   
+  const handleEvaluationCreated = (newEvaluation: EvaluationRequest) => {
+    setEvaluations(prevEvaluations => [newEvaluation, ...prevEvaluations]);
+    setIsCreateDialogOpen(false);
+  };
+  
+  const filteredEvaluations = () => {
+    switch (activeTab) {
+      case 'open':
+        return evaluations.filter(e => e.status === 'pending' || e.status === 'Open');
+      case 'offered':
+        return evaluations.filter(e => e.status === 'active' || e.status === 'Offered');
+      case 'accepted':
+        return evaluations.filter(e => e.status === 'Accepted');
+      case 'inProgress':
+        return evaluations.filter(e => e.status === 'Evaluation In Progress');
+      case 'closed':
+        return evaluations.filter(e => e.status === 'completed' || e.status === 'Closed');
+      default:
+        return evaluations;
+    }
+  };
+  
+  const handleViewDetails = (evaluation: EvaluationRequest) => {
+    // To be implemented
+    console.log('View details for evaluation:', evaluation);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Evaluation Requests</h2>
-        <Button onClick={() => setCreateDialogOpen(true)} className="bg-psyched-darkBlue hover:bg-psyched-darkBlue/90 text-slate-50">
-          <PlusCircle className="mr-1 h-5 w-5" />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Evaluation Requests</h2>
+        <Button onClick={handleCreateEvaluation}>
+          <Plus className="mr-2 h-4 w-4" />
           New Evaluation
         </Button>
       </div>
       
-      <Tabs defaultValue="all" onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-6 w-full">
-          <TabsTrigger value="all">
-            All ({evaluationCounts.total})
-          </TabsTrigger>
-          <TabsTrigger value="open">
-            Open ({evaluationCounts.open})
-          </TabsTrigger>
-          <TabsTrigger value="offered">
-            Offered ({evaluationCounts.offered})
-          </TabsTrigger>
-          <TabsTrigger value="accepted">
-            Accepted ({evaluationCounts.accepted})
-          </TabsTrigger>
-          <TabsTrigger value="inProgress">
-            In Progress ({evaluationCounts.inProgress})
-          </TabsTrigger>
-          <TabsTrigger value="closed">
-            Closed ({evaluationCounts.closed})
-          </TabsTrigger>
+      <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-6 mb-6">
+          <TabsTrigger value="all">All ({evaluationCounts.total})</TabsTrigger>
+          <TabsTrigger value="open">Open ({evaluationCounts.open})</TabsTrigger>
+          <TabsTrigger value="offered">Offered ({evaluationCounts.offered})</TabsTrigger>
+          <TabsTrigger value="accepted">Accepted ({evaluationCounts.accepted})</TabsTrigger>
+          <TabsTrigger value="inProgress">In Progress ({evaluationCounts.inProgress})</TabsTrigger>
+          <TabsTrigger value="closed">Closed ({evaluationCounts.closed})</TabsTrigger>
         </TabsList>
         
-        {/* Shared content for all tabs */}
-        <TabsContent value={activeTab} className="space-y-4">
-          {isLoading || initialLoading ? (
-            <div className="flex justify-center py-8">
-              <LoadingSpinner />
-            </div>
-          ) : filteredEvaluations.length === 0 ? (
-            <EmptyState 
-              title="No evaluations found" 
-              description={`No evaluation requests match the current filter.`} 
-              actionLabel="Create New Evaluation" 
-              onAction={handleCreateEvaluation} 
-            />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredEvaluations.map((evaluation: EvaluationRequest) => (
-                <EvaluationCard key={evaluation.id} evaluation={evaluation} />
-              ))}
-            </div>
-          )}
+        <TabsContent value="all" className="w-full">
+          {renderEvaluationsList()}
+        </TabsContent>
+        <TabsContent value="open" className="w-full">
+          {renderEvaluationsList()}
+        </TabsContent>
+        <TabsContent value="offered" className="w-full">
+          {renderEvaluationsList()}
+        </TabsContent>
+        <TabsContent value="accepted" className="w-full">
+          {renderEvaluationsList()}
+        </TabsContent>
+        <TabsContent value="inProgress" className="w-full">
+          {renderEvaluationsList()}
+        </TabsContent>
+        <TabsContent value="closed" className="w-full">
+          {renderEvaluationsList()}
         </TabsContent>
       </Tabs>
-
-      <CreateEvaluationDialog 
-        open={createDialogOpen} 
-        onOpenChange={setCreateDialogOpen} 
-        districtId={districtId} 
-        onEvaluationCreated={handleEvaluationCreated} 
+      
+      <CreateEvaluationDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        districtId={districtId}
+        onEvaluationCreated={handleEvaluationCreated}
       />
     </div>
   );
+  
+  function renderEvaluationsList() {
+    if (isLoading) {
+      return <LoadingSpinner />;
+    }
+    
+    const evaluationsToShow = filteredEvaluations();
+    
+    if (evaluationsToShow.length === 0) {
+      return (
+        <Card>
+          <CardContent className="py-10 text-center">
+            <p className="text-muted-foreground">No evaluation requests found</p>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    return (
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {evaluationsToShow.map(evaluation => (
+          <EvaluationCard 
+            key={evaluation.id} 
+            evaluation={evaluation} 
+            onViewDetails={() => handleViewDetails(evaluation)}
+          />
+        ))}
+      </div>
+    );
+  }
 };

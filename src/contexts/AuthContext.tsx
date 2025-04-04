@@ -1,121 +1,181 @@
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 
-import React, { createContext, useContext, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuthState, Profile, Role } from '@/hooks/useAuthState';
-import { loginWithEmail, signUpWithEmail, logoutUser } from '@/services/authService';
-import { User, Session } from '@supabase/supabase-js';
-
+// AuthContext interface
 interface AuthContextType {
   user: User | null;
-  profile: Profile | null;
+  profile: any | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string, role: Role) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ user: User | null; error: Error | null }>;
+  signup: (email: string, password: string, role: string, name?: string) => Promise<{ user: User | null; error: Error | null }>;
   logout: () => Promise<void>;
-  session: Session | null;
+  refreshProfile: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create context with default values
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  profile: null,
+  isAuthenticated: false,
+  isLoading: true,
+  login: async () => ({ user: null, error: null }),
+  signup: async () => ({ user: null, error: null }),
+  logout: async () => {},
+  refreshProfile: async () => {},
+});
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, profile, session, isLoading, setProfile } = useAuthState();
-  const navigate = useNavigate();
-  const location = useLocation();
+// Hook to use the auth context
+export const useAuth = () => useContext(AuthContext);
 
-  // Handle redirect after authentication changes
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    // Only attempt navigation if we have loaded the profile and we're not on an auth page
-    if (!isLoading && profile && !location.pathname.includes('/login') && !location.pathname.includes('/register') && !location.pathname.includes('/psychologist-signup') && !location.pathname.includes('/district-signup') && !location.pathname.includes('/admin-secret-auth')) {
-      const role = profile.role;
-      if (role && location.pathname === '/') {
-        if (role === 'admin') {
-          navigate('/admin-dashboard');
-        } else if (role === 'district') {
-          navigate('/district-dashboard');
-        } else if (role === 'psychologist') {
-          navigate('/psychologist-dashboard');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setUser(session?.user || null);
+        if (session?.user) {
+          await loadProfile(session.user.id);
+        } else {
+          setProfile(null);
         }
+        setIsLoading(false);
       }
-    }
-  }, [profile, isLoading, navigate, location.pathname]);
+    );
 
-  const login = async (email: string, password: string) => {
-    try {
-      const data = await loginWithEmail(email, password);
-      
-      if (data.user && profile) {
-        // Redirect based on role
-        if (profile.role) {
-          if (profile.role === 'admin') {
-            navigate('/admin-dashboard');
-          } else if (profile.role === 'district') {
-            navigate('/district-dashboard');
-          } else if (profile.role === 'psychologist') {
-            navigate('/psychologist-dashboard');
-          }
-        }
+    // Initial load
+    const loadInitialSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user || null);
+      if (user) {
+        await loadProfile(user.id);
       }
+      setIsLoading(false);
+    };
+    loadInitialSession();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const loadProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        // toast.error('Failed to load profile', {
+        //   description: error.message
+        // });
+        return;
+      }
+      setProfile(data);
     } catch (error: any) {
-      console.error('Login error:', error);
-      throw error;
+      console.error('Unexpected error loading profile:', error);
+      // toast.error('Unexpected error loading profile', {
+      //   description: error.message
+      // });
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, role: Role) => {
+  const login = async (email: string, password: string) => {
     try {
-      const data = await signUpWithEmail(email, password, name, role);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      // If no email confirmation is required, we can redirect the user
-      if (data.user && data.session) {
-        // Wait for profile to be updated via auth state change
-        
-        if (role === 'psychologist') {
-          navigate('/psychologist-signup');
-        } else if (role === 'district') {
-          navigate('/district-signup');
-        } else if (role === 'admin') {
-          navigate('/admin-dashboard');
-        }
-      } else {
-        // Otherwise, redirect to login page
-        navigate('/login');
-      }
+      if (error) throw error;
+      
+      return { user: data.user, error: null };
     } catch (error: any) {
-      console.error('Registration error:', error);
-      throw error;
+      console.error('Error logging in:', error);
+      toast.error('Login failed', {
+        description: error.message
+      });
+      return { user: null, error };
+    }
+  };
+
+  const signup = async (email: string, password: string, role: string, name?: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            role,
+            name: name || email.split('@')[0],
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success('Account created', {
+        description: 'Please check your email to verify your account'
+      });
+      
+      return { user: data.user, error: null };
+    } catch (error: any) {
+      console.error('Error signing up:', error);
+      toast.error('Signup failed', {
+        description: error.message
+      });
+      return { user: null, error };
     }
   };
 
   const logout = async () => {
     try {
-      await logoutUser();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+    } catch (error: any) {
+      console.error('Error logging out:', error);
+      toast.error('Logout failed', {
+        description: error.message
+      });
+    }
+  };
+
+  // Function to refresh the profile data
+  const refreshProfile = async () => {
+    if (user) {
+      setIsLoading(true);
+      await loadProfile(user.id);
+      setIsLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      profile,
-      session,
-      isAuthenticated: !!user, 
-      isLoading, 
-      login, 
-      signUp,
-      logout 
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        signup,
+        logout,
+        refreshProfile: loadProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import DistrictNavigation from '@/components/district/DistrictNavigation';
 import { EvaluationsPage } from '@/components/district/evaluations/EvaluationsPage';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchEvaluationRequests } from '@/services/evaluationRequestService';
+import { getEvaluationRequests } from '@/services/evaluationRequestService';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 
@@ -27,7 +27,7 @@ const DistrictEvaluations = () => {
     queryKey: ['evaluationRequests', profile?.id],
     queryFn: () => {
       console.log("DistrictEvaluations - Fetching evaluations for profile ID:", profile?.id);
-      return fetchEvaluationRequests(profile?.id || '');
+      return getEvaluationRequests(profile?.id || '');
     },
     enabled: !!profile?.id,
     meta: {

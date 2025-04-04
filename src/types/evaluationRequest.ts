@@ -1,5 +1,5 @@
 
-export type EvaluationRequestStatus = 'pending' | 'active' | 'completed' | 'rejected';
+export type EvaluationRequestStatus = 'pending' | 'active' | 'completed' | 'rejected' | 'Open' | 'Offered' | 'Accepted' | 'Evaluation In Progress' | 'Closed';
 
 export interface EvaluationRequest {
   id: string;

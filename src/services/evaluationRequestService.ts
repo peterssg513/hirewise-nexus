@@ -21,12 +21,19 @@ export interface CreateEvaluationRequestParams {
 
 export async function createEvaluationRequest(data: CreateEvaluationRequestParams): Promise<EvaluationRequest | null> {
   try {
+    // Convert age to number if it's a numeric string
+    const ageValue = typeof data.age === 'string' && !isNaN(Number(data.age)) ? 
+      Number(data.age) : data.age;
+    
+    const insertData = {
+      ...data,
+      age: ageValue,
+      status: 'pending' as EvaluationRequestStatus
+    };
+      
     const { data: evaluation, error } = await supabase
       .from('evaluation_requests')
-      .insert({
-        ...data,
-        status: 'pending' as EvaluationRequestStatus
-      })
+      .insert(insertData)
       .select('*')
       .single();
       
@@ -42,12 +49,19 @@ export async function createEvaluationRequest(data: CreateEvaluationRequestParam
   }
 }
 
-export async function getEvaluationRequests(): Promise<EvaluationRequest[]> {
+export async function getEvaluationRequests(districtId?: string): Promise<EvaluationRequest[]> {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('evaluation_requests')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('*');
+      
+    if (districtId) {
+      query = query.eq('district_id', districtId);
+    }
+    
+    query = query.order('created_at', { ascending: false });
+      
+    const { data, error } = await query;
       
     if (error) throw error;
     
@@ -60,6 +74,9 @@ export async function getEvaluationRequests(): Promise<EvaluationRequest[]> {
     return [];
   }
 }
+
+// Alias to maintain compatibility with existing code
+export const fetchEvaluationRequests = getEvaluationRequests;
 
 export async function getEvaluationRequestById(id: string): Promise<EvaluationRequest | null> {
   try {
@@ -83,9 +100,14 @@ export async function getEvaluationRequestById(id: string): Promise<EvaluationRe
 
 export async function updateEvaluationRequest(id: string, data: Partial<EvaluationRequest>): Promise<EvaluationRequest | null> {
   try {
+    // Convert age to number if it's a numeric string
+    if (data.age && typeof data.age === 'string' && !isNaN(Number(data.age))) {
+      data.age = Number(data.age);
+    }
+    
     const { data: updatedEvaluation, error } = await supabase
       .from('evaluation_requests')
-      .update(data as any)
+      .update(data)
       .eq('id', id)
       .select('*')
       .single();
@@ -122,21 +144,5 @@ export async function deleteEvaluationRequest(id: string): Promise<boolean> {
 }
 
 export async function getDistrictEvaluationRequests(districtId: string): Promise<EvaluationRequest[]> {
-  try {
-    const { data, error } = await supabase
-      .from('evaluation_requests')
-      .select('*')
-      .eq('district_id', districtId)
-      .order('created_at', { ascending: false });
-      
-    if (error) throw error;
-    
-    return data as EvaluationRequest[];
-  } catch (error: any) {
-    console.error(`Error fetching evaluation requests for district ${districtId}:`, error);
-    toast.error('Failed to fetch evaluation requests', {
-      description: error.message || 'Please try again later'
-    });
-    return [];
-  }
+  return getEvaluationRequests(districtId);
 }

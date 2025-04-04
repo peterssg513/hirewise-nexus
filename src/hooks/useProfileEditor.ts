@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
   updatePsychologistProfile, 
-  updateProfileField 
+  updateProfile
 } from '@/services/profileService';
 import { Experience, Education } from '@/services/psychologistSignupService';
 import { Certification } from '@/services/certificationService';
@@ -85,11 +85,11 @@ export const useProfileEditor = ({
           ...updatedData,
         };
         
-        await updateProfileField(user.id, 'bio', updatedData.bio);
-        await updateProfileField(user.id, 'phone_number', updatedData.phone_number);
-        await updateProfileField(user.id, 'city', updatedData.city);
-        await updateProfileField(user.id, 'state', updatedData.state);
-        await updateProfileField(user.id, 'zip_code', updatedData.zip_code);
+        await updateProfile(user.id, 'bio', updatedData.bio);
+        await updateProfile(user.id, 'phone_number', updatedData.phone_number);
+        await updateProfile(user.id, 'city', updatedData.city);
+        await updateProfile(user.id, 'state', updatedData.state);
+        await updateProfile(user.id, 'zip_code', updatedData.zip_code);
       } else if (state.editSection === 'experience') {
         let updatedExperiences = [...experiences];
         
@@ -162,7 +162,7 @@ export const useProfileEditor = ({
     if (!user) return;
 
     try {
-      await updateProfileField(user.id, 'profile_picture_url', url);
+      await updateProfile(user.id, 'profile_picture_url', url);
       
       toast({
         title: "Profile picture updated",

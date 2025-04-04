@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchDistrictProfile } from '@/services/districtProfileService';
 import { fetchJobs } from '@/services/jobService';
 import { fetchSchools } from '@/services/schoolService';
-import { fetchEvaluationRequests } from '@/services/evaluationRequestService';
+import { getEvaluationRequests } from '@/services/evaluationRequestService';
 import { useToast } from '@/hooks/use-toast';
 import { DistrictProfile } from '@/components/district/DistrictProfile';
 import { DistrictOverview }  from '@/components/district/DistrictOverview';
@@ -69,7 +68,7 @@ const DistrictHome = () => {
           setSchoolsCount(schools.length);
           
           // Load evaluations count
-          const evaluations = await fetchEvaluationRequests(districtProfile.id);
+          const evaluations = await getEvaluationRequests(districtProfile.id);
           setEvaluationsCount({
             open: evaluations.filter(e => e.status === 'Open').length,
             offered: evaluations.filter(e => e.status === 'Offered').length,
