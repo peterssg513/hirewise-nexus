@@ -16,7 +16,16 @@ export interface School {
   school_type?: string;
   grade_levels?: string[];
   student_count?: number;
+  street?: string;
+  zip_code?: string;
+  enrollment_size?: number;
 }
+
+// Type for creating a school
+export type CreateSchoolParams = Partial<School> & { 
+  name: string; 
+  district_id: string;
+};
 
 // Fetch schools for a district
 export const fetchSchools = async (districtId: string): Promise<School[]> => {
@@ -36,7 +45,7 @@ export const fetchSchools = async (districtId: string): Promise<School[]> => {
 };
 
 // Create a new school
-export const createSchool = async (schoolData: Partial<School>): Promise<School> => {
+export const createSchool = async (schoolData: CreateSchoolParams): Promise<School> => {
   try {
     const { data, error } = await supabase
       .from('schools')
@@ -87,6 +96,11 @@ export const deleteSchool = async (id: string): Promise<void> => {
 
 // Get school by id
 export const getSchoolById = async (id: string): Promise<School | null> => {
+  return fetchSchoolById(id);
+};
+
+// Fetch school by id - new function name for consistency
+export const fetchSchoolById = async (id: string): Promise<School | null> => {
   try {
     const { data, error } = await supabase
       .from('schools')

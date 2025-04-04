@@ -1,23 +1,42 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface EvaluationRequest {
   id: string;
+  student_id?: string;
+  legal_name?: string;
+  date_of_birth?: string;
+  age?: number | string;
   district_id: string;
   school_id?: string;
-  psychologist_id?: string;
-  legal_name: string;
-  grade_level?: string;
-  birthdate?: string;
-  service_type: string;
-  skills_required?: string[];
+  other_relevant_info?: string;
+  service_type?: string;
+  grade?: string;
+  created_at?: string;
+  updated_at?: string;
+  status?: string;
+  general_education_teacher?: string;
+  special_education_teachers?: string;
+  parents?: string;
+  title?: string;
+  description?: string;
   location?: string;
   timeframe?: string;
-  description?: string;
-  title?: string;
-  status: string;
-  created_at?: string;
+  skills_required?: string[];
+  payment_amount?: string;
+  state?: string;
 }
+
+export type EvaluationRequestStatus = 
+  | 'pending' 
+  | 'active' 
+  | 'completed' 
+  | 'canceled' 
+  | 'rejected'
+  | 'Open'
+  | 'Offered'
+  | 'Accepted'
+  | 'Evaluation In Progress'
+  | 'Closed';
 
 // Fetch evaluation requests for a district
 export const fetchEvaluationRequests = async (districtId: string): Promise<EvaluationRequest[]> => {
@@ -41,7 +60,7 @@ export const createEvaluationRequest = async (evaluationData: Partial<Evaluation
   try {
     const { data, error } = await supabase
       .from('evaluation_requests')
-      .insert([{ ...evaluationData, status: 'Open' }])
+      .insert([evaluationData])
       .select()
       .single();
     
