@@ -6,7 +6,7 @@ import App from './App';
 import './index.css';
 import './App.css';
 import './styles/common.css';
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "./components/ui/toaster";
 import { AuthProvider } from './contexts/AuthContext';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
