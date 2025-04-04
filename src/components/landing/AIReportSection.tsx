@@ -62,7 +62,7 @@ const AIReportSection = () => {
             <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-100 transform rotate-1 z-10 relative">
               <div className="flex space-x-2 mb-4">
                 <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                <div className="w-3 h-3 bg-psyched-yellow rounded-full"></div>
                 <div className="w-3 h-3 bg-green-400 rounded-full"></div>
               </div>
               
@@ -91,7 +91,7 @@ const AIReportSection = () => {
                     <li>Processing Speed: 88 (Low Average)</li>
                   </ul>
                   
-                  <div className="bg-blue-50 border-l-2 border-blue-400 p-2 my-3 rounded">
+                  <div className="bg-blue-50 border-l-2 border-psyched-lightBlue p-2 my-3 rounded">
                     <p className="text-xs">AI compliance check: This report meets all district requirements. Consider adding behavioral observations to strengthen recommendations.</p>
                   </div>
                 </div>

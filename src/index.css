@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 262 73% 57%; /* Magic School purple */
+    --primary: 262 73% 57%; /* PsychedHire purple */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 224 88% 54%; /* Indigo */
@@ -101,10 +101,34 @@
   }
   
   .magic-star {
-    @apply absolute text-magic-yellow opacity-70 animate-float;
+    @apply absolute text-psyched-yellow opacity-70 animate-float;
   }
   
   .magic-gradient-text {
-    @apply bg-gradient-to-r from-magic-purple to-magic-brightPurple bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-psyched-purple to-psyched-brightPurple bg-clip-text text-transparent;
+  }
+  
+  .psyched-gradient-bg {
+    @apply bg-gradient-to-br from-psyched-purple via-psyched-indigo to-psyched-darkPurple;
+  }
+  
+  .psyched-card {
+    @apply bg-white rounded-lg p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow;
+  }
+  
+  .psyched-btn-primary {
+    @apply bg-psyched-purple text-white hover:bg-psyched-purple/90 transition-colors;
+  }
+  
+  .psyched-btn-secondary {
+    @apply bg-white text-psyched-darkBlue border border-gray-200 hover:bg-gray-50 transition-colors;
+  }
+  
+  .psyched-btn-outline {
+    @apply bg-transparent border border-psyched-purple text-psyched-purple hover:bg-psyched-purple/10 transition-colors;
+  }
+  
+  .psyched-section-padding {
+    @apply py-16 md:py-20;
   }
 }

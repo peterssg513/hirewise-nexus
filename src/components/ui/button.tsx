@@ -10,19 +10,22 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-magic-purple text-white hover:bg-magic-purple/90",
+        default: "bg-psyched-purple text-white hover:bg-psyched-purple/90",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-magic-purple/10 hover:text-magic-purple",
+          "border border-input bg-background hover:bg-psyched-purple/10 hover:text-psyched-purple",
         secondary:
-          "bg-magic-indigo text-white hover:bg-magic-indigo/80",
-        ghost: "hover:bg-magic-purple/10 hover:text-magic-purple",
-        link: "text-magic-purple underline-offset-4 hover:underline",
+          "bg-psyched-indigo text-white hover:bg-psyched-indigo/80",
+        ghost: "hover:bg-psyched-purple/10 hover:text-psyched-purple",
+        link: "text-psyched-purple underline-offset-4 hover:underline",
         success: "bg-green-500 text-white hover:bg-green-600",
-        primary: "bg-magic-purple text-white hover:bg-magic-purple/90",
-        white: "bg-white text-magic-gray900 border border-gray-200 hover:bg-gray-50",
-        gradient: "bg-gradient-to-r from-magic-indigo to-magic-purple text-white hover:opacity-90",
+        primary: "bg-psyched-purple text-white hover:bg-psyched-purple/90",
+        white: "bg-white text-psyched-darkBlue border border-gray-200 hover:bg-gray-50",
+        yellow: "bg-psyched-yellow text-psyched-darkBlue hover:bg-psyched-yellow/90",
+        orange: "bg-psyched-orange text-white hover:bg-psyched-orange/90",
+        lightBlue: "bg-psyched-lightBlue text-psyched-darkBlue hover:bg-psyched-lightBlue/90",
+        gradient: "bg-gradient-to-r from-psyched-indigo to-psyched-purple text-white hover:opacity-90",
       },
       size: {
         default: "h-10 px-4 py-2",

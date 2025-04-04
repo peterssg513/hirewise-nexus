@@ -1,45 +1,48 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
+
 const Hero = () => {
-  return <section className="pt-20 pb-20 bg-gradient-to-br from-psyched-purple via-psyched-indigo to-psyched-darkPurple text-white relative overflow-hidden bg-violet-600">
+  return (
+    <section className="pt-20 pb-20 bg-gradient-to-br from-psyched-purple via-psyched-indigo to-psyched-darkPurple text-white relative overflow-hidden">
       <div className="absolute -top-24 -right-24 w-64 h-64 bg-psyched-indigo/30 rounded-full blur-3xl"></div>
       <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-psyched-lightPurple/30 rounded-full blur-3xl"></div>
       
       {/* Animated stars */}
       <div className="absolute top-20 right-[20%] magic-star">
-        <Sparkles className="h-6 w-6 text-yellow-300" />
+        <Sparkles className="h-6 w-6 text-psyched-yellow" />
       </div>
       <div className="absolute bottom-20 left-[20%] magic-star" style={{
-      animationDelay: '2s'
-    }}>
-        <Sparkles className="h-4 w-4 text-yellow-300" />
+        animationDelay: '2s'
+      }}>
+        <Sparkles className="h-4 w-4 text-psyched-yellow" />
       </div>
       <div className="absolute top-40 left-[10%] magic-star" style={{
-      animationDelay: '1s'
-    }}>
-        <Sparkles className="h-5 w-5 text-yellow-300" />
+        animationDelay: '1s'
+      }}>
+        <Sparkles className="h-5 w-5 text-psyched-yellow" />
       </div>
       <div className="absolute bottom-40 right-[10%] magic-star" style={{
-      animationDelay: '3s'
-    }}>
-        <Sparkles className="h-7 w-7 text-yellow-300" />
+        animationDelay: '3s'
+      }}>
+        <Sparkles className="h-7 w-7 text-psyched-yellow" />
       </div>
       
       <div className="psyched-container relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <div className="inline-flex items-center px-4 py-1.5 mb-4 bg-white/10 text-white rounded-full text-sm font-medium backdrop-blur-sm">
-              <Sparkles className="w-4 h-4 mr-2 text-yellow-300" />
+              <Sparkles className="w-4 h-4 mr-2 text-psyched-yellow" />
               The power of AI to help schools
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Psyched<span className="text-yellow-300">Hire!</span>
+              Psyched<span className="text-psyched-yellow">Hire!</span>
             </h1>
             <p className="text-xl text-white/90 mb-8 max-w-lg leading-relaxed">
               The most loved, secure, and trusted AI platform for
-              <span className="font-medium text-white"> school psychologists and schools.</span>
+              <span className="font-medium text-white"> school psychologists and schools.</span>
             </p>
             
             <ul className="mb-8 space-y-3">
@@ -66,7 +69,7 @@ const Hero = () => {
             <div className="flex flex-wrap gap-4">
               <Link to="/for-psychologists">
                 <Button size="lg" className="group text-psyched-purple bg-slate-950 hover:bg-slate-800">
-                  Teachers sign up free
+                  Psychologists sign up free
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
@@ -87,14 +90,14 @@ const Hero = () => {
             <div className="bg-white/10 backdrop-blur-md rounded-lg p-8 shadow-xl border border-white/20 transform rotate-1 z-20 relative">
               <div className="flex space-x-2 mb-4">
                 <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-psyched-yellow rounded-full"></div>
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               </div>
               
               <div className="relative">
                 <img alt="PsychedHire Screenshot" className="rounded-md w-full shadow-lg border border-white/30" src="/lovable-uploads/917f5e68-3967-473b-bc3e-69479c38263f.png" />
                 <div className="absolute -top-6 -right-6">
-                  <Sparkles className="h-10 w-10 text-yellow-300 opacity-80" />
+                  <Sparkles className="h-10 w-10 text-psyched-yellow opacity-80" />
                 </div>
               </div>
             </div>
@@ -103,6 +106,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default Hero;

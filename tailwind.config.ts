@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -66,6 +67,18 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
+				psyched: {
+					purple: '#6E41E2',
+					brightPurple: '#9333EA',
+					lightPurple: '#A788FA',
+					indigo: '#4F46E5',
+					indigoDark: '#4338CA',
+					yellow: '#F7C600',
+					darkBlue: '#2A3950',
+					lightBlue: '#8DD3F7',
+					orange: '#FF9052',
+					cream: '#FFF9E7',
+				},
 				magic: {
 					purple: '#6E41E2',
 					brightPurple: '#9333EA',
@@ -79,13 +92,6 @@ export default {
 					gray600: '#4B5563',
 					gray800: '#1F2937',
 					gray900: '#111827',
-				},
-				psyched: {
-					yellow: '#F7C600',
-					darkBlue: '#2A3950',
-					lightBlue: '#8DD3F7',
-					orange: '#FF9052',
-					cream: '#FFF9E7',
 				},
 				teal: {
 					50: '#f0fdfa',
