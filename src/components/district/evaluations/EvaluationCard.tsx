@@ -1,123 +1,94 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { EvaluationRequest } from '@/services/evaluationRequestService';
-import { ClipboardList, MapPin, Clock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ClipboardList, Clock, Calendar, User, School, GraduationCap, AlertCircle } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { EvaluationRequest } from '@/types/evaluationRequest';
 
 interface EvaluationCardProps {
   evaluation: EvaluationRequest;
+  onViewDetails: (evaluation: EvaluationRequest) => void;
 }
 
-export const EvaluationCard: React.FC<EvaluationCardProps> = ({ evaluation }) => {
-  const navigate = useNavigate();
-  
-  const getBadgeColorByStatus = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'pending':
-      case 'open':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'active':
-      case 'offered':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'completed':
-      case 'closed':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'canceled':
-      case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
+const statusColors: Record<string, string> = {
+  pending: 'bg-yellow-500',
+  active: 'bg-green-500',
+  completed: 'bg-blue-500',
+  rejected: 'bg-red-500',
+};
 
-  const handleViewDetails = () => {
-    navigate(`/district-dashboard/evaluations/${evaluation.id}`);
-  };
+const getFormattedDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return formatDistanceToNow(date, { addSuffix: true });
+};
 
-  // Create display title
-  const displayTitle = evaluation.title || 
-    `${evaluation.service_type || 'Evaluation'} for ${evaluation.legal_name || 'Student'}`;
-
+export const EvaluationCard: React.FC<EvaluationCardProps> = ({
+  evaluation,
+  onViewDetails,
+}) => {
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-medium text-lg line-clamp-2">
-            {displayTitle}
-          </h3>
-          <Badge 
-            variant="outline" 
-            className={`${getBadgeColorByStatus(evaluation.status)} ml-2 whitespace-nowrap`}
-          >
-            {evaluation.status}
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg line-clamp-1">{evaluation.legal_name}</CardTitle>
+          <Badge className={statusColors[evaluation.status] || 'bg-gray-500'}>
+            {evaluation.status.charAt(0).toUpperCase() + evaluation.status.slice(1)}
           </Badge>
         </div>
-        
-        <div className="text-sm text-muted-foreground space-y-1">
-          {evaluation.location && (
-            <div className="flex items-center">
-              <MapPin className="h-3.5 w-3.5 mr-1 text-gray-500" />
-              <span className="truncate">{evaluation.location}</span>
-            </div>
-          )}
-          
-          {evaluation.timeframe && (
-            <div className="flex items-center">
-              <Clock className="h-3.5 w-3.5 mr-1 text-gray-500" />
-              <span>{evaluation.timeframe}</span>
-            </div>
-          )}
+        <div className="text-sm text-muted-foreground flex items-center">
+          <Calendar className="h-4 w-4 mr-1" />
+          {getFormattedDate(evaluation.created_at)}
         </div>
       </CardHeader>
-      
-      <CardContent className="py-2 flex-grow">
-        <div className="text-sm space-y-3">
-          {evaluation.service_type && (
-            <div>
-              <p className="text-muted-foreground mb-1">Service Type:</p>
-              <p>{evaluation.service_type}</p>
-            </div>
-          )}
-
-          {evaluation.legal_name && (
-            <div>
-              <p className="text-muted-foreground mb-1">Student Name:</p>
-              <p>{evaluation.legal_name}</p>
-            </div>
-          )}
-
-          {evaluation.skills_required?.length > 0 && (
-            <div>
-              <p className="text-muted-foreground mb-1">Skills Required:</p>
-              <div className="flex flex-wrap gap-1">
-                {evaluation.skills_required.map((skill, index) => (
-                  <Badge key={index} variant="outline" className="bg-slate-50">
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
+      <CardContent className="pb-2">
+        <div className="space-y-2">
+          <div className="flex items-start gap-2">
+            <ClipboardList className="h-4 w-4 text-muted-foreground mt-1" />
+            <span className="text-sm">
+              <span className="font-medium">Service:</span> {evaluation.service_type || 'Not specified'}
+            </span>
+          </div>
+          
+          {evaluation.timeframe && (
+            <div className="flex items-start gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground mt-1" />
+              <span className="text-sm">
+                <span className="font-medium">Timeframe:</span> {evaluation.timeframe}
+              </span>
             </div>
           )}
           
-          {evaluation.description && (
-            <div>
-              <p className="text-muted-foreground mb-1">Description:</p>
-              <p className="line-clamp-3">{evaluation.description}</p>
+          {evaluation.grade && (
+            <div className="flex items-start gap-2">
+              <GraduationCap className="h-4 w-4 text-muted-foreground mt-1" />
+              <span className="text-sm">
+                <span className="font-medium">Grade:</span> {evaluation.grade}
+              </span>
+            </div>
+          )}
+          
+          {evaluation.skills_required && evaluation.skills_required.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {evaluation.skills_required.map((skill, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {skill}
+                </Badge>
+              ))}
+            </div>
+          )}
+          
+          {evaluation.status === 'pending' && (
+            <div className="mt-2 flex items-start gap-2 text-yellow-600">
+              <AlertCircle className="h-4 w-4 mt-1" />
+              <span className="text-sm">Awaiting admin approval</span>
             </div>
           )}
         </div>
       </CardContent>
-      
-      <CardFooter className="pt-3">
-        <Button 
-          onClick={handleViewDetails}
-          className="w-full bg-psyched-darkBlue hover:bg-psyched-darkBlue/90"
-          size="sm"
-        >
-          <ClipboardList className="mr-1 h-4 w-4" />
+      <CardFooter>
+        <Button variant="outline" onClick={() => onViewDetails(evaluation)} className="w-full">
           View Details
         </Button>
       </CardFooter>

@@ -1,207 +1,239 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-/**
- * Sets up the required storage buckets if they don't exist
- */
-export const setupStorageBuckets = async () => {
+export interface Profile {
+  id: string;
+  email: string;
+  name?: string;
+  role?: 'district' | 'psychologist' | 'admin';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DistrictProfile {
+  id: string;
+  user_id: string;
+  name: string;
+  location?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  description?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at?: string;
+  updated_at?: string;
+  signup_progress?: string;
+  signup_completed?: boolean;
+  district_size?: number;
+  job_title?: string;
+  state?: string;
+  website?: string;
+}
+
+export interface PsychologistProfile {
+  id: string;
+  user_id: string;
+  profile_picture_url?: string;
+  experience_years?: number;
+  specialties?: string[];
+  education?: string;
+  certifications?: string[];
+  certification_details?: object;
+  phone_number?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  work_types?: string[];
+  evaluation_types?: string[];
+  experience?: string;
+  availability?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  signup_progress?: number;
+  signup_completed?: boolean;
+}
+
+export async function getProfile(): Promise<Profile | null> {
   try {
-    // Check if avatars bucket exists
-    const { data: buckets, error } = await supabase
-      .storage
-      .listBuckets();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return null;
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
       
     if (error) throw error;
     
-    // Create the bucket if it doesn't exist
-    if (!buckets.find(bucket => bucket.name === 'avatars')) {
-      const { error: createError } = await supabase
-        .storage
-        .createBucket('avatars', {
-          public: true,
-          fileSizeLimit: 5242880 // 5MB
-        });
-        
-      if (createError) throw createError;
-      
-      console.log('Created avatars bucket');
-    }
-  } catch (error) {
-    console.error('Error setting up storage buckets:', error);
+    return data as Profile;
+  } catch (error: any) {
+    console.error('Error getting profile:', error);
+    return null;
   }
-};
+}
 
-/**
- * Fetches the psychologist profile data
- */
-export const fetchPsychologistProfile = async (userId: string) => {
+export async function updateProfile(profile: Partial<Profile>): Promise<Profile | null> {
   try {
-    // Setup storage buckets if needed
-    await setupStorageBuckets();
+    const { data: { user } } = await supabase.auth.getUser();
     
-    // First fetch the basic profile information
-    const { data: profileData, error: profileError } = await supabase
+    if (!user) {
+      toast.error('Authentication error', {
+        description: 'You must be logged in to update your profile'
+      });
+      return null;
+    }
+    
+    const { data, error } = await supabase
       .from('profiles')
-      .select('name, email')
-      .eq('id', userId)
+      .update(profile)
+      .eq('id', user.id)
+      .select()
       .single();
       
-    if (profileError) {
-      console.error("Error fetching profile details:", profileError);
-      throw profileError;
+    if (error) throw error;
+    
+    toast.success('Profile updated', {
+      description: 'Your profile has been updated successfully'
+    });
+    
+    return data as Profile;
+  } catch (error: any) {
+    console.error('Error updating profile:', error);
+    
+    toast.error('Profile update failed', {
+      description: error.message || 'An error occurred while updating your profile'
+    });
+    
+    return null;
+  }
+}
+
+export async function getDistrictProfile(): Promise<DistrictProfile | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return null;
+    
+    const { data, error } = await supabase
+      .from('districts')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+      
+    if (error) {
+      if (error.code === 'PGRST116') {
+        toast.error('District profile not found', {
+          description: 'You may need to complete the registration process'
+        });
+      }
+      return null;
     }
     
-    // Then fetch the psychologist-specific data with all fields
-    const { data: psychologistData, error: psychologistError } = await supabase
+    return data as DistrictProfile;
+  } catch (error: any) {
+    console.error('Error getting district profile:', error);
+    return null;
+  }
+}
+
+export async function updateDistrictProfile(profile: Partial<DistrictProfile>): Promise<DistrictProfile | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error('Authentication error', {
+        description: 'You must be logged in to update your district profile'
+      });
+      return null;
+    }
+    
+    const { data, error } = await supabase
+      .from('districts')
+      .update(profile)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    toast.success('District profile updated', {
+      description: 'Your district profile has been updated successfully'
+    });
+    
+    return data as DistrictProfile;
+  } catch (error: any) {
+    console.error('Error updating district profile:', error);
+    
+    toast.error('District profile update failed', {
+      description: error.message || 'An error occurred while updating your district profile'
+    });
+    
+    return null;
+  }
+}
+
+export async function getPsychologistProfile(): Promise<PsychologistProfile | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return null;
+    
+    const { data, error } = await supabase
       .from('psychologists')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .single();
       
-    if (psychologistError) {
-      console.error("Error details:", psychologistError);
-      
-      // If record not found, create a new profile
-      if (psychologistError.code === 'PGRST116') {
-        await createPsychologistProfile(userId);
-        return fetchPsychologistProfile(userId);
+    if (error) {
+      if (error.code === 'PGRST116') {
+        toast.error('Psychologist profile not found', {
+          description: 'You may need to complete the registration process'
+        });
       }
-      
-      throw psychologistError;
+      return null;
     }
-
-    console.log("Fetched psychologist data:", psychologistData);
-    console.log("Profile picture URL:", psychologistData.profile_picture_url);
     
-    // Combine the data
-    return {
-      ...psychologistData,
-      profiles: profileData
-    };
-  } catch (error) {
-    console.error('Error fetching psychologist profile:', error);
-    throw error;
+    return data as PsychologistProfile;
+  } catch (error: any) {
+    console.error('Error getting psychologist profile:', error);
+    return null;
   }
-};
+}
 
-/**
- * Updates psychologist profile information
- */
-export const updatePsychologistProfile = async (userId: string, profileData: any) => {
+export async function updatePsychologistProfile(profile: Partial<PsychologistProfile>): Promise<PsychologistProfile | null> {
   try {
-    // Remove any fields that should not be directly updated
-    const sanitizedData = { ...profileData };
-    delete sanitizedData.id;
-    delete sanitizedData.user_id;
-    delete sanitizedData.profiles;
-    delete sanitizedData.created_at;
-    delete sanitizedData.updated_at;
+    const { data: { user } } = await supabase.auth.getUser();
     
-    console.log("Updating profile with data:", sanitizedData);
+    if (!user) {
+      toast.error('Authentication error', {
+        description: 'You must be logged in to update your psychologist profile'
+      });
+      return null;
+    }
     
     const { data, error } = await supabase
       .from('psychologists')
-      .update(sanitizedData)
-      .eq('user_id', userId)
-      .select();
+      .update(profile)
+      .eq('user_id', user.id)
+      .select()
+      .single();
       
     if (error) throw error;
     
-    toast({
-      title: "Profile updated",
-      description: "Your profile has been successfully updated.",
+    toast.success('Psychologist profile updated', {
+      description: 'Your psychologist profile has been updated successfully'
     });
     
-    return data;
-  } catch (error) {
+    return data as PsychologistProfile;
+  } catch (error: any) {
     console.error('Error updating psychologist profile:', error);
     
-    toast({
-      title: "Update failed",
-      description: "There was an error updating your profile. Please try again.",
-      variant: "destructive",
+    toast.error('Psychologist profile update failed', {
+      description: error.message || 'An error occurred while updating your psychologist profile'
     });
     
-    throw error;
+    return null;
   }
-};
-
-/**
- * Creates a new psychologist profile if it doesn't exist
- */
-export const createPsychologistProfile = async (userId: string) => {
-  try {
-    // Check if profile exists
-    const { data: existingProfile, error: checkError } = await supabase
-      .from('psychologists')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle();
-      
-    if (checkError) throw checkError;
-    
-    // If profile doesn't exist, create it
-    if (!existingProfile) {
-      const { data, error } = await supabase
-        .from('psychologists')
-        .insert({ user_id: userId })
-        .select()
-        .single();
-        
-      if (error) throw error;
-      
-      toast({
-        title: "Profile created",
-        description: "Your profile has been created. Complete your profile to improve your experience.",
-      });
-      
-      return data;
-    }
-    
-    return existingProfile;
-  } catch (error) {
-    console.error('Error creating psychologist profile:', error);
-    
-    toast({
-      title: "Profile creation failed",
-      description: "There was an error creating your profile. Please try again.",
-      variant: "destructive",
-    });
-    
-    throw error;
-  }
-};
-
-/**
- * Updates a specific field in the psychologist profile
- */
-export const updateProfileField = async (userId: string, field: string, value: any) => {
-  try {
-    console.log(`Updating ${field} to:`, value);
-    const { data, error } = await supabase
-      .from('psychologists')
-      .update({ [field]: value })
-      .eq('user_id', userId)
-      .select();
-      
-    if (error) throw error;
-    
-    toast({
-      title: "Profile updated",
-      description: `Your ${field.replace('_', ' ')} has been updated.`,
-    });
-    
-    return data;
-  } catch (error) {
-    console.error(`Error updating profile field ${field}:`, error);
-    
-    toast({
-      title: "Update failed",
-      description: "There was an error updating your profile. Please try again.",
-      variant: "destructive",
-    });
-    
-    throw error;
-  }
-};
+}

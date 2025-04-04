@@ -16,6 +16,8 @@ export const GRADE_LEVELS = [
   'Grade 12',
 ];
 
+export const EVALUATION_REQUEST_STATUSES = ['pending', 'active', 'completed', 'rejected'] as const;
+
 export const SERVICE_TYPES = [
   'Initial Evaluation',
   'Re-evaluation',
