@@ -96,12 +96,7 @@ const App = () => {
         <Route
           path="/psychologist-dashboard"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['psychologist']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['psychologist']}>
               <DashboardLayout>
                 <PsychologistDashboard />
               </DashboardLayout>
@@ -112,12 +107,7 @@ const App = () => {
         <Route
           path="/psychologist-dashboard/applications"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['psychologist']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['psychologist']}>
               <DashboardLayout>
                 <Applications />
               </DashboardLayout>
@@ -128,12 +118,7 @@ const App = () => {
         <Route
           path="/psychologist-dashboard/evaluations"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['psychologist']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['psychologist']}>
               <DashboardLayout>
                 <Evaluations />
               </DashboardLayout>
@@ -144,12 +129,7 @@ const App = () => {
         <Route
           path="/district-dashboard"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['district']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['district']}>
               <DashboardLayout>
                 <DistrictDashboard />
               </DashboardLayout>
@@ -160,12 +140,7 @@ const App = () => {
         <Route
           path="/district-dashboard/home"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['district']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['district']}>
               <DashboardLayout>
                 <DistrictHome />
               </DashboardLayout>
@@ -176,12 +151,7 @@ const App = () => {
         <Route
           path="/district-dashboard/jobs"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['district']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['district']}>
               <DashboardLayout>
                 <DistrictJobs />
               </DashboardLayout>
@@ -192,12 +162,7 @@ const App = () => {
         <Route
           path="/district-dashboard/schools"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['district']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['district']}>
               <DashboardLayout>
                 <DistrictSchools />
               </DashboardLayout>
@@ -208,12 +173,7 @@ const App = () => {
         <Route
           path="/district-dashboard/evaluations"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['district']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['district']}>
               <DashboardLayout>
                 <DistrictEvaluations />
               </DashboardLayout>
@@ -224,12 +184,7 @@ const App = () => {
         <Route
           path="/district-dashboard/students"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['district']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['district']}>
               <DashboardLayout>
                 <DistrictStudents />
               </DashboardLayout>
@@ -240,12 +195,7 @@ const App = () => {
         <Route
           path="/district-dashboard/settings"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['district']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['district']}>
               <DashboardLayout>
                 <DistrictSettings />
               </DashboardLayout>
@@ -256,12 +206,7 @@ const App = () => {
         <Route
           path="/admin-dashboard"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['admin']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['admin']}>
               <DashboardLayout>
                 <AdminDashboard />
               </DashboardLayout>
@@ -272,12 +217,7 @@ const App = () => {
         <Route
           path="/admin-dashboard/approvals"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['admin']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['admin']}>
               <DashboardLayout>
                 <Approvals />
               </DashboardLayout>
@@ -288,12 +228,7 @@ const App = () => {
         <Route
           path="/admin-dashboard/districts"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['admin']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['admin']}>
               <DashboardLayout>
                 <AdminDistricts />
               </DashboardLayout>
@@ -304,12 +239,7 @@ const App = () => {
         <Route
           path="/admin-dashboard/psychologists"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['admin']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['admin']}>
               <DashboardLayout>
                 <AdminPsychologists />
               </DashboardLayout>
@@ -320,12 +250,7 @@ const App = () => {
         <Route
           path="/admin-dashboard/schools"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['admin']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['admin']}>
               <DashboardLayout>
                 <AdminSchools />
               </DashboardLayout>
@@ -336,12 +261,7 @@ const App = () => {
         <Route
           path="/admin-dashboard/jobs"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['admin']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['admin']}>
               <DashboardLayout>
                 <AdminJobs />
               </DashboardLayout>
@@ -352,12 +272,7 @@ const App = () => {
         <Route
           path="/admin-dashboard/evaluations"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['admin']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['admin']}>
               <DashboardLayout>
                 <AdminEvaluations />
               </DashboardLayout>
@@ -368,12 +283,7 @@ const App = () => {
         <Route
           path="/admin-dashboard/students"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              allowedRoles={['admin']}
-              userRole={profile?.role}
-              redirectPath="/unauthorized"
-            >
+            <ProtectedRoute allowedRoles={['admin']}>
               <DashboardLayout>
                 <AdminStudents />
               </DashboardLayout>
