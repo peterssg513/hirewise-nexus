@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { WORK_TYPES } from './stateSalaryService';
 
 export interface Job {
   id: string;
@@ -31,15 +32,8 @@ export const JOB_TITLES = [
   "Clinical School Psychologist"
 ];
 
-export const WORK_TYPES = [
-  "Full-time",
-  "Part-time",
-  "Contract",
-  "Temporary",
-  "Seasonal",
-  "Per diem",
-  "Remote"
-];
+// Re-export WORK_TYPES from stateSalaryService to maintain compatibility
+export { WORK_TYPES };
 
 export const DEFAULT_BENEFITS = [
   "Competitive Salary",

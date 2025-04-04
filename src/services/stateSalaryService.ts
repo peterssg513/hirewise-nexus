@@ -62,6 +62,16 @@ export const WORK_LOCATIONS = [
   "Regional"
 ];
 
+export const WORK_TYPES = [
+  "Full-time",
+  "Part-time",
+  "Contract",
+  "Temporary",
+  "Seasonal",
+  "Per diem",
+  "Remote"
+];
+
 export const STATE_SALARY_DATA = {
   'CA': { min: 80000, max: 120000 },
   'NY': { min: 75000, max: 115000 },
