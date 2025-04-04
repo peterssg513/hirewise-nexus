@@ -153,3 +153,35 @@ export const getJobById = async (id: string): Promise<Job | null> => {
     return null;
   }
 };
+
+// Fetch applications for a job
+export const fetchJobApplications = async (jobId: string): Promise<any[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('applications')
+      .select(`
+        *,
+        psychologists:psychologist_id (
+          id,
+          experience_years,
+          certifications,
+          specialties,
+          city,
+          state,
+          profiles:user_id (
+            name,
+            email,
+            profile_picture_url
+          )
+        )
+      `)
+      .eq('job_id', jobId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching job applications:', error);
+    return [];
+  }
+};
